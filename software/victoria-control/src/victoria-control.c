@@ -119,7 +119,7 @@ int main(void) {
             p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
         }
 
-        // Unexpected CH overheat -> Error 0010
+        // Unexpected CH overheat -> Error 010
         if (p_system->ch_temperature < (CH_SETPOINT_HIGH - MAX_CH_TEMP_TOLERANCE)) {
             GasOff(p_system);
             p_system->error = ERROR_010;

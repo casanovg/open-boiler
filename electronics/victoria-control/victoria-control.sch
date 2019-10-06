@@ -1,13 +1,13 @@
 EESchema Schematic File Version 4
-LIBS:victoria-control-cache
+LIBS:victoria-v0.6-cache
 EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
 encoding utf-8
 Sheet 1 1
 Title "Open-Boiler"
-Date "2019-08-19"
-Rev "0.5"
+Date "2019-09-22"
+Rev "0.6"
 Comp "Nicebots"
 Comment1 "Gustavo Casanova"
 Comment2 ""
@@ -580,7 +580,7 @@ L Device:Thermistor_NTC TH1
 U 1 1 5D69E78A
 P 10300 1200
 F 0 "TH1" H 10398 1246 50  0000 L CNN
-F 1 "Thermistor_NTC" H 10398 1155 50  0000 L CNN
+F 1 "NTC Thermistor" H 10398 1155 50  0000 L CNN
 F 2 "Varistor:RV_Disc_D12mm_W3.9mm_P7.5mm" H 10300 1250 50  0001 C CNN
 F 3 "~" H 10300 1250 50  0001 C CNN
 	1    10300 1200
@@ -682,7 +682,7 @@ L Device:Thermistor_NTC TH2
 U 1 1 5D72E01F
 P 10300 2500
 F 0 "TH2" H 10398 2546 50  0000 L CNN
-F 1 "Thermistor_NTC" H 10398 2455 50  0000 L CNN
+F 1 "NTC Thermistor" H 10398 2455 50  0000 L CNN
 F 2 "Varistor:RV_Disc_D12mm_W3.9mm_P7.5mm" H 10300 2550 50  0001 C CNN
 F 3 "~" H 10300 2550 50  0001 C CNN
 	1    10300 2500
@@ -2110,7 +2110,7 @@ L Device:R R25
 U 1 1 5D69E79E
 P 9800 1300
 F 0 "R25" V 9890 1260 50  0000 L CNN
-F 1 "1K" V 9800 1250 50  0000 L CNN
+F 1 "10K" V 9800 1230 50  0000 L CNN
 F 2 "Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P12.70mm_Horizontal" V 9730 1300 50  0001 C CNN
 F 3 "~" H 9800 1300 50  0001 C CNN
 	1    9800 1300
@@ -2121,7 +2121,7 @@ L Device:R R26
 U 1 1 5D4714B7
 P 9800 2600
 F 0 "R26" V 9890 2560 50  0000 L CNN
-F 1 "1K" V 9800 2550 50  0000 L CNN
+F 1 "10K" V 9800 2530 50  0000 L CNN
 F 2 "Resistor_THT:R_Axial_DIN0309_L9.0mm_D3.2mm_P12.70mm_Horizontal" V 9730 2600 50  0001 C CNN
 F 3 "~" H 9800 2600 50  0001 C CNN
 	1    9800 2600
@@ -2149,24 +2149,6 @@ F 3 "~" H 8550 4050 50  0001 C CNN
 	1    8550 4050
 	-1   0    0    1   
 $EndComp
-Wire Wire Line
-	700  3920 700  4000
-Wire Wire Line
-	700  4000 900  4000
-Connection ~ 900  4000
-$Comp
-L power:+5V #PWR02
-U 1 1 5D4BEEE7
-P 700 3500
-F 0 "#PWR02" H 700 3350 50  0001 C CNN
-F 1 "+5V" H 715 3673 50  0000 C CNN
-F 2 "" H 700 3500 50  0001 C CNN
-F 3 "" H 700 3500 50  0001 C CNN
-	1    700  3500
-	1    0    0    -1  
-$EndComp
-Wire Wire Line
-	700  3620 700  3500
 $Comp
 L power:+5V #PWR014
 U 1 1 5D508ABE
@@ -2355,4 +2337,28 @@ F 3 "~" H 700 3770 50  0001 C CNN
 	1    700  3770
 	-1   0    0    1   
 $EndComp
+Wire Wire Line
+	700  3620 700  3500
+$Comp
+L power:+5V #PWR02
+U 1 1 5D4BEEE7
+P 700 3500
+F 0 "#PWR02" H 700 3350 50  0001 C CNN
+F 1 "+5V" H 715 3673 50  0000 C CNN
+F 2 "" H 700 3500 50  0001 C CNN
+F 3 "" H 700 3500 50  0001 C CNN
+	1    700  3500
+	1    0    0    -1  
+$EndComp
+Connection ~ 900  4000
+Wire Wire Line
+	700  4000 900  4000
+Wire Wire Line
+	700  3920 700  4000
+Text Notes 10400 1460 0    50   ~ 0
+Honeywell T7335D\n10K at 25°C
+Text Notes 10400 2750 0    50   ~ 0
+Honeywell T7335D\n10K at 25°C
+Text Notes 9910 4730 0    50   ~ 0
+Campini Ty60R\nOpen at 105°C\nManual Reset\n
 $EndSCHEMATC

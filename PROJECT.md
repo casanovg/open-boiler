@@ -31,5 +31,5 @@ The first thing to consider is to start seeing the boiler, not as a black box an
 3. 12.000 Kcal/h gas valve: Solenoid 12 VDC, 31Ω.
 4. 20.000 Kcal/h gas valve: 12 VDC, 31Ω solenoid.
 5. Flue gas extractor: 220 VAC electric fan.
-6. Heating water pump: 220 VAC 3-speed electric pump.
+6. Heating water pump: 3-speed 220 VAC electric pump.
 6. Electronic spark igniter: 18,000 V output, 12 and 5 VDC inputs.

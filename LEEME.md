@@ -1,7 +1,4 @@
 # Proyecto Open-Boiler
-2019-08-19 (gustavo.casanova@nicebots.com)
-
-## Resumen
 Este proyecto apunta a reemplazar la placa de control electrónica de una caldera combinada hogareña Roca Victoria 20/20 por una alternativa de hardware y software abierto. Es posible que a futuro se también se extienda su aplicación a otros modelos y fabricantes.
 
 ## Historia detrás del proyecto

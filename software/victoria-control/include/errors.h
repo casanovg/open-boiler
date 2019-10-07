@@ -4,7 +4,7 @@
  *  ........................................................
  *  File: errors.h (error codes header) for ATmega328
  *  ........................................................
- *  Version: 0.5 "Juan" / 2019-08-19
+ *  Version: 0.6 "Juan" / 2019-09-22
  *  gustavo.casanova@nicebots.com
  *  ........................................................
  */
@@ -20,13 +20,13 @@
 #define ERROR_002 2
 // E003: Airflow sensor out of sequence
 #define ERROR_003 3
-// E004: Exhaust fan not producing enough airflow or airflow-sensor failure
+// E004: Exhaust fan not producing enough airflow or airflow-sensor failure (before ignition)
 #define ERROR_004 4
 // E005: Ignition timeout, flame not detected or unexpectedly extinguished
 #define ERROR_005 5
 // E006: Airflow sensor didn't turn off on time
 #define ERROR_006 6
-// E007: No pressure detected in the flue-exhaust duct, there is a fan or airflow sensor problem
+// E007: No pressure detected in the flue-exhaust duct, there is a fan or airflow sensor failure (when the flame is lit)
 #define ERROR_007 7
 // E008: DHW sensor out of range: NTX thermistor failure or cable disconnected
 #define ERROR_008 8

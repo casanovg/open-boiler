@@ -4,7 +4,7 @@
  *  ........................................................
  *  File: victoria-control.h (headers) for ATmega328
  *  ........................................................
- *  Version: 0.5 "Juan" / 2019-08-19
+ *  Version: 0.6 "Juan" / 2019-09-22
  *  gustavo.casanova@nicebots.com
  *  ........................................................
  */
@@ -25,8 +25,8 @@
 #define BAUDRATE 38400
 #define BAUD_PRESCALER (((F_CPU / (BAUDRATE * 16UL))) - 1)
 
-#define CH_SETPOINT_HIGH        730     /* ADC-NTC CH temperature ~ 52°C */
-#define CH_SETPOINT_LOW         830     /* ADC-NTC CH temperature ~ 42°C */
+#define CH_SETPOINT_HIGH        241     /* ADC-NTC CH temperature ~ 55°C */
+#define CH_SETPOINT_LOW         379     /* ADC-NTC CH temperature ~ 38°C */
 
 #ifndef MAX_IGNITION_RETRIES
 #define MAX_IGNITION_RETRIES    3       /* Number of ignition retries when no flame is detected */
@@ -37,7 +37,7 @@
 #endif /* OVERHEAT_OVERRIDE */
 
 #ifndef AIRFLOW_OVERRIDE
-#define AIRFLOW_OVERRIDE        true    /* True: Flue airflow sensor override */
+#define AIRFLOW_OVERRIDE        false   /* True: Flue airflow sensor override */
 #endif /* AIRFLOW_OVERRIDE */
 
 #ifndef FAST_FLAME_DETECTION
@@ -129,7 +129,8 @@
 //#define CH_TEMP ADC7
 #define ADC_MIN 0
 #define ADC_MAX 1023
-#define MAX_CH_TEMP_TOLERANCE 80
+#define MAX_CH_TEMP_TOLERANCE 65
+
 #define CH_TEMP_MASK 0x3FE
 
 // Types
@@ -154,6 +155,8 @@ typedef enum inner_steps {
     IGNITING_5 = 25,
     IGNITING_6 = 26,
     DHW_ON_DUTY_1 = 31,
+    DHW_ON_DUTY_2 = 32,
+    DHW_ON_DUTY_3 = 33,
     CH_ON_DUTY_1 = 41,
     CH_ON_DUTY_2 = 42
 } InnerStep;
@@ -171,8 +174,6 @@ typedef enum input_flags {
 typedef enum analog_inputs {
     DHW_TEMPERATURE = 6,
     CH_TEMPERATURE = 7,
-    //DHW_TEMPERATURE = 4,  // Just for testing -> SDA in production
-    //CH_TEMPERATURE = 5,   // Just for testing -> SCL in production
     DHW_SETTING = 0,
     CH_SETTING = 1,
     SYSTEM_SETTING = 2
@@ -218,6 +219,11 @@ typedef struct sys_info {
     uint32_t pump_delay;            /* CH water pump auto-shutdown timer */
     InnerStep ch_on_duty_step;      /* CH inner step before handing over control to DHW */
 } SysInfo;
+typedef struct heat_power {
+    bool valve_3_state;
+    bool valve_2_state;
+    bool valve_1_state;
+} HeatPower;
 typedef struct debounce_sw {
     uint16_t ch_request_deb;        /* CH request switch debouncing delay */
     uint16_t airflow_deb;           /* Airflow sensor switch debouncing delay*/
@@ -249,7 +255,7 @@ void GasOff(SysInfo *);
 void SystemRestart(void);
 
 // Globals
-const char __flash str_header_01[] = {" OPEN-BOILER v0.5   "};
+const char __flash str_header_01[] = {" OPEN-BOILER v0.6   "};
 const char __flash str_header_02[] = {"\"Juan, Sandra & Gustavo\" "};
 const char __flash str_iflags[] = {"Inputs: "};
 const char __flash str_oflags[] = {"Outputs: "};
@@ -290,5 +296,33 @@ const char __flash str_mode_100[] = {"        [ ERROR ] .\n\r"};
 const char __flash str_wptimer[] = {"  CH water pump auto-shutdown timer: "};
 #endif /* SHOW_PUMP_TIMER */
 //const char __flash str_bug[] = {"  FORCED BUG !!! "};
+
+const bool __flash heat_modes[5][3][3] = {
+    {
+        {0, 0, 1},
+        {0, 0, 1},
+        {0, 0, 1}
+    },
+    {
+        {0, 1, 0},
+        {0, 0, 1},
+        {0, 0, 1}
+    },
+    {
+        {0, 1, 0},
+        {0, 1, 0},
+        {0, 0, 1}
+    },
+    {
+        {1, 0, 0},
+        {0, 0, 1},
+        {0, 0, 1}
+    },
+    {
+        {0, 1, 0},
+        {0, 1, 0},
+        {0, 1, 0}
+    }
+};
 
 #endif /* VICTORIA_CONTROL_H_ */

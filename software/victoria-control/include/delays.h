@@ -4,7 +4,7 @@
  *  ........................................................
  *  File: delays.h (non-blocking delays) for ATmega328
  *  ........................................................
- *  Version: 0.5 "Juan" / 2019-08-19
+ *  Version: 0.6 "Juan" / 2019-09-22
  *  gustavo.casanova@nicebots.com
  *  ........................................................
  */
@@ -23,12 +23,18 @@
 #define DLY_L_IGNITING_4 100        /* Igniting_4 step long delay */
 #define DLY_L_IGNITING_5 300        /* Igniting_5 step long delay */
 #define DLY_L_IGNITING_6 500        /* Igniting_6 step long delay */
-#define DLY_L_DHW_ON_DUTY_1 500     /* On_DHW_Duty_1 step long delay */
+#define DLY_L_DHW_ON_DUTY_1 100     /* On_DHW_Duty_1 step long delay */
 #define DLY_L_DHW_ON_DUTY_LOOP 3000 /* On_DHW_Duty loop long delay */
 #define DLY_L_CH_ON_DUTY_1 500      /* On_CH_Duty_1 step long delay */
 #define DLY_L_CH_ON_DUTY_LOOP 3000  /* On_DHW_Duty loop long delay */
-#define DLY_WATER_PUMP_OFF 1800000   /* Delay until the water pump shuts down when there are no CH requests */
-                                    /* Time: 900000 / 60 / 1000 = 15 min aprox, 1800000 = 30 min aprox     */
-#define DLY_DEBOUNCE 1000           /* Debounce delay for electromechanical switches */
+#define DLY_L_FLAME_MODULATION 9000 /* Modulation cycle: used in 1/3 parts */
+#define DLY_WATER_PUMP_OFF 600000   /* Delay until the water pump shuts down when there are no CH requests */
+                                    /* Time: 600000 / 60 / 1000 = 15 min aprox */
+                                    /* Time: 900000 / 60 / 1000 = 15 min aprox */
+                                    /* Time: 1800000 / 60 / 1000 = 30 min aprox     */
+#define DLY_DEBOUNCE_CH_REQ 1000    /* Debounce delay for CH request thermostat switch */
+#define DLY_DEBOUNCE_AIRFLOW 10     /* Debounce delay for airflow sensor switch */
+#define DLY_FLAME_OFF 100           /* Delay before checking if the flame is off after closing gas */
+#define DLY_AIRFLOW_OFF 2000        /* Delay before checking if the airflow sensor switches off when the fan gets turned off */
 
 #endif /* DELAYS_H_ */

@@ -18,18 +18,18 @@ The first thing to consider is to start seeing the boiler, not as a black box an
 ## Inputs:
 1. DHW temperature sensor: Honeywell T7335D NTC thermistor  (10 KΩ at 25 °C).
 2. Central heating temperature sensor: : Honeywell T7335D NTC thermistor  (10 KΩ at 25 °C).
-3. DHW temperature setting: Piher 10 kΩ through-hole PCB potentiometer.
-4. DC temperature setting: Piher 10 kΩ through-hole PCB potentiometer.
-5. System mode setting: Piher 10 kΩ through-hole PCB potentiometer.
+3. DHW temperature setting: Piher 10 KΩ through-hole PCB potentiometer.
+4. DC temperature setting: Piher 10 KΩ through-hole PCB potentiometer.
+5. System mode setting: Piher 10 KΩ through-hole PCB potentiometer.
 6. Flame sensor: ionization probe -> to be replaced by a KY-026 infrared light sensor.
 7. Flue exhaust flow sensor: Pressure switch 12-15 mm ca -> initially preserved but with an overridding option by software. Maybe it will be replaced by a Bosch BMP280 barometric sensor in the future.
-8. Overheating sensor: Campini Ty60R 105 ºC manual reset-thermostat.
+8. Overheating sensor: Campini Ty60R 105 °C manual reset-thermostat.
 
 ## Outputs:
-1. Safety gas valve: Solenoid 12 VDC, 31Ω.
-2. 7.000 Kcal/h gas valve: Solenoid 12 VDC, 31Ω.
-3. 12.000 Kcal/h gas valve: Solenoid 12 VDC, 31Ω.
-4. 20.000 Kcal/h gas valve: 12 VDC, 31Ω solenoid.
+1. Safety gas valve: Solenoid 12 VDC, 31 Ω.
+2. 7.000 Kcal/h gas valve: Solenoid 12 VDC, 31 Ω.
+3. 12.000 Kcal/h gas valve: Solenoid 12 VDC, 31 Ω.
+4. 20.000 Kcal/h gas valve: 12 VDC, 31 Ω solenoid.
 5. Flue gas extractor: 220 VAC electric fan.
 6. Heating water pump: 3-speed 220 VAC electric pump.
 6. Electronic spark igniter: 18,000 V output, 12 and 5 VDC inputs.

@@ -1,0 +1,21 @@
+EESchema-LIBRARY Version 2.4
+#encoding utf-8
+#
+# Thermostat
+#
+DEF Thermostat SW 0 40 N N 1 F N
+F0 "SW" -45 115 50 H V L CNN
+F1 "Thermostat" 20 -265 50 H V C CNN
+F2 "" 0 200 50 H I C CNN
+F3 "" 0 200 50 H I C CNN
+DRAW
+C -80 0 20 0 1 0 N
+C 80 0 20 0 1 0 N
+P 2 0 1 0 105 30 -60 0 N
+P 8 0 1 0 -25 5 -25 -40 50 -40 50 -65 -50 -65 -50 -90 0 -90 0 -115 N
+X 1 1 -200 0 100 R 50 50 0 1 P
+X 2 2 200 0 100 L 50 50 0 1 P
+ENDDRAW
+ENDDEF
+#
+#End Library

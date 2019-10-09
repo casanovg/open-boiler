@@ -1,0 +1,55 @@
+Celsius
+-------
+* Water at 38 °C or below is unlikely to scald an adult occupant at any exposure time.
+* Water at 50 °C for 5 minutes can cause 2nd & 3rd degree burns on adult skin
+* Water at 55 °C for 30 seconds can cause 2nd & 3rd degree burns on adult skin
+* Water at 60 °C for 5 seconds can cause 2nd & 3rd degree burns on adult skin
+* Water at 65 °C for 1.5 seconds can cause 2nd & 3rd degree burns on adult skin
+* Water at 70 °C for 0.5 seconds can cause 2nd & 3rd degree burns on adult skin
+
+Farenheit
+---------
+* Water at 100 deg F or below is unlikely to scald an adult occupant at any exposure time.
+* Water at 120 deg F for 5 minutes can cause 2nd & 3rd degree burns on adult skin
+* Water at 130 deg F for 30 seconds can cause 2nd & 3rd degree burns on adult skin
+* Water at 140 deg F for 5 seconds can cause 2nd & 3rd degree burns on adult skin
+* Water at 150 deg F for 1.5 seconds can cause 2nd & 3rd degree burns on adult skin
+* Water at 160 deg F for 0.5 seconds can cause 2nd & 3rd degree burns on adult skin
+
+Combi boilers ideal temperature for central heating
+---------------------------------------------------
+The perfect room temperature: Set your room thermostat at between 18 and 21 degrees Centigrade to optimise your boiler’s performance. Studies have found that this is the most comfortable interior temperature range for the majority of people surveyed. For older or less mobile people, between 22 and 23 degrees is a better temperature.
+
+Many people think that if they whack up the thermostat high, it will help the house to heat up more quickly. This method however, is inefficient and only uses more fuel with no benefit. Because your boiler works at one speed, turning the thermostat up too high will only waste energy, costing you money and making your home way too hot.
+
+Your boiler controls explained: Using your boiler controls correctly can help you to save a considerable amount of money and create a more comfortable living area. First and foremost, locate the two dials and the digital display on the front of your combi boiler. These control the output temperature for the radiators and the hot water temperature. To maximise efficiency, we recommend setting your radiator dial to 75 degrees and your hot water to 60 degrees.
+
+Once you’ve got your boiler running at the optimal temperature, you’ll want to set the timer for when you need heating the most. With a combi boiler, hot water is on demand. When you open a hot water tap the boiler is triggered to supply hot water, so no need to set the timer for hot water.
+
+For your central heating system, your timer settings will depend on when you spend most time at home. For most people, setting your central heating to come on half an hour before their alarm clock and half an hour before they come home from work is most convenient. An hour of heating in the morning and evening is a good starting point for your central heating system.
+
+If you need a boost of heat during a particularly cold snap, you can easily override your timings by manually turning on your heating system.
+
+Different room, different temperature: Most modern radiators are fitted with thermostatic radiator valves. They can be adjusted to regulate the flow of water into a room in order to control the temperature. Radiator valves usually have temperature settings from one to five. For maximum efficiency, set the radiators in your living room to three or four and in your bedrooms to two.
+
+It is never a good idea to turn off radiators in individual rooms. If a room of your home is not in regular use, turn the thermostatic valve down as low as possible to prevent problems with mould and damp from occurring.
+
+How to Bleed a Radiator
+-----------------------
+If you find one or more of your radiators is hot at the bottom, cold at the top, or even cold all over — this means you will need to bleed your radiator.
+
+For this you need a bleeding key. You can buy these from you local hardware store.
+
+* At one end of your radiator there is a slot that the key fits into.
+
+* Make sure you have a cloth underneath before turning the key.
+
+* When you turn the key, you will hear a hissing noise — this means that the built up air in the radiator is releasing.
+
+* As soon as water starts to come out and the hissing stops — close it and wipe up any excess water.
+
+* Do all of your radiators starting from the ground floor up.
+
+* Check your boiler after bleeding all the radiators in case your pressure has dropped as the pressure may need topping up. You can refer to our re-pressurising video. If its a combi or pressurised system — you will need to re charge the system using the filling or link key ensuring the correct pressure is added
+
+* If the pressure drops again, the radiators may need topping up and you may need to call a Help-Link engineer. 

@@ -1,0 +1,5 @@
+(sym_lib_table
+  (lib (name ESP32-DEVKITC-32D)(type Legacy)(uri C:/Users/gcasanova/source/repos/GitHub/open-boiler/electronics/kicad-components/esp32-devkitc-32d/ESP32-DEVKITC-32D.lib)(options "")(descr ""))
+  (lib (name ESP8266_ESP01_cp)(type Legacy)(uri "C:/Users/gcasanova/Google Drive/IoT/ESP-01/esp8266-esp01-KiCad-3D/ESP8266_ESP01_cp.lib")(options "")(descr ""))
+  (lib (name victoria-v1.0-rescue)(type Legacy)(uri ${KIPRJMOD}/victoria-v1.0-rescue.lib)(options "")(descr ""))
+)

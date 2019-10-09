@@ -1,0 +1,7 @@
+(sym_lib_table
+  (lib (name esp32-devkit-32d)(type Legacy)(uri "$(KICAD_USER_TEMPLATE_DIR)/esp32-devkitc-32d/ESP32-DEVKITC-32D.lib")(options "")(descr ""))
+  (lib (name arduino-pro-mini)(type Legacy)(uri "$(KICAD_USER_TEMPLATE_DIR)/arduino-pro-mini/ARDUINO_PRO_MINI.lib")(options "")(descr ""))
+  (lib (name arduino-pro-mini-0)(type Legacy)(uri ${KICAD_USER_TEMPLATE_DIR}/arduino-pro-mini/arduino-pro-mini.lib)(options "")(descr ""))
+  (lib (name uln2003a)(type Legacy)(uri ${KICAD_USER_TEMPLATE_DIR}/ULN2003A/ULN2003A.lib)(options "")(descr ""))
+  (lib (name thermostat)(type Legacy)(uri ${KICAD_USER_TEMPLATE_DIR}/THERMOSTAT/THERMOSTAT.lib)(options "")(descr ""))
+)

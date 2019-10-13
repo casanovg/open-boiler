@@ -1,7 +1,4 @@
 # Proyecto Open-Boiler
-2019-08-19 (gustavo.casanova@nicebots.com)
-
-## Resumen
 Este proyecto apunta a reemplazar la placa de control electrónica de una caldera combinada hogareña Roca Victoria 20/20 por una alternativa de hardware y software abierto. Es posible que a futuro se también se extienda su aplicación a otros modelos y fabricantes.
 
 ## Historia detrás del proyecto
@@ -17,20 +14,20 @@ Antes de tirarla, decidí desarmar una vez mas a ver que podía hacer. La verdad
 Lo primero a considerar, es comenzar a ver la caldera, ya no como una caja negra (o más bien blanca en este caso), sino como un conjunto de entradas y salidas que a las que hay que aplicarles lógica para que funcionen orquestadamente. Este modelo en particular está compuesto de la siguiente manera:
 
 ## Entradas:
-1. Sensor de temperatura de agua caliente sanitaria “ACS”: Termistor NTC 100 kΩ (Honeywell T7335D 10K a 25°C).
-2. Sensor de temperatura de calefacción central “CC”: Termistor NTC 100 kΩ (Honeywell T7335D 10K a 25°C).
-3. Ajuste de temperatura de ACS: potenciómetro de 10 kΩ (Piher).
-4. Ajuste de temperatura de CC: potenciómetro de 10 kΩ (Piher).
-5. Ajuste de modo del sistema: potenciómetro de 10 kΩ (Piher).
-6. Sensor de llama: sonda de ionización -> se reemplaza por sensor de luz infrarroja KY-026.
+1. Sensor de temperatura de agua caliente sanitaria “ACS”: Termistor NTC Honeywell T7335D (10 KΩ a 25°C).
+2. Sensor de temperatura de calefacción central “CC”: Termistor NTC Honeywell T7335D (10 KΩ a 25°C).
+3. Ajuste de temperatura de ACS: Potenciómetro PCB Piher de 10 kΩ.
+4. Ajuste de temperatura de CC: Potenciómetro PCB Piher de 10 kΩ.
+5. Ajuste de modo del sistema: Potenciómetro PCB Piher de 10 kΩ.
+6. Sensor de llama: Sonda de ionización -> se reemplaza por sensor de luz infrarroja KY-026.
 7. Sensor de flujo de aire de escape: Presostato 12-15 mm ca -> inicialmente se conserva con la posibilidad de ser anulado por software. En un futuro se reemplazará por un sensor barométrico Bosch BMP280.
-8. Sensor de sobrecalentamiento: Termostato 105ºC con reposición manual (Campini Ty60R, abre a 105°C).
+8. Sensor de sobrecalentamiento: Termostato Campini Ty60R de 105 °C con reposición manual.
 
 ## Salidas:
-1. Válvula de gas de seguridad: Solenoide 12 VCC, 31Ω.
-2. Válvula de gas de 7.000 kcal/h: Solenoide 12 VCC, 31Ω.
-3. Válvula de gas de 12.000 kcal/h: Solenoide 12 VCC, 31Ω.
-4. Válvula de gas de 20.000 kcal/h: Solenoide 12 VCC, 31Ω.
+1. Válvula de gas de seguridad: Solenoide 12 VCC, 31 Ω.
+2. Válvula de gas de 7.000 kcal/h: Solenoide 12 VCC, 31 Ω.
+3. Válvula de gas de 12.000 kcal/h: Solenoide 12 VCC, 31 Ω.
+4. Válvula de gas de 20.000 kcal/h: Solenoide 12 VCC, 31 Ω.
 5. Extractor de gases de combustión: Electroventilador 220 VAC.
-6. Bomba de agua de calefacción: Electrobomba 220 VAC.
+6. Bomba de agua de calefacción: Electrobomba 220 VAC, 3 velocidades.
 7. Encendedor electrónico a chispas: Salida 18.000 V, Entradas de 12 y 5  VCC.

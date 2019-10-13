@@ -52,6 +52,8 @@
 #define SHOW_PUMP_TIMER         true    /* True: Shows the CH water pump auto-shutdown timer */
 #endif /* SHOW_PUMP_TIMER */
 
+#define BUFFER_LENGTH           34      /* Circular buffers length */
+
 // Flame detector (mini-pro pin 2 - input)
 #define FLAME_DDR DDRD
 #define FLAME_PIN PIN2
@@ -142,6 +144,7 @@ typedef enum states {
     CH_ON_DUTY = 40,
     ERROR = 100
 } State;
+
 typedef enum inner_steps {
     OFF_1 = 1,
     OFF_2 = 2,
@@ -160,10 +163,12 @@ typedef enum inner_steps {
     CH_ON_DUTY_1 = 41,
     CH_ON_DUTY_2 = 42
 } InnerStep;
+
 typedef enum flags_types {
     INPUT_FLAGS = 0,
     OUTPUT_FLAGS = 1
 } FlagsType;
+
 typedef enum input_flags {
     DHW_REQUEST = 0,
     CH_REQUEST = 1,
@@ -171,6 +176,7 @@ typedef enum input_flags {
     FLAME = 3,
     OVERHEAT = 4
 } InputFlag;
+
 typedef enum analog_inputs {
     DHW_TEMPERATURE = 6,
     CH_TEMPERATURE = 7,
@@ -178,6 +184,7 @@ typedef enum analog_inputs {
     CH_SETTING = 1,
     SYSTEM_SETTING = 2
 } AnalogInput;
+
 typedef enum output_flags {
     EXHAUST_FAN = 0,
     WATER_PUMP = 1,
@@ -188,10 +195,12 @@ typedef enum output_flags {
     VALVE_3 = 6,
     LED_UI = 7
 } OutputFlag;
+
 typedef enum hw_switch {
     TURN_ON = 1,
     TURN_OFF = 0
 } HwSwitch;
+
 typedef enum digit_length {
     DIGITS_1 = 1,
     DIGITS_2 = 2,
@@ -202,6 +211,7 @@ typedef enum digit_length {
     DIGITS_7 = 7,
     DIGITS_FREE = 0
 } DigitLength;
+
 typedef struct sys_info {
     State system_state;             /* System running state */
     InnerStep inner_step;           /* State inner step (sub-states) */
@@ -219,15 +229,30 @@ typedef struct sys_info {
     uint32_t pump_delay;            /* CH water pump auto-shutdown timer */
     InnerStep ch_on_duty_step;      /* CH inner step before handing over control to DHW */
 } SysInfo;
+
 typedef struct heat_power {
     bool valve_3_state;
     bool valve_2_state;
     bool valve_1_state;
 } HeatPower;
+
 typedef struct debounce_sw {
     uint16_t ch_request_deb;        /* CH request switch debouncing delay */
     uint16_t airflow_deb;           /* Airflow sensor switch debouncing delay*/
 } DebounceSw;
+
+typedef struct ring_buffer {    
+    uint16_t data[BUFFER_LENGTH];
+    uint8_t ix;
+} RingBuffer;
+
+typedef struct adc_buffers {
+    RingBuffer dhw_temp_adc_buffer;
+    RingBuffer ch_temp_adc_buffer;
+    RingBuffer dhw_set_adc_buffer;
+    RingBuffer ch_set_adc_buffer;
+    RingBuffer sys_set_adc_buffer;
+} AdcBuffers;
 
 // Prototypes
 void SerialInit(void);
@@ -253,6 +278,7 @@ void InitAnalogSensor(SysInfo *, AnalogInput);
 uint16_t CheckAnalogSensor(SysInfo *, AnalogInput, bool);
 void GasOff(SysInfo *);
 void SystemRestart(void);
+void InitADCBuffers(AdcBuffers *, uint8_t);
 
 // Globals
 const char __flash str_header_01[] = {" OPEN-BOILER v0.6   "};
@@ -296,33 +322,5 @@ const char __flash str_mode_100[] = {"        [ ERROR ] .\n\r"};
 const char __flash str_wptimer[] = {"  CH water pump auto-shutdown timer: "};
 #endif /* SHOW_PUMP_TIMER */
 //const char __flash str_bug[] = {"  FORCED BUG !!! "};
-
-const bool __flash heat_modes[5][3][3] = {
-    {
-        {0, 0, 1},
-        {0, 0, 1},
-        {0, 0, 1}
-    },
-    {
-        {0, 1, 0},
-        {0, 0, 1},
-        {0, 0, 1}
-    },
-    {
-        {0, 1, 0},
-        {0, 1, 0},
-        {0, 0, 1}
-    },
-    {
-        {1, 0, 0},
-        {0, 0, 1},
-        {0, 0, 1}
-    },
-    {
-        {0, 1, 0},
-        {0, 1, 0},
-        {0, 1, 0}
-    }
-};
 
 #endif /* VICTORIA_CONTROL_H_ */

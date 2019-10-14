@@ -48,7 +48,7 @@ int main(void) {
     // ADC buffers initialization
     AdcBuffers buffer_pack;
     AdcBuffers *p_buffer_pack = &buffer_pack;
-    InitADCBuffers(p_buffer_pack, BUFFER_LENGTH);
+    InitAdcBuffers(p_buffer_pack, BUFFER_LENGTH);
 
     // Initialize USART for serial communications (38400, N, 8, 1)
     SerialInit();
@@ -99,7 +99,7 @@ int main(void) {
 
         // Update analog input sensors status
         for (AnalogInput analog_sensor = DHW_SETTING; analog_sensor <= CH_TEMPERATURE; analog_sensor++) {
-            CheckAnalogSensor(p_system, analog_sensor, false);
+            CheckAnalogSensor(p_system, p_buffer_pack, analog_sensor, false);
         }
 
         // If the pump is working, check delay counter to turn it off
@@ -844,29 +844,49 @@ void InitAnalogSensor(SysInfo *p_sys, AnalogInput analog_sensor) {
 }
 
 // Function CheckAnalogSensor
-uint16_t CheckAnalogSensor(SysInfo *p_sys, AnalogInput analog_sensor, bool ShowDashboard) {
+uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInput analog_sensor, bool ShowDashboard) {
     ADMUX = (0xF0 & ADMUX) | analog_sensor;
     ADCSRA |= (1 << ADSC);
     loop_until_bit_is_clear(ADCSRA, ADSC);
     switch (analog_sensor) {
         case DHW_TEMPERATURE: {
-            p_sys->dhw_temperature = (ADC & 0x3FF);
+            p_buffer_pack->dhw_temp_adc_buffer.data[p_buffer_pack->dhw_temp_adc_buffer.ix++] = (ADC & 0x3FF);
+            if (p_buffer_pack->dhw_temp_adc_buffer.ix > BUFFER_LENGTH) {
+                p_buffer_pack->dhw_temp_adc_buffer.ix = 0;
+            }
+            p_sys->dhw_temperature = AverageAdc(p_buffer_pack->dhw_temp_adc_buffer.data, BUFFER_LENGTH, MEAN);
             break;
         }
         case CH_TEMPERATURE: {
-            p_sys->ch_temperature = (ADC & 0x3FF);
+            p_buffer_pack->ch_temp_adc_buffer.data[p_buffer_pack->ch_temp_adc_buffer.ix++] = (ADC & 0x3FF);
+            if (p_buffer_pack->ch_temp_adc_buffer.ix > BUFFER_LENGTH) {
+                p_buffer_pack->ch_temp_adc_buffer.ix = 0;
+            }
+            p_sys->ch_temperature = AverageAdc(p_buffer_pack->ch_temp_adc_buffer.data, BUFFER_LENGTH, MEAN);
             break;
         }
         case DHW_SETTING: {
-            p_sys->dhw_setting = (ADC & 0x3FF);
+            p_buffer_pack->dhw_set_adc_buffer.data[p_buffer_pack->dhw_set_adc_buffer.ix++] = (ADC & 0x3FF);
+            if (p_buffer_pack->dhw_set_adc_buffer.ix > BUFFER_LENGTH) {
+                p_buffer_pack->dhw_set_adc_buffer.ix = 0;
+            }
+            p_sys->dhw_setting = AverageAdc(p_buffer_pack->dhw_set_adc_buffer.data, BUFFER_LENGTH, MEAN);
             break;
         }
         case CH_SETTING: {
-            p_sys->ch_setting = (ADC & 0x3FF);
+            p_buffer_pack->ch_set_adc_buffer.data[p_buffer_pack->ch_set_adc_buffer.ix++] = (ADC & 0x3FF);
+            if (p_buffer_pack->ch_set_adc_buffer.ix > BUFFER_LENGTH) {
+                p_buffer_pack->ch_set_adc_buffer.ix = 0;
+            }
+            p_sys->ch_setting = AverageAdc(p_buffer_pack->ch_set_adc_buffer.data, BUFFER_LENGTH, MEAN);
             break;
         }
         case SYSTEM_SETTING: {
-            p_sys->system_setting = (ADC & 0x3FF);
+            p_buffer_pack->sys_set_adc_buffer.data[p_buffer_pack->sys_set_adc_buffer.ix++] = (ADC & 0x3FF);
+            if (p_buffer_pack->sys_set_adc_buffer.ix > BUFFER_LENGTH) {
+                p_buffer_pack->sys_set_adc_buffer.ix = 0;
+            }
+            p_sys->system_setting = AverageAdc(p_buffer_pack->sys_set_adc_buffer.data, BUFFER_LENGTH, MEAN);
             break;
         }
         default: {
@@ -1183,8 +1203,8 @@ void ControlActuator(SysInfo *p_sys, OutputFlag device, HwSwitch command, bool S
     }
 }
 
-// Function InitADCBuffers
-void InitADCBuffers(AdcBuffers *p_buffer_pack, uint8_t buffer_length) {
+// Function InitAdcBuffers
+void InitAdcBuffers(AdcBuffers *p_buffer_pack, uint8_t buffer_length) {
     p_buffer_pack->dhw_temp_adc_buffer.ix = 0;
     p_buffer_pack->ch_temp_adc_buffer.ix = 0;
     p_buffer_pack->dhw_set_adc_buffer.ix = 0;
@@ -1197,6 +1217,24 @@ void InitADCBuffers(AdcBuffers *p_buffer_pack, uint8_t buffer_length) {
         p_buffer_pack->ch_set_adc_buffer.data[i] = 0;
         p_buffer_pack->sys_set_adc_buffer.data[i] = 0;
     }
+}
+
+// Function AverageAdc
+uint16_t AverageAdc(uint16_t adc_buffer[], uint8_t buffer_len, AverageType average_type) {
+    uint16_t avg_value = 0;
+    switch (average_type) {
+        case MEAN: {
+            for (uint8_t i = 0; i < buffer_len; i++) {
+                avg_value += adc_buffer[i];
+            }
+            avg_value = avg_value / buffer_len;
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+    return avg_value;    
 }
 
 // Function SerialInit

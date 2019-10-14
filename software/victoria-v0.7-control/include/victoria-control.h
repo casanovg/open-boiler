@@ -212,6 +212,14 @@ typedef enum digit_length {
     DIGITS_FREE = 0
 } DigitLength;
 
+typedef enum average_type {
+    MEAN = 0,
+    ROBUST = 1,
+    MOVING = 2,
+    FIR_FILTER = 3,
+    IIR_FILTER = 4
+} AverageType;
+
 typedef struct sys_info {
     State system_state;             /* System running state */
     InnerStep inner_step;           /* State inner step (sub-states) */
@@ -275,13 +283,14 @@ void ControlActuator(SysInfo *, OutputFlag, HwSwitch, bool);
 void InitDigitalSensor(SysInfo *, InputFlag);
 bool CheckDigitalSensor(SysInfo *, InputFlag, DebounceSw *, bool);
 void InitAnalogSensor(SysInfo *, AnalogInput);
-uint16_t CheckAnalogSensor(SysInfo *, AnalogInput, bool);
+uint16_t CheckAnalogSensor(SysInfo *, AdcBuffers *, AnalogInput, bool);
 void GasOff(SysInfo *);
 void SystemRestart(void);
-void InitADCBuffers(AdcBuffers *, uint8_t);
+void InitAdcBuffers(AdcBuffers *, uint8_t);
+uint16_t AverageAdc(uint16_t[] , uint8_t, AverageType);
 
 // Globals
-const char __flash str_header_01[] = {" OPEN-BOILER v0.6   "};
+const char __flash str_header_01[] = {" OPEN-BOILER v0.7   "};
 const char __flash str_header_02[] = {"\"Juan, Sandra & Gustavo\" "};
 const char __flash str_iflags[] = {"Inputs: "};
 const char __flash str_oflags[] = {"Outputs: "};

@@ -152,3 +152,7 @@ $RECYCLE.BIN/
 # End of https://www.gitignore.io/api/visualstudiocode,windows,c,c++,kicad
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
+software/victoria-v0.7-control/.vscode/settings.json
+software/victoria-v0.7-control/.pio/build/project.checksum
+software/victoria-v0.7-control/.vscode/launch.json
+software/victoria-v0.7-control/.pio/build/project.checksum

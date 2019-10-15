@@ -37,7 +37,7 @@
 #endif /* OVERHEAT_OVERRIDE */
 
 #ifndef AIRFLOW_OVERRIDE
-#define AIRFLOW_OVERRIDE        true   /* True: Flue airflow sensor override */
+#define AIRFLOW_OVERRIDE        false   /* True: Flue airflow sensor override */
 #endif /* AIRFLOW_OVERRIDE */
 
 #ifndef FAST_FLAME_DETECTION

@@ -858,7 +858,7 @@ uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInpu
     switch (analog_sensor) {
         case DHW_TEMPERATURE: {
             p_buffer_pack->dhw_temp_adc_buffer.data[p_buffer_pack->dhw_temp_adc_buffer.ix++] = (ADC & 0x3FF);
-            if (p_buffer_pack->dhw_temp_adc_buffer.ix > BUFFER_LENGTH) {
+            if (p_buffer_pack->dhw_temp_adc_buffer.ix >= BUFFER_LENGTH) {
                 p_buffer_pack->dhw_temp_adc_buffer.ix = 0;
             }
             p_sys->dhw_temperature = AverageAdc(p_buffer_pack->dhw_temp_adc_buffer.data, BUFFER_LENGTH, MEAN);
@@ -866,7 +866,7 @@ uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInpu
         }
         case CH_TEMPERATURE: {
             p_buffer_pack->ch_temp_adc_buffer.data[p_buffer_pack->ch_temp_adc_buffer.ix++] = (ADC & 0x3FF);
-            if (p_buffer_pack->ch_temp_adc_buffer.ix > BUFFER_LENGTH) {
+            if (p_buffer_pack->ch_temp_adc_buffer.ix >= BUFFER_LENGTH) {
                 p_buffer_pack->ch_temp_adc_buffer.ix = 0;
             }
             p_sys->ch_temperature = AverageAdc(p_buffer_pack->ch_temp_adc_buffer.data, BUFFER_LENGTH, MEAN);
@@ -874,7 +874,7 @@ uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInpu
         }
         case DHW_SETTING: {
             p_buffer_pack->dhw_set_adc_buffer.data[p_buffer_pack->dhw_set_adc_buffer.ix++] = (ADC & 0x3FF);
-            if (p_buffer_pack->dhw_set_adc_buffer.ix > BUFFER_LENGTH) {
+            if (p_buffer_pack->dhw_set_adc_buffer.ix >= BUFFER_LENGTH) {
                 p_buffer_pack->dhw_set_adc_buffer.ix = 0;
             }
             p_sys->dhw_setting = AverageAdc(p_buffer_pack->dhw_set_adc_buffer.data, BUFFER_LENGTH, MEAN);
@@ -882,7 +882,7 @@ uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInpu
         }
         case CH_SETTING: {
             p_buffer_pack->ch_set_adc_buffer.data[p_buffer_pack->ch_set_adc_buffer.ix++] = (ADC & 0x3FF);
-            if (p_buffer_pack->ch_set_adc_buffer.ix > BUFFER_LENGTH) {
+            if (p_buffer_pack->ch_set_adc_buffer.ix >= BUFFER_LENGTH) {
                 p_buffer_pack->ch_set_adc_buffer.ix = 0;
             }
             p_sys->ch_setting = AverageAdc(p_buffer_pack->ch_set_adc_buffer.data, BUFFER_LENGTH, MEAN);
@@ -890,7 +890,7 @@ uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInpu
         }
         case SYSTEM_SETTING: {
             p_buffer_pack->sys_set_adc_buffer.data[p_buffer_pack->sys_set_adc_buffer.ix++] = (ADC & 0x3FF);
-            if (p_buffer_pack->sys_set_adc_buffer.ix > BUFFER_LENGTH) {
+            if (p_buffer_pack->sys_set_adc_buffer.ix >= BUFFER_LENGTH) {
                 p_buffer_pack->sys_set_adc_buffer.ix = 0;
             }
             p_sys->system_setting = AverageAdc(p_buffer_pack->sys_set_adc_buffer.data, BUFFER_LENGTH, MEAN);

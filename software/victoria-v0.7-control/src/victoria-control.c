@@ -74,6 +74,13 @@ int main(void) {
         InitAnalogSensor(p_system, analog_sensor);
     }
 
+    // Pre-load analog sensor values
+    for (uint8_t i = 0; i < BUFFER_LENGTH; i++) {
+        for (AnalogInput analog_sensor = DHW_SETTING; analog_sensor <= CH_TEMPERATURE; analog_sensor++) {
+            CheckAnalogSensor(p_system, p_buffer_pack, analog_sensor, false);
+        }
+    }
+
     // Show system operation status
     Dashboard(p_system, false);
 

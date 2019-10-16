@@ -77,6 +77,15 @@ int main(void) {
     uint8_t current_valve = 0;
     unsigned long valve_open_timer = 0;
 
+    #define BUFF_LEN 34
+
+    uint16_t shake[BUFF_LEN];
+    uint8_t length = BUFF_LEN;
+
+    for (uint8_t i = 0; i < BUFF_LEN; i++) {
+        shake[i] = i + 101;
+    }
+
     printf("\r\nGC gas valve mixer\n\r");
     printf("==================\n\n\r");
 
@@ -102,6 +111,17 @@ int main(void) {
      *************
      */
     for (;;) {
+
+        if (length--) {
+            printf("\n\n\rSHAKE PRONTO SHAKE %d: %d\n\n\r", length, shake[length]);
+        } else {
+            length = BUFF_LEN;
+            printf("\n\n\r%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\r");
+            printf("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\r");
+            printf("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n\r");
+        }
+        
+
         // ******************************************************************************************
         // Read the current heat level setup to determine what valves should be opened and for how long
         if (current_valve < system_valves) {

@@ -861,7 +861,7 @@ uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInpu
             if (p_buffer_pack->dhw_temp_adc_buffer.ix >= BUFFER_LENGTH) {
                 p_buffer_pack->dhw_temp_adc_buffer.ix = 0;
             }
-            p_sys->dhw_temperature = AverageAdc(p_buffer_pack->dhw_temp_adc_buffer.data, BUFFER_LENGTH, MEAN);
+            p_sys->dhw_temperature = AverageAdc(p_buffer_pack->dhw_temp_adc_buffer.data, BUFFER_LENGTH, 0, MEAN);
             break;
         }
         case CH_TEMPERATURE: {
@@ -869,7 +869,7 @@ uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInpu
             if (p_buffer_pack->ch_temp_adc_buffer.ix >= BUFFER_LENGTH) {
                 p_buffer_pack->ch_temp_adc_buffer.ix = 0;
             }
-            p_sys->ch_temperature = AverageAdc(p_buffer_pack->ch_temp_adc_buffer.data, BUFFER_LENGTH, MEAN);
+            p_sys->ch_temperature = AverageAdc(p_buffer_pack->ch_temp_adc_buffer.data, BUFFER_LENGTH, 0, MEAN);
             break;
         }
         case DHW_SETTING: {
@@ -877,7 +877,7 @@ uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInpu
             if (p_buffer_pack->dhw_set_adc_buffer.ix >= BUFFER_LENGTH) {
                 p_buffer_pack->dhw_set_adc_buffer.ix = 0;
             }
-            p_sys->dhw_setting = AverageAdc(p_buffer_pack->dhw_set_adc_buffer.data, BUFFER_LENGTH, MEAN);
+            p_sys->dhw_setting = AverageAdc(p_buffer_pack->dhw_set_adc_buffer.data, BUFFER_LENGTH, 0, MEAN);
             break;
         }
         case CH_SETTING: {
@@ -885,7 +885,7 @@ uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInpu
             if (p_buffer_pack->ch_set_adc_buffer.ix >= BUFFER_LENGTH) {
                 p_buffer_pack->ch_set_adc_buffer.ix = 0;
             }
-            p_sys->ch_setting = AverageAdc(p_buffer_pack->ch_set_adc_buffer.data, BUFFER_LENGTH, MEAN);
+            p_sys->ch_setting = AverageAdc(p_buffer_pack->ch_set_adc_buffer.data, BUFFER_LENGTH, 0, MEAN);
             break;
         }
         case SYSTEM_SETTING: {
@@ -893,7 +893,7 @@ uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInpu
             if (p_buffer_pack->sys_set_adc_buffer.ix >= BUFFER_LENGTH) {
                 p_buffer_pack->sys_set_adc_buffer.ix = 0;
             }
-            p_sys->system_setting = AverageAdc(p_buffer_pack->sys_set_adc_buffer.data, BUFFER_LENGTH, MEAN);
+            p_sys->system_setting = AverageAdc(p_buffer_pack->sys_set_adc_buffer.data, BUFFER_LENGTH, 0, MEAN);
             break;
         }
         default: {
@@ -1227,7 +1227,7 @@ void InitAdcBuffers(AdcBuffers *p_buffer_pack, uint8_t buffer_length) {
 }
 
 // Function AverageAdc
-uint16_t AverageAdc(uint16_t adc_buffer[], uint8_t buffer_len, AverageType average_type) {
+uint16_t AverageAdc(uint16_t adc_buffer[], uint8_t buffer_len, uint8_t start, AverageType average_type) {
     uint16_t avg_value = 0;
     switch (average_type) {
         case MEAN: {
@@ -1235,6 +1235,32 @@ uint16_t AverageAdc(uint16_t adc_buffer[], uint8_t buffer_len, AverageType avera
                 avg_value += adc_buffer[i];
             }
             avg_value = avg_value / buffer_len;
+            break;
+        }
+        case ROBUST: {
+            uint16_t max, min;
+            avg_value = max = min = adc_buffer[0];
+            for (uint8_t i = 1; i < buffer_len; i++) {
+                avg_value += adc_buffer[i];
+                if (adc_buffer[i] > max) {
+                    max = adc_buffer[i];
+                } else if (adc_buffer[i] < min) {
+                    min = adc_buffer[i];
+                }
+            }
+            avg_value -= max;
+            avg_value -= min;
+            //avg_value = (avg_value >> 5);
+            avg_value = avg_value / (buffer_len - 2);
+            break;
+        }
+        case MOVING: {
+            avg_value += adc_buffer[start];
+            if (start == (buffer_len - 1)) {
+                avg_value -= adc_buffer[0];
+            } else {
+                avg_value -= adc_buffer[start + 1];
+            }
             break;
         }
         default: {

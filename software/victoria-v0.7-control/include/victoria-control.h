@@ -215,9 +215,9 @@ typedef enum digit_length {
 typedef enum average_type {
     MEAN = 0,
     ROBUST = 1,
-    MOVING = 2,
-    FIR_FILTER = 3,
-    IIR_FILTER = 4
+    MOVING = 2
+    //FIR_FILTER = 3,
+    //IIR_FILTER = 4
 } AverageType;
 
 typedef struct sys_info {
@@ -287,7 +287,7 @@ uint16_t CheckAnalogSensor(SysInfo *, AdcBuffers *, AnalogInput, bool);
 void GasOff(SysInfo *);
 void SystemRestart(void);
 void InitAdcBuffers(AdcBuffers *, uint8_t);
-uint16_t AverageAdc(uint16_t[] , uint8_t, AverageType);
+uint16_t AverageAdc(uint16_t[] , uint8_t, uint8_t, AverageType);
 
 // Globals
 const char __flash str_header_01[] = {" OPEN-BOILER v0.7   "};

@@ -1289,6 +1289,24 @@ uint16_t FilterIir(uint16_t value) {
     return Y;
 }
 
+// Function CalculateNtcTemperature
+int CalculateNtcTemperature(uint16_t adc, int To, int dT) {
+    int aux;
+    unsigned int min, max;
+    uint8_t i;
+    //Buscamos el intervalo de la tabla en que se encuentra el valor de ADC
+    for(i = 0; (i < NTC_VALUES) && (adc < (ntc_adc_temp[i])); i++);
+        if ((i==0)||(i == NTC_VALUES)) { // Si no está, devolvemos un error
+            return -32767;
+        }
+    max = ntc_adc_temp[i - 1]; //Buscamos el valor más alto del intervalo
+    min = ntc_adc_temp[i];   //y el más bajoa
+    aux = (max - adc) * dT;  //hacemos el primer paso de la interpolación
+    aux = aux/(max - min); //y el segundo paso
+    aux += (i - 1) * dT + To;  //y añadimos el offset del resultado
+    return aux;
+}
+
 // Function SerialInit
 void SerialInit(void) {
     UBRR0H = (uint8_t)(BAUD_PRESCALER >> 8);

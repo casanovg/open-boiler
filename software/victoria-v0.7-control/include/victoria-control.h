@@ -304,6 +304,7 @@ void InitAdcBuffers(AdcBuffers *, uint8_t);
 uint16_t AverageAdc(uint16_t[], uint8_t, uint8_t, AverageType);
 uint16_t FilterFir(uint16_t[], uint8_t, uint8_t);
 uint16_t FilterIir(uint16_t);
+int CalculateNtcTemperature(uint16_t adc, int To, int dT);
 
 // Globals
 const uint16_t fir_table[FIR_LEN] = {

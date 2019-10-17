@@ -140,13 +140,16 @@
 #define IR_VAL 50
 #define FIR_LEN 31
 
+// Number of NTC ADC values used for calculating temperature
+#define NTC_VALUES 11
+
 // Temperature calculation settings
-#define TO_CELSIUS -300     /* Celsius offset value */
-#define DT_CELSIUS 100      /* Celsius delta T (difference between two consecutive table entries) */
-#define TO_KELVIN 2430      /* Kelvin offset value */
-#define DT_KELVIN 100       /* Kelvin delta T (difference between two consecutive table entries) */
-#define TO_FAHRENHEIT -220  /* Fahrenheit offset value */
-#define DT_FAHRENHEIT 180   /* Fahrenheit delta T (difference between two consecutive table entries) */
+#define TO_CELSIUS -300    /* Celsius offset value */
+#define DT_CELSIUS 100     /* Celsius delta T (difference between two consecutive table entries) */
+#define TO_KELVIN 2430     /* Kelvin offset value */
+#define DT_KELVIN 100      /* Kelvin delta T (difference between two consecutive table entries) */
+#define TO_FAHRENHEIT -220 /* Fahrenheit offset value */
+#define DT_FAHRENHEIT 180  /* Fahrenheit delta T (difference between two consecutive table entries) */
 
 // Types
 typedef enum states {
@@ -306,6 +309,9 @@ uint16_t FilterIir(uint16_t);
 const uint16_t fir_table[FIR_LEN] = {
     1, 3, 9, 23, 48, 89, 149, 230, 333, 454, 586, 719, 840, 938, 1002, 1024,
     1002, 938, 840, 719, 586, 454, 333, 230, 149, 89, 48, 23, 9, 3, 1};
+
+const uint16_t ntc_adc_temp[NTC_VALUES] = {
+    939, 892, 828, 749, 657, 560, 464, 377, 300, 237, 186};
 
 const char __flash str_header_01[] = {" OPEN-BOILER v0.7   "};
 const char __flash str_header_02[] = {"\"Juan, Sandra & Gustavo\" "};

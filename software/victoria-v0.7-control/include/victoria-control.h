@@ -14,45 +14,45 @@
 
 #include <avr/io.h>
 #include <avr/pgmspace.h>
+#include <avr/wdt.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <util/delay.h>
 #include "delays.h"
 #include "errors.h"
-#include <avr/wdt.h>
 
 // Serial comm settings
 #define BAUDRATE 38400
 #define BAUD_PRESCALER (((F_CPU / (BAUDRATE * 16UL))) - 1)
 
-#define CH_SETPOINT_HIGH        241     /* ADC-NTC CH temperature ~ 55°C */
-#define CH_SETPOINT_LOW         379     /* ADC-NTC CH temperature ~ 38°C */
+#define CH_SETPOINT_HIGH 241 /* ADC-NTC CH temperature ~ 55°C */
+#define CH_SETPOINT_LOW 379  /* ADC-NTC CH temperature ~ 38°C */
 
 #ifndef MAX_IGNITION_RETRIES
-#define MAX_IGNITION_RETRIES    3       /* Number of ignition retries when no flame is detected */
-#endif /* IGNITION_RETRIES */
+#define MAX_IGNITION_RETRIES 3 /* Number of ignition retries when no flame is detected */
+#endif                         /* IGNITION_RETRIES */
 
 #ifndef OVERHEAT_OVERRIDE
-#define OVERHEAT_OVERRIDE       false   /* True: Overheating thermostat override */
-#endif /* OVERHEAT_OVERRIDE */
+#define OVERHEAT_OVERRIDE false /* True: Overheating thermostat override */
+#endif                          /* OVERHEAT_OVERRIDE */
 
 #ifndef AIRFLOW_OVERRIDE
-#define AIRFLOW_OVERRIDE        false   /* True: Flue airflow sensor override */
-#endif /* AIRFLOW_OVERRIDE */
+#define AIRFLOW_OVERRIDE false /* True: Flue airflow sensor override */
+#endif                         /* AIRFLOW_OVERRIDE */
 
 #ifndef FAST_FLAME_DETECTION
-#define FAST_FLAME_DETECTION    false   /* True: Spark igniter is turned off when the flame is detected */
-#endif /* FAST_FLAME_DETECTION */       /*       instead of checking the flame sensor after a delay     */
+#define FAST_FLAME_DETECTION false /* True: Spark igniter is turned off when the flame is detected */
+#endif /* FAST_FLAME_DETECTION */  /*       instead of checking the flame sensor after a delay     */
 
 #ifndef LED_UI_FOR_FLAME
-#define LED_UI_FOR_FLAME        true    /* True: Activates onboard LED when the flame detector is on */
-#endif /* LED_UI_FOR_FLAME */
+#define LED_UI_FOR_FLAME true /* True: Activates onboard LED when the flame detector is on */
+#endif                        /* LED_UI_FOR_FLAME */
 
 #ifndef SHOW_PUMP_TIMER
-#define SHOW_PUMP_TIMER         true    /* True: Shows the CH water pump auto-shutdown timer */
-#endif /* SHOW_PUMP_TIMER */
+#define SHOW_PUMP_TIMER true /* True: Shows the CH water pump auto-shutdown timer */
+#endif                       /* SHOW_PUMP_TIMER */
 
-#define BUFFER_LENGTH           34      /* Circular buffers length */
+#define BUFFER_LENGTH 34 /* Circular buffers length */
 
 // Flame detector (mini-pro pin 2 - input)
 #define FLAME_DDR DDRD
@@ -135,6 +135,19 @@
 
 #define CH_TEMP_MASK 0x3FE
 
+// Filter settings
+#define FIR_SUM 11872
+#define IR_VAL 50
+#define FIR_LEN 31
+
+// Temperature calculation settings
+#define TO_CELSIUS -300     /* Celsius offset value */
+#define DT_CELSIUS 100      /* Celsius delta T (difference between two consecutive table entries) */
+#define TO_KELVIN 2430      /* Kelvin offset value */
+#define DT_KELVIN 100       /* Kelvin delta T (difference between two consecutive table entries) */
+#define TO_FAHRENHEIT -220  /* Fahrenheit offset value */
+#define DT_FAHRENHEIT 180   /* Fahrenheit delta T (difference between two consecutive table entries) */
+
 // Types
 typedef enum states {
     OFF = 0,
@@ -216,26 +229,24 @@ typedef enum average_type {
     MEAN = 0,
     ROBUST = 1,
     MOVING = 2
-    //FIR_FILTER = 3,
-    //IIR_FILTER = 4
 } AverageType;
 
 typedef struct sys_info {
-    State system_state;             /* System running state */
-    InnerStep inner_step;           /* State inner step (sub-states) */
-    uint8_t input_flags;            /* Flags signaling input sensor status */
-    uint8_t output_flags;           /* Flags signaling hardware activation status */
-    uint16_t dhw_temperature;       /* DHW NTC thermistor temperature readout */
-    uint16_t ch_temperature;        /* CH NTC thermistor temperature readout */
-    uint16_t dhw_setting;           /* DWH setting potentiometer readout */
-    uint16_t ch_setting;            /* CH setting potentiometer readout */
-    uint16_t system_setting;        /* System mode potentiometer readout */
-    uint8_t last_displayed_iflags;  /* Input sensor flags last shown status */
-    uint8_t last_displayed_oflags;  /* Hardware activation flags last shown status */
-    uint8_t ignition_retries;       /* Ignition retry counter */
-    uint8_t error;                  /* System error code */
-    uint32_t pump_delay;            /* CH water pump auto-shutdown timer */
-    InnerStep ch_on_duty_step;      /* CH inner step before handing over control to DHW */
+    State system_state;            /* System running state */
+    InnerStep inner_step;          /* State inner step (sub-states) */
+    uint8_t input_flags;           /* Flags signaling input sensor status */
+    uint8_t output_flags;          /* Flags signaling hardware activation status */
+    uint16_t dhw_temperature;      /* DHW NTC thermistor temperature readout */
+    uint16_t ch_temperature;       /* CH NTC thermistor temperature readout */
+    uint16_t dhw_setting;          /* DWH setting potentiometer readout */
+    uint16_t ch_setting;           /* CH setting potentiometer readout */
+    uint16_t system_setting;       /* System mode potentiometer readout */
+    uint8_t last_displayed_iflags; /* Input sensor flags last shown status */
+    uint8_t last_displayed_oflags; /* Hardware activation flags last shown status */
+    uint8_t ignition_retries;      /* Ignition retry counter */
+    uint8_t error;                 /* System error code */
+    uint32_t pump_delay;           /* CH water pump auto-shutdown timer */
+    InnerStep ch_on_duty_step;     /* CH inner step before handing over control to DHW */
 } SysInfo;
 
 typedef struct heat_power {
@@ -245,11 +256,11 @@ typedef struct heat_power {
 } HeatPower;
 
 typedef struct debounce_sw {
-    uint16_t ch_request_deb;        /* CH request switch debouncing delay */
-    uint16_t airflow_deb;           /* Airflow sensor switch debouncing delay*/
+    uint16_t ch_request_deb; /* CH request switch debouncing delay */
+    uint16_t airflow_deb;    /* Airflow sensor switch debouncing delay*/
 } DebounceSw;
 
-typedef struct ring_buffer {    
+typedef struct ring_buffer {
     uint16_t data[BUFFER_LENGTH];
     uint8_t ix;
 } RingBuffer;
@@ -287,9 +298,15 @@ uint16_t CheckAnalogSensor(SysInfo *, AdcBuffers *, AnalogInput, bool);
 void GasOff(SysInfo *);
 void SystemRestart(void);
 void InitAdcBuffers(AdcBuffers *, uint8_t);
-uint16_t AverageAdc(uint16_t[] , uint8_t, uint8_t, AverageType);
+uint16_t AverageAdc(uint16_t[], uint8_t, uint8_t, AverageType);
+uint16_t FilterFir(uint16_t[], uint8_t, uint8_t);
+uint16_t FilterIir(uint16_t);
 
 // Globals
+const uint16_t fir_table[FIR_LEN] = {
+    1, 3, 9, 23, 48, 89, 149, 230, 333, 454, 586, 719, 840, 938, 1002, 1024,
+    1002, 938, 840, 719, 586, 454, 333, 230, 149, 89, 48, 23, 9, 3, 1};
+
 const char __flash str_header_01[] = {" OPEN-BOILER v0.7   "};
 const char __flash str_header_02[] = {"\"Juan, Sandra & Gustavo\" "};
 const char __flash str_iflags[] = {"Inputs: "};

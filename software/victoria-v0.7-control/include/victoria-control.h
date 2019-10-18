@@ -141,7 +141,7 @@
 #define FIR_LEN 31
 
 // Number of NTC ADC values used for calculating temperature
-#define NTC_VALUES 11
+#define NTC_VALUES 12
 
 // Temperature calculation settings
 #define TO_CELSIUS -300    /* Celsius offset value */

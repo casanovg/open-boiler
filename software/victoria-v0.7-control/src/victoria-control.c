@@ -1466,7 +1466,7 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
         SerialTxStr(str_lit_14);
         SerialTxNum(p_sys->ch_temperature, DIGITS_4);
         SerialTxChr(32); /* Space (_) */
-        SerialTxNum(GetNtcTemperature(p_sys->ch_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_3);    
+        SerialTxNum(GetNtcTemperature(p_sys->ch_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_3);
 
         SerialTxChr(32); /* Space (_) */
         SerialTxChr(32); /* Space (_) */

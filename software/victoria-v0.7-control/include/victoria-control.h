@@ -225,6 +225,7 @@ typedef enum digit_length {
     DIGITS_5 = 5,
     DIGITS_6 = 6,
     DIGITS_7 = 7,
+    FLOAT_TEMP = 8,
     DIGITS_FREE = 0
 } DigitLength;
 
@@ -304,7 +305,7 @@ void InitAdcBuffers(AdcBuffers *, uint8_t);
 uint16_t AverageAdc(uint16_t[], uint8_t, uint8_t, AverageType);
 uint16_t FilterFir(uint16_t[], uint8_t, uint8_t);
 uint16_t FilterIir(uint16_t);
-int CalculateNtcTemperature(uint16_t adc, int To, int dT);
+int GetNtcTemperature(uint16_t, int, int);
 
 // Globals
 const uint16_t fir_table[FIR_LEN] = {
@@ -315,7 +316,7 @@ const uint16_t fir_table[FIR_LEN] = {
 const uint16_t ntc_adc_temp[NTC_VALUES] = {
     939, 892, 828, 749, 657, 560, 464, 377, 300, 237, 186};
 */
-const uint16_t ntc_adc_temp[NTC_VALUES] = {
+const uint16_t ntc_adc_table[NTC_VALUES] = {
     929, 869, 787, 685, 573, 461, 359, 274, 206, 154, 116, 87};
 
  /*

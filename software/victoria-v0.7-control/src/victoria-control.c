@@ -1290,20 +1290,21 @@ uint16_t FilterIir(uint16_t value) {
 }
 
 // Function CalculateNtcTemperature
-int CalculateNtcTemperature(uint16_t adc, int To, int dT) {
+int GetNtcTemperature(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
     int aux;
-    unsigned int min, max;
+    uint16_t min, max;
     uint8_t i;
     //Buscamos el intervalo de la tabla en que se encuentra el valor de ADC
-    for(i = 0; (i < NTC_VALUES) && (adc < (ntc_adc_temp[i])); i++);
-        if ((i==0)||(i == NTC_VALUES)) { // Si no está, devolvemos un error
-            return -32767;
-        }
-    max = ntc_adc_temp[i - 1]; //Buscamos el valor más alto del intervalo
-    min = ntc_adc_temp[i];   //y el más bajoa
-    aux = (max - adc) * dT;  //hacemos el primer paso de la interpolación
-    aux = aux/(max - min); //y el segundo paso
-    aux += (i - 1) * dT + To;  //y añadimos el offset del resultado
+    for (i = 0; (i < NTC_VALUES) && (ntc_adc_value < (ntc_adc_table[i])); i++)
+        ;
+    if ((i == 0) || (i == NTC_VALUES)) {  // Si no está, devolvemos un error
+        return -32767;
+    }
+    max = ntc_adc_table[i - 1];                 //Buscamos el valor más alto del intervalo
+    min = ntc_adc_table[i];                     //y el más bajoa
+    aux = (max - ntc_adc_value) * temp_delta;   //hacemos el primer paso de la interpolación
+    aux = aux / (max - min);                    //y el segundo paso
+    aux += (i - 1) * temp_delta + temp_offset;  //y añadimos el offset del resultado
     return aux;
 }
 
@@ -1455,7 +1456,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
         // DHW temperature
         SerialTxStr(str_lit_13);
         SerialTxNum(p_sys->dhw_temperature, DIGITS_4);
-        //@@@@@ SerialTxNum((p_sys->ch_setting * 1.1), DIGITS_4);
+        SerialTxChr(32); /* Space (_) */
+        SerialTxNum(GetNtcTemperature(p_sys->dhw_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_2);
 
         SerialTxChr(32); /* Space (_) */
         SerialTxChr(32); /* Space (_) */
@@ -1463,6 +1465,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
         // CH temperature
         SerialTxStr(str_lit_14);
         SerialTxNum(p_sys->ch_temperature, DIGITS_4);
+        SerialTxChr(32); /* Space (_) */
+        SerialTxNum(GetNtcTemperature(p_sys->ch_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_2);    
 
         SerialTxChr(32); /* Space (_) */
         SerialTxChr(32); /* Space (_) */

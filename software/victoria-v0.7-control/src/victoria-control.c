@@ -1294,10 +1294,10 @@ int GetNtcTemperature(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
     int aux;
     uint16_t min, max;
     uint8_t i;
-    //Buscamos el intervalo de la tabla en que se encuentra el valor de ADC
+    // Search the table interval where the ADC value is located
     for (i = 0; (i < NTC_VALUES) && (ntc_adc_value < (ntc_adc_table[i])); i++)
         ;
-    if ((i == 0) || (i == NTC_VALUES)) {  // Si no está, devolvemos un error
+    if ((i == 0) || (i == NTC_VALUES)) {  // If there is not located, return an error
         return -32767;
     }
     max = ntc_adc_table[i - 1];                 //Buscamos el valor más alto del intervalo

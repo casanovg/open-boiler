@@ -144,12 +144,12 @@
 #define NTC_VALUES 12
 
 // Temperature calculation settings
-#define TO_CELSIUS -300    /* Celsius offset value */
-#define DT_CELSIUS 100     /* Celsius delta T (difference between two consecutive table entries) */
-#define TO_KELVIN 2430     /* Kelvin offset value */
-#define DT_KELVIN 100      /* Kelvin delta T (difference between two consecutive table entries) */
-#define TO_FAHRENHEIT -220 /* Fahrenheit offset value */
-#define DT_FAHRENHEIT 180  /* Fahrenheit delta T (difference between two consecutive table entries) */
+#define TO_CELSIUS (-300)    /* Celsius offset value */
+#define DT_CELSIUS (100)     /* Celsius delta T (difference between two consecutive table entries) */
+#define TO_KELVIN (2430)     /* Kelvin offset value */
+#define DT_KELVIN (100)      /* Kelvin delta T (difference between two consecutive table entries) */
+#define TO_FAHRENHEIT (-220) /* Fahrenheit offset value */
+#define DT_FAHRENHEIT (180)  /* Fahrenheit delta T (difference between two consecutive table entries) */
 
 // Types
 typedef enum states {

@@ -64,7 +64,7 @@ int main(void) {
     printf("\r\nGC temperature calculation\n\r");
     printf("==========================\n\r");
 
-    const uint16_t adc_temp = 549;
+    const uint16_t adc_temp = 347;
 
     printf("\n\rADC A: %d, Temperature calculation = %d\n\n\r", adc_temp, TempNTC(adc_temp, TO_CELSIUS, DT_CELSIUS));
     printf("\n\rADC B: %d, Temperature calculation = %d\n\n\r", adc_temp, GetNtcTemperature(adc_temp, TO_CELSIUS, DT_CELSIUS));

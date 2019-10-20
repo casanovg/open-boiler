@@ -146,9 +146,9 @@
 // Temperature calculation settings
 #define TO_CELSIUS -200    /* Celsius offset value */
 #define DT_CELSIUS 100     /* Celsius delta T (difference between two consecutive table entries) */
-#define TO_KELVIN 2430     /* Kelvin offset value */
+#define TO_KELVIN 2530     /* Kelvin offset value */
 #define DT_KELVIN 100      /* Kelvin delta T (difference between two consecutive table entries) */
-#define TO_FAHRENHEIT -220 /* Fahrenheit offset value */
+#define TO_FAHRENHEIT -40 /* Fahrenheit offset value */
 #define DT_FAHRENHEIT 180  /* Fahrenheit delta T (difference between two consecutive table entries) */
 
 // Types

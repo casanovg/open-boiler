@@ -187,7 +187,7 @@ int main(void) {
                     // . Step OFF_2 : Fan test in progress: turn fan on  .
                     // ..................................................
                     case OFF_2: {
-#if !(AIRFLOW_OVERRIDE)
+#if (!(AIRFLOW_OVERRIDE) && !(FAN_TEST_OVERRIDE))
                         if (!(delay--)) {                                 /* DLY_L_OFF_2 */
                             SetFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN); /* Turn exhaust fan on */
                             delay = DLY_L_OFF_3;
@@ -195,14 +195,14 @@ int main(void) {
                         }
 #else
                         p_system->inner_step = OFF_3;
-#endif /* AIRFLOW_OVERRIDE */
+#endif /* AIRFLOW_OVERRIDE && FAN_TEST_OVERRIDE */
                         break;
                     }
                     // .....................................................................
                     // . Step OFF_3 : Fan test in progress: check airflow sensor activation .
                     // .....................................................................
                     case OFF_3: {
-#if !(AIRFLOW_OVERRIDE)
+#if (!(AIRFLOW_OVERRIDE) && !(FAN_TEST_OVERRIDE))
                         // Airflow sensor activated -> fan test successful
                         if ((p_system->input_flags >> AIRFLOW) & true) {
                             ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN);
@@ -220,7 +220,7 @@ int main(void) {
                         p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
                         delay = DLY_L_OFF_4;
                         p_system->inner_step = OFF_4;
-#endif /* AIRFLOW_OVERRIDE */
+#endif /* AIRFLOW_OVERRIDE && FAN_TEST_OVERRIDE */
                         break;
                     }
                     // .......................................................................
@@ -230,7 +230,7 @@ int main(void) {
                         //LED_UI_PORT |= (1 << LED_UI_PIN);       // @@@@@
                         if (!(delay--)) { /* DLY_L_OFF_4 --- Let the fan to rev down --- */
                                           //LED_UI_PORT &= ~(1 << LED_UI_PIN);  // @@@@@
-#if !(AIRFLOW_OVERRIDE)
+#if (!(AIRFLOW_OVERRIDE) && !(FAN_TEST_OVERRIDE))
                             if ((p_system->input_flags >> AIRFLOW) & true) {
                                 p_system->error = ERROR_006;
                                 p_system->system_state = ERROR;
@@ -245,7 +245,7 @@ int main(void) {
                             delay = DLY_L_READY_1;
                             p_system->inner_step = READY_1;
                             p_system->system_state = READY;
-#endif /* AIRFLOW_OVERRIDE */
+#endif /* AIRFLOW_OVERRIDE && FAN_TEST_OVERRIDE */
                         }
                         break;
                     }

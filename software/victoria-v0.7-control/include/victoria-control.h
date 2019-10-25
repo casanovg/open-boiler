@@ -25,34 +25,38 @@
 #define BAUDRATE 38400
 #define BAUD_PRESCALER (((F_CPU / (BAUDRATE * 16UL))) - 1)
 
-#define CH_SETPOINT_HIGH 241 /* ADC-NTC CH temperature ~ 55°C */
-#define CH_SETPOINT_LOW 379  /* ADC-NTC CH temperature ~ 38°C */
+#define CH_SETPOINT_HIGH 241        /* ADC-NTC CH temperature ~ 55°C */
+#define CH_SETPOINT_LOW 379         /* ADC-NTC CH temperature ~ 38°C */
 
 #ifndef MAX_IGNITION_RETRIES
-#define MAX_IGNITION_RETRIES 3 /* Number of ignition retries when no flame is detected */
-#endif                         /* IGNITION_RETRIES */
+#define MAX_IGNITION_RETRIES 3      /* Number of ignition retries when no flame is detected */
+#endif /* IGNITION_RETRIES */
 
 #ifndef OVERHEAT_OVERRIDE
-#define OVERHEAT_OVERRIDE false /* True: Overheating thermostat override */
-#endif                          /* OVERHEAT_OVERRIDE */
+#define OVERHEAT_OVERRIDE false     /* True: Overheating thermostat override */
+#endif /* OVERHEAT_OVERRIDE */
 
 #ifndef AIRFLOW_OVERRIDE
-#define AIRFLOW_OVERRIDE false /* True: Flue airflow sensor override */
-#endif                         /* AIRFLOW_OVERRIDE */
+#define AIRFLOW_OVERRIDE false      /* True: Flue airflow sensor override */
+#endif /* AIRFLOW_OVERRIDE */
+
+#ifndef FAN_TEST_OVERRIDE
+#define FAN_TEST_OVERRIDE false     /* True: Flue airflow sensor override */
+#endif /* FAN_TEST_OVERRIDE */
 
 #ifndef FAST_FLAME_DETECTION
-#define FAST_FLAME_DETECTION false /* True: Spark igniter is turned off when the flame is detected */
-#endif /* FAST_FLAME_DETECTION */  /*       instead of checking the flame sensor after a delay     */
+#define FAST_FLAME_DETECTION false  /* True: Spark igniter is turned off when the flame is detected */
+#endif /* FAST_FLAME_DETECTION */   /*       instead of checking the flame sensor after a delay     */
 
 #ifndef LED_UI_FOR_FLAME
-#define LED_UI_FOR_FLAME true /* True: Activates onboard LED when the flame detector is on */
-#endif                        /* LED_UI_FOR_FLAME */
+#define LED_UI_FOR_FLAME true       /* True: Activates onboard LED when the flame detector is on */
+#endif /* LED_UI_FOR_FLAME */
 
 #ifndef SHOW_PUMP_TIMER
-#define SHOW_PUMP_TIMER true /* True: Shows the CH water pump auto-shutdown timer */
-#endif                       /* SHOW_PUMP_TIMER */
+#define SHOW_PUMP_TIMER true        /* True: Shows the CH water pump auto-shutdown timer */
+#endif /* SHOW_PUMP_TIMER */
 
-#define BUFFER_LENGTH 34 /* Circular buffers length */
+#define BUFFER_LENGTH 34            /* Circular buffers length */
 
 // Flame detector (mini-pro pin 2 - input)
 #define FLAME_DDR DDRD

@@ -62,12 +62,18 @@ int main(void) {
     }
 
     printf("\r\nGC temperature calculation\n\r");
-    printf("==========================\n\r");
+    printf("==========================\n\n\r");
 
-    const uint16_t adc_temp = 347;
+    //const uint16_t adc_temp = 347;
 
-    printf("\n\rADC A: %d, Temperature calculation = %d\n\n\r", adc_temp, TempNTC(adc_temp, TO_CELSIUS, DT_CELSIUS));
-    printf("\n\rADC B: %d, Temperature calculation = %d\n\n\r", adc_temp, GetNtcTemperature(adc_temp, TO_CELSIUS, DT_CELSIUS));
+    //printf("\n\rADC A: %d, Temperature calculation = %d\n\n\r", adc_temp, TempNTC(adc_temp, TO_CELSIUS, DT_CELSIUS));
+    for (uint16_t adc_temp = 1023; adc_temp > 0; adc_temp--) {
+        printf("ADC B: %d, Temperature calculation = %2d.%1d\n\r", adc_temp, 
+            (GetNtcTemperature(adc_temp, TO_CELSIUS, DT_CELSIUS) & 0XFF0) >> 1,
+            (GetNtcTemperature(adc_temp, TO_CELSIUS, DT_CELSIUS) & 0XF));
+    }
+
+    printf("\n\n\r");
 
 }
 
@@ -90,7 +96,7 @@ int GetNtcTemperature(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
         return -32767;
     }
 
-    printf("\n\rADC table entry (%d) = %d\n\r", i, ntc_adc_table[i]);
+    //printf("ADC table entry (%d) = %d\n\r", i, ntc_adc_table[i]);
 
     max = ntc_adc_table[i - 1];                 //Buscamos el valor más alto del intervalo
     min = ntc_adc_table[i];                     //y el más bajoa

@@ -42,7 +42,8 @@ const unsigned int TablaADC[PuntosTabla] = {
 // Prototypes
 int main(void);
 void Delay(unsigned int milli_seconds);
-int GetNtcTemperature(uint16_t, int, int);
+int GetNtcTenths(uint16_t, int, int);
+float GetNtcDegrees(uint16_t, int, int);
 int TempNTC(unsigned int, int, int);
 
 // Main function
@@ -68,8 +69,9 @@ int main(void) {
 
     //printf("\n\rADC B: %d, Temperature calculation = %d\n\n\r", adc_temp, TempNTC(adc_temp, TO_CELSIUS, DT_CELSIUS));
     for (uint16_t adc_temp = 1023; adc_temp > 0; adc_temp--) {
-        int celsius_centigrades = GetNtcTemperature(adc_temp, TO_CELSIUS, DT_CELSIUS);
-        if (celsius_centigrades != -32767) {
+        int celsius_tenths = GetNtcTenths(adc_temp, TO_CELSIUS, DT_CELSIUS);
+        float celsius_degrees = GetNtcDegrees(adc_temp, TO_CELSIUS, DT_CELSIUS);
+        if (celsius_degrees != -32767) {
             // int celsius_grades = celsius_centigrades / 10;
             // //int celsius_decimals = celsius_centigrades - (celsius_grades * 10);
             // int celsius_decimals = celsius_centigrades % 10;
@@ -79,7 +81,7 @@ int main(void) {
             // printf("ADC B: %d, Temp Value = %d, Celsius calculation = %2d.%1d\n\r",
             //        adc_temp, celsius_centigrades, celsius_grades, celsius_decimals);
             printf("ADC output: %d, Temp value = %d, Celsius calculation = %.1f \370C\n\r",
-                   adc_temp, celsius_centigrades, (float)celsius_centigrades / 10);
+                   adc_temp, celsius_tenths, celsius_degrees);
         }
     }
 
@@ -93,8 +95,8 @@ void Delay(unsigned int milli_seconds) {
         ;
 }
 
-// Function GetNtcTemperature
-int GetNtcTemperature(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
+// Function GetNtcTenths
+int GetNtcTenths(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
     int aux;
     uint16_t min, max;
     uint8_t i;
@@ -112,6 +114,24 @@ int GetNtcTemperature(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
     aux = aux / (max - min);                    //y el segundo paso
     aux += (i - 1) * temp_delta + temp_offset;  //y añadimos el offset del resultado
     return aux;
+}
+
+// Function GetNtcTenths
+float GetNtcDegrees(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
+    int aux;
+    uint16_t min, max;
+    uint8_t i;
+    // Search the table interval where the ADC value is located
+    for (i = 0; (i < NTC_VALUES) && (ntc_adc_value < (ntc_adc_table[i])); i++);
+    if ((i == 0) || (i == NTC_VALUES)) {  // If there is not located, return an error
+        return -32767.0;
+    }
+    max = ntc_adc_table[i - 1];                 //Buscamos el valor más alto del intervalo
+    min = ntc_adc_table[i];                     //y el más bajoa
+    aux = (max - ntc_adc_value) * temp_delta;   //hacemos el primer paso de la interpolación
+    aux = aux / (max - min);                    //y el segundo paso
+    aux += (i - 1) * temp_delta + temp_offset;  //y añadimos el offset del resultado
+    return ((float)aux / 10);
 }
 
 // Function TempNTC

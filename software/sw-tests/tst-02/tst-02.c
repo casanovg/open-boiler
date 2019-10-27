@@ -66,7 +66,7 @@ int main(void) {
 
     //const uint16_t adc_temp = 347;
 
-    //printf("\n\rADC A: %d, Temperature calculation = %d\n\n\r", adc_temp, TempNTC(adc_temp, TO_CELSIUS, DT_CELSIUS));
+    //printf("\n\rADC B: %d, Temperature calculation = %d\n\n\r", adc_temp, TempNTC(adc_temp, TO_CELSIUS, DT_CELSIUS));
     for (uint16_t adc_temp = 1023; adc_temp > 0; adc_temp--) {
         int celsius_centigrades = GetNtcTemperature(adc_temp, TO_CELSIUS, DT_CELSIUS);
         if (celsius_centigrades != -32767) {
@@ -78,7 +78,7 @@ int main(void) {
             // }
             // printf("ADC B: %d, Temp Value = %d, Celsius calculation = %2d.%1d\n\r",
             //        adc_temp, celsius_centigrades, celsius_grades, celsius_decimals);
-            printf("ADC B: %d, Temp Value = %d, Celsius calculation = %.1f \370C\n\r",
+            printf("ADC output: %d, Temp value = %d, Celsius calculation = %.1f \370C\n\r",
                    adc_temp, celsius_centigrades, (float)celsius_centigrades / 10);
         }
     }

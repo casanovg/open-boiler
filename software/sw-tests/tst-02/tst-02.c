@@ -68,11 +68,19 @@ int main(void) {
 
     //printf("\n\rADC A: %d, Temperature calculation = %d\n\n\r", adc_temp, TempNTC(adc_temp, TO_CELSIUS, DT_CELSIUS));
     for (uint16_t adc_temp = 1023; adc_temp > 0; adc_temp--) {
-        uint16_t celsius_centigrades = GetNtcTemperature(adc_temp, TO_CELSIUS, DT_CELSIUS);
-        uint8_t celsius_grades = celsius_centigrades / 10;
-        uint8_t celsius_decimals = celsius_centigrades - (celsius_grades * 10);
-        printf("ADC B: %d, Temp Value = %d, Celsius calculation = %2d.%1d\n\r",
-               adc_temp, celsius_centigrades, celsius_grades, celsius_decimals);
+        int celsius_centigrades = GetNtcTemperature(adc_temp, TO_CELSIUS, DT_CELSIUS);
+        if (celsius_centigrades != -32767) {
+            // int celsius_grades = celsius_centigrades / 10;
+            // //int celsius_decimals = celsius_centigrades - (celsius_grades * 10);
+            // int celsius_decimals = celsius_centigrades % 10;
+            // if (celsius_decimals < 0) {
+            //     celsius_decimals *= -1;
+            // }
+            // printf("ADC B: %d, Temp Value = %d, Celsius calculation = %2d.%1d\n\r",
+            //        adc_temp, celsius_centigrades, celsius_grades, celsius_decimals);
+            printf("ADC B: %d, Temp Value = %d, Celsius calculation = %2.1f\n\r",
+                   adc_temp, celsius_centigrades, (float)celsius_centigrades / 10);            
+        }
     }
 
     printf("\n\n\r");

@@ -68,8 +68,9 @@ int main(void) {
 
     //printf("\n\rADC A: %d, Temperature calculation = %d\n\n\r", adc_temp, TempNTC(adc_temp, TO_CELSIUS, DT_CELSIUS));
     for (uint16_t adc_temp = 1023; adc_temp > 0; adc_temp--) {
-        printf("ADC B: %d, Temperature calculation = %2d.%1d\n\r", adc_temp, 
-            (GetNtcTemperature(adc_temp, TO_CELSIUS, DT_CELSIUS) & 0XFF0) >> 1,
+        printf("ADC B: %d, Temp Value = %d, Celsius calculation = %2d.%1d\n\r", adc_temp,
+            GetNtcTemperature(adc_temp, TO_CELSIUS, DT_CELSIUS),
+            (GetNtcTemperature(adc_temp, TO_CELSIUS, DT_CELSIUS) / 10),
             (GetNtcTemperature(adc_temp, TO_CELSIUS, DT_CELSIUS) & 0XF));
     }
 

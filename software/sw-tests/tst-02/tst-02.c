@@ -78,8 +78,8 @@ int main(void) {
             // }
             // printf("ADC B: %d, Temp Value = %d, Celsius calculation = %2d.%1d\n\r",
             //        adc_temp, celsius_centigrades, celsius_grades, celsius_decimals);
-            printf("ADC B: %d, Temp Value = %d, Celsius calculation = %2.1f\n\r",
-                   adc_temp, celsius_centigrades, (float)celsius_centigrades / 10);            
+            printf("ADC B: %d, Temp Value = %d, Celsius calculation = %.1f \370C\n\r",
+                   adc_temp, celsius_centigrades, (float)celsius_centigrades / 10);
         }
     }
 
@@ -99,8 +99,7 @@ int GetNtcTemperature(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
     uint16_t min, max;
     uint8_t i;
     // Search the table interval where the ADC value is located
-    for (i = 0; (i < NTC_VALUES) && (ntc_adc_value < (ntc_adc_table[i])); i++)
-        ;
+    for (i = 0; (i < NTC_VALUES) && (ntc_adc_value < (ntc_adc_table[i])); i++);
     if ((i == 0) || (i == NTC_VALUES)) {  // If there is not located, return an error
         return -32767;
     }

@@ -42,8 +42,8 @@ const unsigned int TablaADC[PuntosTabla] = {
 // Prototypes
 int main(void);
 void Delay(unsigned int milli_seconds);
-int GetNtcTenths(uint16_t, int, int);
-float GetNtcDegrees(uint16_t, int, int);
+int GetNtcTempTenths(uint16_t, int, int);
+float GetNtcTempDegrees(uint16_t, int, int);
 int TempNTC(unsigned int, int, int);
 
 // Main function
@@ -69,8 +69,8 @@ int main(void) {
 
     //printf("\n\rADC B: %d, Temperature calculation = %d\n\n\r", adc_temp, TempNTC(adc_temp, TO_CELSIUS, DT_CELSIUS));
     for (uint16_t adc_temp = 1023; adc_temp > 0; adc_temp--) {
-        int celsius_tenths = GetNtcTenths(adc_temp, TO_CELSIUS, DT_CELSIUS);
-        float celsius_degrees = GetNtcDegrees(adc_temp, TO_CELSIUS, DT_CELSIUS);
+        int celsius_tenths = GetNtcTempTenths(adc_temp, TO_CELSIUS, DT_CELSIUS);
+        float celsius_degrees = GetNtcTempDegrees(adc_temp, TO_CELSIUS, DT_CELSIUS);
         if (celsius_degrees != -32767) {
             // int celsius_grades = celsius_centigrades / 10;
             // //int celsius_decimals = celsius_centigrades - (celsius_grades * 10);
@@ -95,8 +95,8 @@ void Delay(unsigned int milli_seconds) {
         ;
 }
 
-// Function GetNtcTenths
-int GetNtcTenths(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
+// Function GetNtcTempTenths
+int GetNtcTempTenths(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
     int aux;
     uint16_t min, max;
     uint8_t i;
@@ -114,8 +114,8 @@ int GetNtcTenths(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
     return aux;
 }
 
-// Function GetNtcTenths
-float GetNtcDegrees(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
+// Function GetNtctempDegrees
+float GetNtcTempDegrees(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
     int aux;
     uint16_t min, max;
     uint8_t i;

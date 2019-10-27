@@ -105,9 +105,7 @@ int GetNtcTenths(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
     if ((i == 0) || (i == NTC_VALUES)) {  // If there is not located, return an error
         return -32767;
     }
-
     //printf("ADC table entry (%d) = %d\n\r", i, ntc_adc_table[i]);
-
     max = ntc_adc_table[i - 1];                 //Buscamos el valor más alto del intervalo
     min = ntc_adc_table[i];                     //y el más bajoa
     aux = (max - ntc_adc_value) * temp_delta;   //hacemos el primer paso de la interpolación

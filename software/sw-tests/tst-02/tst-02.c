@@ -15,6 +15,9 @@
 // ADC Buffer lenght
 #define BUFF_LEN 34
 
+// DHW setting steps
+#define DHW_SETTING_STEPS 12
+
 // Number of NTC ADC values used for calculating temperature
 #define NTC_VALUES 12
 #define PuntosTabla (12)
@@ -93,7 +96,7 @@ int main(void) {
         }
     }
 
-    printf("\n\n\rDHW pot adc = %d, DHW heat level setting = %d\n\r", dhw_pot, GetHeatLevel(dhw_pot, 12));
+    printf("\n\n\rDHW pot adc = %d, DHW heat level setting = %d\n\r", dhw_pot, GetHeatLevel(dhw_pot, DHW_SETTING_STEPS));
 
     printf("\n\n\r");
 }

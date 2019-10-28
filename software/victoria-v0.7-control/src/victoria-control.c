@@ -1606,15 +1606,23 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
 
         SerialTxStr(str_lit_18);
         SerialTxChr(32); /* Space (_) */
+        
         SerialTxStr(str_lit_15);
         SerialTxNum(p_sys->dhw_setting, DIGITS_4);
-        //@@@@@ SerialTxNum((p_sys->ch_setting / 1.1), DIGITS_4);
+        SerialTxChr(32); /* Space (_) */
+        SerialTxNum(GetHeatLevel(p_sys->dhw_setting, DHW_SETTING_STEPS), DIGITS_2);
+
         SerialTxChr(32); /* Space (_) */
         SerialTxChr(32); /* Space (_) */
+
         SerialTxStr(str_lit_16);
         SerialTxNum(p_sys->ch_setting, DIGITS_4);
         SerialTxChr(32); /* Space (_) */
+        SerialTxNum(GetHeatLevel(p_sys->ch_setting, DHW_SETTING_STEPS), DIGITS_2);
+
         SerialTxChr(32); /* Space (_) */
+        SerialTxChr(32); /* Space (_) */
+
         SerialTxStr(str_lit_17);
         SerialTxNum(p_sys->system_setting, DIGITS_4);
 

@@ -58,6 +58,9 @@
 
 #define BUFFER_LENGTH 34            /* Circular buffers length */
 
+#define DHW_SETTING_STEPS 12        /* DHW setting potentiometer steps */
+#define CH_SETTING_STEPS 12         /* CH setting potentiometer steps */
+
 // Flame detector (mini-pro pin 2 - input)
 #define FLAME_DDR DDRD
 #define FLAME_PIN PIN2

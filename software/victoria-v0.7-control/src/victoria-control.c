@@ -1308,6 +1308,53 @@ int GetNtcTemperature(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
     return aux;
 }
 
+// Function GetNtcTempTenths
+int GetNtcTempTenths(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
+    int aux;
+    uint16_t min, max;
+    uint8_t i;
+    // Search the table interval where the ADC value is located
+    for (i = 0; (i < NTC_VALUES) && (ntc_adc_value < (ntc_adc_table[i])); i++);
+    if ((i == 0) || (i == NTC_VALUES)) {  // If there is not located, return an error
+        return -32767;
+    }
+    //printf("ADC table entry (%d) = %d\n\r", i, ntc_adc_table[i]);
+    max = ntc_adc_table[i - 1];                 //Buscamos el valor más alto del intervalo
+    min = ntc_adc_table[i];                     //y el más bajoa
+    aux = (max - ntc_adc_value) * temp_delta;   //hacemos el primer paso de la interpolación
+    aux = aux / (max - min);                    //y el segundo paso
+    aux += (i - 1) * temp_delta + temp_offset;  //y añadimos el offset del resultado
+    return aux;
+}
+
+// Function GetNtctempDegrees
+float GetNtcTempDegrees(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
+    int aux;
+    uint16_t min, max;
+    uint8_t i;
+    // Search the table interval where the ADC value is located
+    for (i = 0; (i < NTC_VALUES) && (ntc_adc_value < (ntc_adc_table[i])); i++);
+    if ((i == 0) || (i == NTC_VALUES)) {  // If there is not located, return an error
+        return -32767.0;
+    }
+    max = ntc_adc_table[i - 1];                 //Buscamos el valor más alto del intervalo
+    min = ntc_adc_table[i];                     //y el más bajoa
+    aux = (max - ntc_adc_value) * temp_delta;   //hacemos el primer paso de la interpolación
+    aux = aux / (max - min);                    //y el segundo paso
+    aux += (i - 1) * temp_delta + temp_offset;  //y añadimos el offset del resultado
+    return ((float)aux / 10);
+}
+
+// Function GetHeatLevel
+uint8_t GetHeatLevel(int16_t pot_adc_value, uint8_t knob_steps) {
+    uint8_t heat_level = 0;
+    for (heat_level = 0; (pot_adc_value < (ADC_MAX - ((ADC_MAX / knob_steps) * (heat_level + 1)))); heat_level++);
+    if (heat_level >= knob_steps) {
+        heat_level = --knob_steps;
+    }
+    return heat_level;
+}
+
 // Function SerialInit
 void SerialInit(void) {
     UBRR0H = (uint8_t)(BAUD_PRESCALER >> 8);

@@ -310,6 +310,9 @@ uint16_t AverageAdc(uint16_t[], uint8_t, uint8_t, AverageType);
 uint16_t FilterFir(uint16_t[], uint8_t, uint8_t);
 uint16_t FilterIir(uint16_t);
 int GetNtcTemperature(uint16_t, int, int);
+int GetNtcTempTenths(uint16_t, int, int);
+float GetNtcTempDegrees(uint16_t, int, int);
+uint8_t GetHeatLevel(int16_t, uint8_t);
 
 // Globals
 const uint16_t fir_table[FIR_LEN] = {

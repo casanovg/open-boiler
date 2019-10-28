@@ -8,6 +8,13 @@
 #include <stdio.h>
 #include <time.h>
 
+// ADC value range
+#define ADC_MAX 1023
+#define ADC_MIN 0
+
+// ADC Buffer lenght
+#define BUFF_LEN 34
+
 // Number of NTC ADC values used for calculating temperature
 #define NTC_VALUES 12
 #define PuntosTabla (12)
@@ -54,8 +61,6 @@ int main(void) {
     uint8_t current_valve = 0;
     unsigned long valve_open_timer = 0;
 
-#define BUFF_LEN 34
-
     uint16_t shake[BUFF_LEN];
     uint8_t length = BUFF_LEN;
 
@@ -66,7 +71,7 @@ int main(void) {
     printf("\r\nGC temperature calculation\n\r");
     printf("==========================\n\n\r");
 
-    const uint16_t dhw_pot = 0;
+    const uint16_t dhw_pot = 241;
 
     //const uint16_t adc_temp = 347;
 
@@ -158,10 +163,8 @@ int TempNTC(unsigned int adc, int To, int dT) {
 
 // Function GetHeatLevel
 uint8_t GetHeatLevel(int16_t pot_adc_value, uint8_t knob_steps) {
-    #define ADC_TOP 1023
-    #define ADC_LOW 0
     uint8_t heat_level = 0;
-    for (heat_level = 0; (pot_adc_value < (ADC_TOP - ((ADC_TOP / knob_steps) * (heat_level + 1)))); heat_level++);
+    for (heat_level = 0; (pot_adc_value < (ADC_MAX - ((ADC_MAX / knob_steps) * (heat_level + 1)))); heat_level++);
     if (heat_level >= knob_steps) {
         heat_level = --knob_steps;
     }

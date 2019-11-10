@@ -12,7 +12,7 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug",
-            "executable": "c:/Users/gcasanova/source/Repos/GitHub/open-boiler/software/victoria-v0.7-control/.pio/build/pro16MHzatmega328/firmware.elf",
+            "executable": "c:/Users/gcasanova/source/Repos/GitHub/open-boiler/software/victoria-v0.7-control-b/.pio/build/pro16MHzatmega328/firmware.elf",
             "toolchainBinDir": "C:/Users/gcasanova/.platformio/packages/toolchain-atmelavr/bin",
             "preLaunchTask": {
                 "type": "PlatformIO",
@@ -24,7 +24,7 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (skip Pre-Debug)",
-            "executable": "c:/Users/gcasanova/source/Repos/GitHub/open-boiler/software/victoria-v0.7-control/.pio/build/pro16MHzatmega328/firmware.elf",
+            "executable": "c:/Users/gcasanova/source/Repos/GitHub/open-boiler/software/victoria-v0.7-control-b/.pio/build/pro16MHzatmega328/firmware.elf",
             "toolchainBinDir": "C:/Users/gcasanova/.platformio/packages/toolchain-atmelavr/bin",
             "internalConsoleOptions": "openOnSessionStart"
         }

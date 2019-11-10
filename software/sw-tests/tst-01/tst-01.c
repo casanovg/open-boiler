@@ -112,15 +112,14 @@ int main(void) {
      */
     for (;;) {
 
-        if (length--) {
-            printf("\n\n\rSHAKE PRONTO SHAKE %d: %d\n\n\r", length, shake[length]);
-        } else {
-            length = BUFF_LEN;
-            printf("\n\n\r%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\r");
-            printf("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\r");
-            printf("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n\r");
-        }
-        
+        // if (length--) {
+        //     // printf("\n\n\rSHAKE PRONTO SHAKE %d: %d\n\n\r", length, shake[length]);
+        // } else {
+        //     length = BUFF_LEN;
+        //     printf("\n\n\r%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\r");
+        //     printf("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\r");
+        //     printf("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n\r");
+        // }
 
         // ******************************************************************************************
         // Read the current heat level setup to determine what valves should be opened and for how long

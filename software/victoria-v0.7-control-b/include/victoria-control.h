@@ -17,6 +17,7 @@
 #include <avr/wdt.h>
 #include <stdbool.h>
 #include <stdio.h>
+//#include <time.h>
 #include <util/delay.h>
 #include "delays.h"
 #include "errors.h"
@@ -25,43 +26,43 @@
 #define BAUDRATE 38400
 #define BAUD_PRESCALER (((F_CPU / (BAUDRATE * 16UL))) - 1)
 
-#define CH_SETPOINT_HIGH 241        /* ADC-NTC CH temperature ~ 55°C */
-#define CH_SETPOINT_LOW 379         /* ADC-NTC CH temperature ~ 38°C */
+#define CH_SETPOINT_HIGH 241 /* ADC-NTC CH temperature ~ 55°C */
+#define CH_SETPOINT_LOW 379  /* ADC-NTC CH temperature ~ 38°C */
 
 #ifndef MAX_IGNITION_RETRIES
-#define MAX_IGNITION_RETRIES 3      /* Number of ignition retries when no flame is detected */
-#endif /* IGNITION_RETRIES */
+#define MAX_IGNITION_RETRIES 3 /* Number of ignition retries when no flame is detected */
+#endif                         /* IGNITION_RETRIES */
 
 #ifndef OVERHEAT_OVERRIDE
-#define OVERHEAT_OVERRIDE false     /* True: Overheating thermostat override */
-#endif /* OVERHEAT_OVERRIDE */
+#define OVERHEAT_OVERRIDE false /* True: Overheating thermostat override */
+#endif                          /* OVERHEAT_OVERRIDE */
 
 #ifndef AIRFLOW_OVERRIDE
-#define AIRFLOW_OVERRIDE false      /* True: Flue airflow sensor override */
-#endif /* AIRFLOW_OVERRIDE */
+#define AIRFLOW_OVERRIDE false /* True: Flue airflow sensor override */
+#endif                         /* AIRFLOW_OVERRIDE */
 
 #ifndef FAN_TEST_OVERRIDE
-#define FAN_TEST_OVERRIDE false     /* True: Flue airflow sensor override */
-#endif /* FAN_TEST_OVERRIDE */
+#define FAN_TEST_OVERRIDE false /* True: Flue airflow sensor override */
+#endif                          /* FAN_TEST_OVERRIDE */
 
 #ifndef FAST_FLAME_DETECTION
-#define FAST_FLAME_DETECTION false  /* True: Spark igniter is turned off when the flame is detected */
-#endif /* FAST_FLAME_DETECTION */   /*       instead of checking the flame sensor after a delay     */
+#define FAST_FLAME_DETECTION false /* True: Spark igniter is turned off when the flame is detected */
+#endif /* FAST_FLAME_DETECTION */  /*       instead of checking the flame sensor after a delay     */
 
 #ifndef LED_UI_FOR_FLAME
-#define LED_UI_FOR_FLAME true       /* True: Activates onboard LED when the flame detector is on */
-#endif /* LED_UI_FOR_FLAME */
+#define LED_UI_FOR_FLAME true /* True: Activates onboard LED when the flame detector is on */
+#endif                        /* LED_UI_FOR_FLAME */
 
 #ifndef SHOW_PUMP_TIMER
-#define SHOW_PUMP_TIMER true        /* True: Shows the CH water pump auto-shutdown timer */
-#endif /* SHOW_PUMP_TIMER */
+#define SHOW_PUMP_TIMER true /* True: Shows the CH water pump auto-shutdown timer */
+#endif                       /* SHOW_PUMP_TIMER */
 
-#define BUFFER_LENGTH 34            /* Circular buffers length */
+#define BUFFER_LENGTH 34 /* Circular buffers length */
 
-#define DHW_SETTING_STEPS 12        /* DHW setting potentiometer steps */
-#define CH_SETTING_STEPS 12         /* CH setting potentiometer steps */
+#define DHW_SETTING_STEPS 12 /* DHW setting potentiometer steps */
+#define CH_SETTING_STEPS 12  /* CH setting potentiometer steps */
 
-#define SYSTEM_VALVES 3             /* Number of system valves for heat modulation */
+#define SYSTEM_VALVES 3 /* Number of system valves for heat modulation */
 
 // Flame detector (mini-pro pin 2 - input)
 #define FLAME_DDR DDRD
@@ -153,12 +154,12 @@
 #define NTC_VALUES 12
 
 // Temperature calculation settings
-#define TO_CELSIUS -200    /* Celsius offset value */
-#define DT_CELSIUS 100     /* Celsius delta T (difference between two consecutive table entries) */
-#define TO_KELVIN 2530     /* Kelvin offset value */
-#define DT_KELVIN 100      /* Kelvin delta T (difference between two consecutive table entries) */
-#define TO_FAHRENHEIT -40  /* Fahrenheit offset value */
-#define DT_FAHRENHEIT 180  /* Fahrenheit delta T (difference between two consecutive table entries) */
+#define TO_CELSIUS -200   /* Celsius offset value */
+#define DT_CELSIUS 100    /* Celsius delta T (difference between two consecutive table entries) */
+#define TO_KELVIN 2530    /* Kelvin offset value */
+#define DT_KELVIN 100     /* Kelvin delta T (difference between two consecutive table entries) */
+#define TO_FAHRENHEIT -40 /* Fahrenheit offset value */
+#define DT_FAHRENHEIT 180 /* Fahrenheit delta T (difference between two consecutive table entries) */
 
 // Types
 typedef enum states {
@@ -269,10 +270,10 @@ typedef struct heat_level {
 } HeatLevel;
 
 typedef struct gas_valve {
-    uint8_t valve_number;           /* Valve number */
-    uint16_t kcal_h;                /* Kcal per hour */
-    float gas_usage;                /* Gas usage per hour */
-    bool status;                    /* Valve status */
+    uint8_t valve_number; /* Valve number */
+    uint16_t kcal_h;      /* Kcal per hour */
+    float gas_usage;      /* Gas usage per hour */
+    bool status;          /* Valve status */
 } GasValve;
 
 typedef struct debounce_sw {
@@ -338,7 +339,7 @@ const uint16_t ntc_adc_temp[NTC_VALUES] = {
 const uint16_t ntc_adc_table[NTC_VALUES] = {
     929, 869, 787, 685, 573, 461, 359, 274, 206, 154, 116, 87};
 
- /*
+/*
  -20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90
 98,66	56,25	33,21	20,24	12,71	8,19	5,42	3,66	2,53	1,78	1,28	0,93
 929, 869, 787, 685, 573, 461, 359, 274, 206, 154, 116, 87
@@ -357,7 +358,7 @@ HeatLevel heat_level[] = {
     {{17, 83, 0}, 11167, 1.362},  /* Heat level 8 = 11167 Kcal/h */
     {{67, 0, 33}, 11333, 1.377},  /* Heat level 9 = 11333 Kcal/h */
     {{33, 50, 17}, 11667, 1.418}, /* Heat level 10 = 11667 Kcal/h */
-    {{0, 100, 0}, 12000, 1.460}  /* Heat level 11 = 12000 Kcal/h */
+    {{0, 100, 0}, 12000, 1.460}   /* Heat level 11 = 12000 Kcal/h */
     // {{50, 17, 33}, 12167, 1.475}, /* Heat level 12 = 12167 Kcal/h */
     // {{17, 67, 16}, 12500, 1.517}, /* Heat level 13 = 12500 Kcal/h */
     // {{34, 33, 33}, 13000, 1.573}, /* Heat level 14 = 13000 Kcal/h */

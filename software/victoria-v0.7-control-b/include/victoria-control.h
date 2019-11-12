@@ -19,6 +19,7 @@
 #include <stdio.h>
 //#include <time.h>
 #include <util/delay.h>
+#include "hw_mapping.h"
 #include "delays.h"
 #include "errors.h"
 
@@ -62,83 +63,8 @@
 #define DHW_SETTING_STEPS 12 /* DHW setting potentiometer steps */
 #define CH_SETTING_STEPS 12  /* CH setting potentiometer steps */
 
-#define SYSTEM_VALVES 3 /* Number of system valves for heat modulation */
+#define TIME_INTERVALS 3 /* Number of system valves for heat modulation */
 
-// Flame detector (mini-pro pin 2 - input)
-#define FLAME_DDR DDRD
-#define FLAME_PIN PIN2
-#define FLAME_PINP PIND
-#define FLAME_PORT PORTD
-// Exhaust fan (mini-pro pin 3 - output)
-#define FAN_DDR DDRD
-#define FAN_PIN PIN3
-#define FAN_PINP PIND
-#define FAN_PORT PORTD
-// Spark igniter (mini-pro pin 4 - output)
-#define SPARK_DDR DDRD
-#define SPARK_PIN PIN4
-#define SPARK_PINP PIND
-#define SPARK_PORT PORTD
-// Valve security (mini-pro pin 5 - output)
-#define VALVE_S_DDR DDRD
-#define VALVE_S_PIN PIN5
-#define VALVE_S_PINP PIND
-#define VALVE_S_PORT PORTD
-// Valve 1 (mini-pro pin 6 - output)
-#define VALVE_1_DDR DDRD
-#define VALVE_1_PIN PIN6
-#define VALVE_1_PINP PIND
-#define VALVE_1_PORT PORTD
-// Valve 2 (mini-pro pin 7 - output)
-#define VALVE_2_DDR DDRD
-#define VALVE_2_PIN PIN7
-#define VALVE_2_PINP PIND
-#define VALVE_2_PORT PORTD
-// Valve 3 (mini-pro pin 8 - output)
-#define VALVE_3_DDR DDRB
-#define VALVE_3_PIN PIN0
-#define VALVE_3_PINP PINB
-#define VALVE_3_PORT PORTB
-// Water pump (mini-pro pin 9 - output)
-#define PUMP_DDR DDRB
-#define PUMP_PIN PIN1
-#define PUMP_PINP PINB
-#define PUMP_PORT PORTB
-// Overheat thermostat (mini-pro pin 10 - input)
-#define OVERHEAT_DDR DDRB
-#define OVERHEAT_PIN PIN2
-#define OVERHEAT_PINP PINB
-#define OVERHEAT_PORT PORTB
-// Domestic Hot Water request (mini-pro pin 11 - input)
-#define DHW_RQ_DDR DDRB
-#define DHW_RQ_PIN PIN3
-#define DHW_RQ_PINP PINB
-#define DHW_RQ_PORT PORTB
-// Central Heating request (mini-pro pin 12 - input)
-#define CH_RQ_DDR DDRB
-#define CH_RQ_PIN PIN4
-#define CH_RQ_PINP PINB
-#define CH_RQ_PORT PORTB
-// Led UI (mini-pro pin 13 - onboard led - output)
-#define LED_UI_DDR DDRB
-#define LED_UI_PIN PIN5
-#define LED_UI_PINP PINB
-#define LED_UI_PORT PORTB
-// DHW potentiometer (mini-pro pin A0 - intput)
-#define DHW_POT ADC0
-// CH potentiometer (mini-pro pin A1 - intput)
-#define CH_POT ADC1
-// System potentiometer (mini-pro pin A2 - intput)
-#define SYS_POT ADC2
-// Air-flow sensor (mini-pro pin A3 - intput) Board 4-6 left to right
-#define AIRFLOW_DDR DDRC
-#define AIRFLOW_PIN PIN3
-#define AIRFLOW_PINP PINC
-#define AIRFLOW_PORT PORTC
-// DHW temperature sensor (mini-pro pin A6 - intput)
-//#define DHW_TEMP ADC6
-// CH temperature sensor (mini-pro pin A7 - intput)
-//#define CH_TEMP ADC7
 #define ADC_MIN 0
 #define ADC_MAX 1023
 #define MAX_CH_TEMP_TOLERANCE 65
@@ -264,7 +190,7 @@ typedef struct sys_info {
 } SysInfo;
 
 typedef struct heat_level {
-    uint8_t valve_open_time[SYSTEM_VALVES];
+    uint8_t valve_open_time[TIME_INTERVALS];
     uint16_t kcal_h;
     float gas_usage;
 } HeatLevel;
@@ -328,25 +254,22 @@ float GetNtcTempDegrees(uint16_t, int, int);
 uint8_t GetHeatLevel(int16_t, uint8_t);
 
 // Globals
-const uint16_t fir_table[FIR_LEN] = {
+
+// Temperature to ADC readings conversion table
+//  T°C:  -20, -10,   0,  10,  20,  30,  40,  50,  60,  70,  80, 90
+//  ADC:  929, 869, 787, 685, 573, 461, 359, 274, 206, 154, 116, 87    
+//  NTC: 98.66, 56.25, 33.21, 20.24, 12.71, 8.19, 5.42, 3.66, 2.53, 1.78, 1.28, 0.93
+const uint16_t __flash ntc_adc_table[NTC_VALUES] = {
+    929, 869, 787, 685, 573, 461, 359, 274, 206, 154, 116, 87};
+
+// FIR filter value table
+const uint16_t __flash fir_table[FIR_LEN] = {
     1, 3, 9, 23, 48, 89, 149, 230, 333, 454, 586, 719, 840, 938, 1002, 1024,
     1002, 938, 840, 719, 586, 454, 333, 230, 149, 89, 48, 23, 9, 3, 1};
 
-/* Original article table
-const uint16_t ntc_adc_temp[NTC_VALUES] = {
-    939, 892, 828, 749, 657, 560, 464, 377, 300, 237, 186};
-*/
-const uint16_t ntc_adc_table[NTC_VALUES] = {
-    929, 869, 787, 685, 573, 461, 359, 274, 206, 154, 116, 87};
-
-/*
- -20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90
-98,66	56,25	33,21	20,24	12,71	8,19	5,42	3,66	2,53	1,78	1,28	0,93
-929, 869, 787, 685, 573, 461, 359, 274, 206, 154, 116, 87
- */
-
-HeatLevel heat_level[] = {
-    /* { { %valve-1, %valve-2, %valve-3 }, Kcal/h, G20_m3 } */
+// Heat levels valve settings
+const HeatLevel __flash heat_level[] = {
+    // { { %valve-1, %valve-2, %valve-3 }, Kcal/h, G20_m3 }
     {{100, 0, 0}, 7000, 0.870},   /* Heat level 0 = 7000 Kcal/h */
     {{83, 17, 0}, 7833, 0.968},   /* Heat level 1 = 7833 Kcal/h */
     {{67, 33, 0}, 8667, 1.067},   /* Heat level 2 = 8667 Kcal/h */
@@ -377,6 +300,7 @@ HeatLevel heat_level[] = {
     // {{0, 0, 100}, 20000, 2.390}   /* Heat level 27 = 20000 Kcal/h */
 };
 
+// Console UI literals
 const char __flash str_header_01[] = {" OPEN-BOILER v0.7   "};
 const char __flash str_header_02[] = {"\"Juan, Sandra & Gustavo\" "};
 const char __flash str_iflags[] = {"Inputs: "};

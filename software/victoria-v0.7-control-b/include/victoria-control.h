@@ -19,9 +19,9 @@
 #include <stdio.h>
 //#include <time.h>
 #include <util/delay.h>
-#include "hw_mapping.h"
 #include "delays.h"
 #include "errors.h"
+#include "hw_mapping.h"
 
 // Serial comm settings
 #define BAUDRATE 38400
@@ -63,7 +63,7 @@
 #define DHW_SETTING_STEPS 12 /* DHW setting potentiometer steps */
 #define CH_SETTING_STEPS 12  /* CH setting potentiometer steps */
 
-#define TIME_INTERVALS 3 /* Number of system valves for heat modulation */
+#define VALVES 3 /* Number of system valves for heat modulation */
 
 #define ADC_MIN 0
 #define ADC_MAX 1023
@@ -190,7 +190,7 @@ typedef struct sys_info {
 } SysInfo;
 
 typedef struct heat_level {
-    uint8_t valve_open_time[TIME_INTERVALS];
+    uint8_t valve_open_time[VALVES];
     uint16_t kcal_h;
     float gas_usage;
 } HeatLevel;
@@ -257,7 +257,7 @@ uint8_t GetHeatLevel(int16_t, uint8_t);
 
 // Temperature to ADC readings conversion table
 //  T°C:  -20, -10,   0,  10,  20,  30,  40,  50,  60,  70,  80, 90
-//  ADC:  929, 869, 787, 685, 573, 461, 359, 274, 206, 154, 116, 87    
+//  ADC:  929, 869, 787, 685, 573, 461, 359, 274, 206, 154, 116, 87
 //  NTC: 98.66, 56.25, 33.21, 20.24, 12.71, 8.19, 5.42, 3.66, 2.53, 1.78, 1.28, 0.93
 const uint16_t __flash ntc_adc_table[NTC_VALUES] = {
     929, 869, 787, 685, 573, 461, 359, 274, 206, 154, 116, 87};

@@ -34,5 +34,7 @@
 #define ERROR_009 9
 // E010: Unexpected CH overtemperature
 #define ERROR_010 10
+// E011: Heat level inconsistency detected
+#define ERROR_011 11
 
 #endif /* ERRORS_H_ */

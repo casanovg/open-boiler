@@ -301,7 +301,7 @@ const HeatLevel __flash heat_level[] = {
 };
 
 // Console UI literals
-const char __flash str_header_01[] = {" OPEN-BOILER v0.7   "};
+const char __flash str_header_01[] = {" OPEN-BOILER v0.7b  "};
 const char __flash str_header_02[] = {"\"Juan, Sandra & Gustavo\" "};
 const char __flash str_iflags[] = {"Inputs: "};
 const char __flash str_oflags[] = {"Outputs: "};

@@ -51,12 +51,12 @@ int main(void) {
 
     static const uint16_t cycle_time = 10000;
     //uint8_t cycle_slots = 6;
-    static bool cycle_in_progress = 0;
+    bool cycle_in_progress = 0;
     uint8_t system_valves = (sizeof(gas_valve) / sizeof(gas_valve[0]));
-    //uint8_t current_heat_level = 0; /* This level is determined by the CH temperature potentiometer */
-    uint8_t current_heat_level = GetHeatLevel(p_system->ch_setting, DHW_SETTING_STEPS);
-    static uint8_t current_valve = 0;
-    static unsigned long valve_open_timer = 0;
+    uint8_t current_heat_level = 1; /* This level is determined by the CH temperature potentiometer */
+    //uint8_t current_heat_level = GetHeatLevel(p_system->ch_setting, DHW_SETTING_STEPS);
+    uint8_t current_valve = 0;
+    uint32_t valve_open_timer = 0;
     // NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW
 
     // Delay
@@ -598,7 +598,7 @@ int main(void) {
                             current_valve = 0;
                             cycle_in_progress = 0;
                             // Read the DHW potentiometer to determine the desired heat level
-                            current_heat_level = GetHeatLevel(p_system->ch_setting, DHW_SETTING_STEPS);
+                            //=== current_heat_levelcurrent_heat_level = GetHeatLevel(p_system->ch_setting, DHW_SETTING_STEPS);
                             // // Move to the next heat level
                             // if (current_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
                             //     current_heat_level = 0;

@@ -524,11 +524,14 @@ int main(void) {
                     // .......................................
                     case DHW_ON_DUTY_1: {
                         // Close valve 1
-                        ClearFlag(p_system, OUTPUT_FLAGS, VALVE_1);
+                        //=== ClearFlag(p_system, OUTPUT_FLAGS, VALVE_1);
+                        ClearFlag(p_system, OUTPUT_FLAGS, VALVE_2);
                         // Close valve 3
+                        //=== ClearFlag(p_system, OUTPUT_FLAGS, VALVE_3);
                         ClearFlag(p_system, OUTPUT_FLAGS, VALVE_3);
                         // Open valve 2
-                        SetFlag(p_system, OUTPUT_FLAGS, VALVE_2);
+                        //=== SetFlag(p_system, OUTPUT_FLAGS, VALVE_2);
+                        SetFlag(p_system, OUTPUT_FLAGS, VALVE_1);
                         if (!(delay--)) { /* DLY_L_FLAME_MODULATION / 3 */
                             delay = DLY_L_FLAME_MODULATION / 3;
                             p_system->inner_step = DHW_ON_DUTY_2;

@@ -1,5 +1,7 @@
 // ---------------------------------------------
 // Test 01 - 2019-10-03 - Gustavo Casanova
+// .............................................
+// Heat modulation algorithm
 // ---------------------------------------------
 
 #include "tst-01.h"
@@ -102,7 +104,7 @@ int main(void) {
 
     // Closing all valves
     for (uint8_t i = 0; i < system_valves; i++) {
-        printf(" (x) Closing valve %d ...\n\r", i + 1);
+        printf(" (X) Closing valve %d ...\n\r", i + 1);
         gas_valve[i].status = 0;
     }
 
@@ -147,7 +149,7 @@ int main(void) {
                     // Set the valve opening time (delay) and open it ...
                     valve_open_timer = (heat_level[current_heat_level].valve_open_time[current_valve] * cycle_time / 100);
                     if (gas_valve[current_valve].status == 0) {
-                        printf(" ( ) Opening valve %d for %d ms!\n\r", current_valve + 1, valve_open_timer);
+                        printf(" (O) Opening valve %d for %d ms!\n\r", current_valve + 1, valve_open_timer);
                         gas_valve[current_valve].status = 1; /* [ ] OPEN VALVE [ ] */
                     } else {
                         printf(" (=) Valve %d already open, keeping it as is for %d ms!\n\r", current_valve + 1, valve_open_timer);
@@ -156,7 +158,7 @@ int main(void) {
                     for (uint8_t valve_to_close = 0; valve_to_close < system_valves; valve_to_close++) {
                         if (valve_to_close != current_valve) {
                             if (gas_valve[valve_to_close].status != 0) {
-                                printf(" (x) Closing valve %d ...\n\r", valve_to_close + 1);
+                                printf(" (X) Closing valve %d ...\n\r", valve_to_close + 1);
                                 gas_valve[valve_to_close].status = 0; /* [x] CLOSE VALVE [x] */
                             }
                         }

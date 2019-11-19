@@ -1,8 +1,13 @@
-// ---------------------------------------------
-// Test 02 - 2019-11-19 - Gustavo Casanova
-// .............................................
-// Heat modulation algorithm test
-// ---------------------------------------------
+/*
+ *  Open-Boiler Control - Victoria 20-20 T/F boiler control
+ *  Author: Gustavo Casanova
+ *  ........................................................
+ *  File: victoria-control.c (main code) for ATmega328
+ *  ........................................................
+ *  Version: 0.7b "Juan" / 2019-11-10 (Heat level modulation)
+ *  gustavo.casanova@nicebots.com
+ *  ........................................................
+ */
 
 #include "victoria-control.h"
 

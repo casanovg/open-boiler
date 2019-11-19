@@ -87,7 +87,7 @@
 #define TO_FAHRENHEIT -40 /* Fahrenheit offset value */
 #define DT_FAHRENHEIT 180 /* Fahrenheit delta T (difference between two consecutive table entries) */
 
-// Types
+// Typedefs
 typedef enum states {
     OFF = 0,
     READY = 10,

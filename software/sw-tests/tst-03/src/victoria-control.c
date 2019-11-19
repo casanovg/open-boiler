@@ -128,26 +128,26 @@ int main(void) {
             }
         }
 
-        // DHW temperature sensor out of range -> Error 008
-        if ((p_system->dhw_temperature <= ADC_MIN) || (p_system->dhw_temperature >= ADC_MAX)) {
-            GasOff(p_system);
-            p_system->error = ERROR_008;
-            p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
-        }
+        // // DHW temperature sensor out of range -> Error 008
+        // if ((p_system->dhw_temperature <= ADC_MIN) || (p_system->dhw_temperature >= ADC_MAX)) {
+        //     GasOff(p_system);
+        //     p_system->error = ERROR_008;
+        //     p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
+        // }
 
-        // CH temperature sensor out of range -> Error 009
-        if ((p_system->ch_temperature <= ADC_MIN) || (p_system->ch_temperature >= ADC_MAX)) {
-            GasOff(p_system);
-            p_system->error = ERROR_009;
-            p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
-        }
+        // // CH temperature sensor out of range -> Error 009
+        // if ((p_system->ch_temperature <= ADC_MIN) || (p_system->ch_temperature >= ADC_MAX)) {
+        //     GasOff(p_system);
+        //     p_system->error = ERROR_009;
+        //     p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
+        // }
 
-        // Unexpected CH overheat -> Error 010
-        if (p_system->ch_temperature < (CH_SETPOINT_HIGH - MAX_CH_TEMP_TOLERANCE)) {
-            GasOff(p_system);
-            p_system->error = ERROR_010;
-            p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
-        }
+        // // Unexpected CH overheat -> Error 010
+        // if (p_system->ch_temperature < (CH_SETPOINT_HIGH - MAX_CH_TEMP_TOLERANCE)) {
+        //     GasOff(p_system);
+        //     p_system->error = ERROR_010;
+        //     p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
+        // }
 
 #if !(OVERHEAT_OVERRIDE)
         // Verify that the overheat thermostat is not open, otherwise, there's a failure

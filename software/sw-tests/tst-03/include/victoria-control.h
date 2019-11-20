@@ -187,6 +187,8 @@ typedef struct sys_info {
     uint8_t error;                 /* System error code */
     uint32_t pump_delay;           /* CH water pump auto-shutdown timer */
     InnerStep ch_on_duty_step;     /* CH inner step before handing over control to DHW */
+    uint8_t dhw_heat_level;
+    uint8_t ch_heat_level;
 } SysInfo;
 
 typedef struct heat_level {

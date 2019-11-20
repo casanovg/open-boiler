@@ -30,6 +30,7 @@ int main(void) {
     p_system->ignition_retries = 0;
     p_system->pump_delay = 0;
     p_system->ch_on_duty_step = CH_ON_DUTY_1;
+    p_system->dhw_heat_level = 7; /* This level is determined by the CH temperature potentiometer */
 
     // Electromechanical switches debouncing initialization
     DebounceSw debounce_sw;
@@ -44,12 +45,13 @@ int main(void) {
         {VALVE_3, 20000, 2.39, 0}
     };
 
-    static const uint16_t cycle_time = 10000;
+    static const uint16_t cycle_time = 5000;
     //uint8_t cycle_slots = 6;
     bool cycle_in_progress = 0;
     uint8_t system_valves = (sizeof(gas_valve) / sizeof(gas_valve[0]));
-    uint8_t current_heat_level = 1; /* This level is determined by the CH temperature potentiometer */
-    //uint8_t current_heat_level = GetHeatLevel(p_system->ch_setting, DHW_SETTING_STEPS);
+    //uint8_t system_valves = 3;
+    //uint8_t dhw_heat_level = 7; /* This level is determined by the CH temperature potentiometer */
+    //uint8_t dhw_heat_level = GetHeatLevel(p_system->ch_setting, DHW_SETTING_STEPS);
     uint8_t current_valve = 0;
     uint32_t valve_open_timer = 0;
     // NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW
@@ -525,6 +527,7 @@ int main(void) {
                         delay = DLY_L_READY_1;
                         p_system->inner_step = READY_1;
                         p_system->system_state = READY;
+                        break;
                     }
                 }
 
@@ -535,17 +538,17 @@ int main(void) {
                 if (current_valve < system_valves) {
                     //Valve-toggling cycle start
                     if (cycle_in_progress == 0) {
-                        // printf("\n\r============== >>> Cycle start: Heat level %d = %d Kcal/h... <<< ==============\n\r", current_heat_level + 1, heat_level[current_heat_level].kcal_h);
+                        // printf("\n\r============== >>> Cycle start: Heat level %d = %d Kcal/h... <<< ==============\n\r", dhw_heat_level + 1, heat_level[dhw_heat_level].kcal_h);
                         uint8_t heat_level_time_usage = 0;
                         // Check that the sum of the time slots used by the valves at a given heat level is consistent and equals 100%
                         for (uint8_t valve = 0; valve < system_valves; valve++) {
-                            heat_level_time_usage += heat_level[current_heat_level].valve_open_time[valve];
+                            heat_level_time_usage += heat_level[p_system->dhw_heat_level].valve_open_time[valve];
                         }
                         // printf("\n\rCycle slot minimal duration: %d\n\r", cycle_slot_duration);
                         // printf("Heat level time usage: %d\n\n\r", heat_level_time_usage);
                         // If the heat level time usage is not 100%, raise an error and exit
                         if (heat_level_time_usage != 100) {
-                            // printf("<<< Heat level %d setting error, the sum of the opening time of all valves must be 100! >>>\n\r", current_heat_level + 1, heat_level_time_usage);
+                            // printf("<<< Heat level %d setting error, the sum of the opening time of all valves must be 100! >>>\n\r", dhw_heat_level + 1, heat_level_time_usage);
                             GasOff(p_system); /* Close gas, turn igniter and fan off */
                             p_system->error = ERROR_011;
                             p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
@@ -554,11 +557,11 @@ int main(void) {
                         cycle_in_progress = 1;
                     }
                     // If a heat-level cycle's current valve has an activation time setting other than zero ...
-                    if (heat_level[current_heat_level].valve_open_time[current_valve] > 0) {
+                    if (heat_level[p_system->dhw_heat_level].valve_open_time[current_valve] > 0) {
                         // If there are no valves open using a heat-level cycle time interval ...
                         if (valve_open_timer == 0) {
                             // Set the valve opening time (delay) and open it ...
-                            valve_open_timer = (heat_level[current_heat_level].valve_open_time[current_valve] * cycle_time / 100);
+                            valve_open_timer = (heat_level[p_system->dhw_heat_level].valve_open_time[current_valve] * cycle_time / 100);
                             if (gas_valve[current_valve].status == 0) {
                                 // printf(" ( ) Opening valve %d for %d ms!\n\r", current_valve + 1, valve_open_timer);
                                 gas_valve[current_valve].status = 1; /* [ ] OPEN VALVE [ ] */
@@ -578,7 +581,7 @@ int main(void) {
                             }
                         }
                     } else {
-                        // printf(" ||| Valve %d not set to be open in heat level %d (%d Kcal/h) ...\n\r", current_valve + 1, current_heat_level + 1, heat_level[current_heat_level].kcal_h);
+                        // printf(" ||| Valve %d not set to be open in heat level %d (%d Kcal/h) ...\n\r", current_valve + 1, dhw_heat_level + 1, heat_level[dhw_heat_level].kcal_h);
                         valve_open_timer++; /* This is necessary to move to the next valve */
                     }
                     // Open-valve delay
@@ -588,26 +591,28 @@ int main(void) {
                         current_valve++;
                         // Valve-toggling cycle end
                         if (current_valve >= system_valves) {
-                            // printf("============== >>> Cycle end: Heat level %d = %d Kcal/h... <<< ==============\n\n\r", current_heat_level + 1, heat_level[current_heat_level].kcal_h);
+                            // printf("============== >>> Cycle end: Heat level %d = %d Kcal/h... <<< ==============\n\n\r", dhw_heat_level + 1, heat_level[dhw_heat_level].kcal_h);
                             // printf(" .......\n\r .......\n\r .......\n\r .......\n\r .......\n\r");
                             current_valve = 0;
                             cycle_in_progress = 0;
                             // Read the DHW potentiometer to determine the desired heat level
-                            //=== current_heat_levelcurrent_heat_level = GetHeatLevel(p_system->ch_setting, DHW_SETTING_STEPS);
+                            //===p_system->dhw_heat_level = GetHeatLevel(p_system->ch_setting, DHW_SETTING_STEPS);
                             // // Move to the next heat level
-                            // if (current_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
-                            //     current_heat_level = 0;
-                            //     //break;
-                            // }
+                            if (p_system->dhw_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
+                                p_system->dhw_heat_level = 0;
+                                //break;
+                            }
                         }
                     } else {
-                        // _delay_ms(1);
+                        _delay_ms(2);
                     }
                 }
          
                 //
                 // [ # # # ] DHW heat modulation code end [ # # # ]
                 //
+
+                break;
             }
 
             /*  _______________________________
@@ -1637,7 +1642,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
         SerialTxStr(str_lit_15);
         SerialTxNum(p_sys->dhw_setting, DIGITS_4);
         SerialTxChr(32); /* Space (_) */
-        SerialTxNum(GetHeatLevel(p_sys->dhw_setting, DHW_SETTING_STEPS), DIGITS_2);
+        //===SerialTxNum(GetHeatLevel(p_sys->dhw_setting, DHW_SETTING_STEPS), DIGITS_2);
+        SerialTxNum(p_sys->dhw_heat_level, DIGITS_2);
 
         SerialTxChr(32); /* Space (_) */
         SerialTxChr(32); /* Space (_) */

@@ -45,14 +45,14 @@ int main(void) {
         {VALVE_3, 20000, 2.39, 0}
     };
 
-    static const uint16_t cycle_time = 1000;
+    static const uint16_t cycle_time = 50000;
     //uint8_t cycle_slots = 6;
     bool cycle_in_progress = 0;
     uint8_t system_valves = (sizeof(gas_valve) / sizeof(gas_valve[0]));
     //uint8_t dhw_heat_level = 7; /* This level is determined by the CH temperature potentiometer */
     //uint8_t dhw_heat_level = GetHeatLevel(p_system->ch_setting, DHW_SETTING_STEPS);
     uint8_t current_valve = 0;
-    uint16_t valve_open_timer = 0;
+    uint32_t valve_open_timer = 0;
     // NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW
 
     // Delay
@@ -613,10 +613,12 @@ int main(void) {
 
                         }
                     } else {
-                        _delay_ms(13);
+                        //_delay_ms(1);
                     }
                 }
          
+                _delay_ms(2);
+
                 //
                 // [ # # # ] DHW heat modulation code end [ # # # ]
                 //

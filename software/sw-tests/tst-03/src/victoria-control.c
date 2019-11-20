@@ -30,7 +30,7 @@ int main(void) {
     p_system->ignition_retries = 0;
     p_system->pump_delay = 0;
     p_system->ch_on_duty_step = CH_ON_DUTY_1;
-    p_system->dhw_heat_level = 7; /* This level is determined by the CH temperature potentiometer */
+    p_system->dhw_heat_level = 0; /* This level is determined by the CH temperature potentiometer */
 
     // Electromechanical switches debouncing initialization
     DebounceSw debounce_sw;
@@ -45,15 +45,14 @@ int main(void) {
         {VALVE_3, 20000, 2.39, 0}
     };
 
-    static const uint16_t cycle_time = 5000;
+    static const uint16_t cycle_time = 1000;
     //uint8_t cycle_slots = 6;
     bool cycle_in_progress = 0;
     uint8_t system_valves = (sizeof(gas_valve) / sizeof(gas_valve[0]));
-    //uint8_t system_valves = 3;
     //uint8_t dhw_heat_level = 7; /* This level is determined by the CH temperature potentiometer */
     //uint8_t dhw_heat_level = GetHeatLevel(p_system->ch_setting, DHW_SETTING_STEPS);
     uint8_t current_valve = 0;
-    uint32_t valve_open_timer = 0;
+    uint16_t valve_open_timer = 0;
     // NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW
 
     // Delay
@@ -602,9 +601,19 @@ int main(void) {
                                 p_system->dhw_heat_level = 0;
                                 //break;
                             }
+
+                            // After running a given heat level, close all valves and wait 3 seconds ...
+                            for (uint8_t valve_to_close = 0; valve_to_close < system_valves; valve_to_close++) {
+                                gas_valve[valve_to_close].status = 0; /* [x] CLOSE VALVE [x] */
+                                ClearFlag(p_system, OUTPUT_FLAGS, gas_valve[valve_to_close].valve_number);
+                            }
+                            ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN);
+                            _delay_ms(3000);
+                            SetFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN);
+
                         }
                     } else {
-                        _delay_ms(2);
+                        _delay_ms(13);
                     }
                 }
          

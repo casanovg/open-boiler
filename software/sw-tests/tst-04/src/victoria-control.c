@@ -1,7 +1,7 @@
 // ---------------------------------------------
-// Test 043 - 2019-10-29 - Gustavo Casanova
+// Test 04 - 2019-11-23 - Gustavo Casanova
 // .............................................
-// Heat modulation algorithm
+// Heat modulation algorithm - new
 // ---------------------------------------------
 
 #include "victoria-control.h"

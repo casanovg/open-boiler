@@ -534,88 +534,121 @@ int main(void) {
                 // [ # # # ] DHW heat modulation code  [ # # # ]
                 //
 
+//gas_valve[current_valve].valve_number);
+
                 if (current_valve < system_valves) {
                     //Valve-toggling cycle start
                     if (cycle_in_progress == 0) {
-                        // printf("\n\r============== >>> Cycle start: Heat level %d = %d Kcal/h... <<< ==============\n\r", dhw_heat_level + 1, heat_level[dhw_heat_level].kcal_h);
-                        uint8_t heat_level_time_usage = 0;
-                        // Check that the sum of the time slots used by the valves at a given heat level is consistent and equals 100%
-                        for (uint8_t valve = 0; valve < system_valves; valve++) {
-                            heat_level_time_usage += heat_level[p_system->dhw_heat_level].valve_open_time[valve];
-                        }
-                        // printf("\n\rCycle slot minimal duration: %d\n\r", cycle_slot_duration);
-                        // printf("Heat level time usage: %d\n\n\r", heat_level_time_usage);
-                        // If the heat level time usage is not 100%, raise an error and exit
-                        if (heat_level_time_usage != 100) {
-                            // printf("<<< Heat level %d setting error, the sum of the opening time of all valves must be 100! >>>\n\r", dhw_heat_level + 1, heat_level_time_usage);
-                            GasOff(p_system); /* Close gas, turn igniter and fan off */
-                            p_system->error = ERROR_011;
-                            p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
-                            break;
-                        }
+                        
                         cycle_in_progress = 1;
-                    }
-                    // If a heat-level cycle's current valve has an activation time setting other than zero ...
-                    if (heat_level[p_system->dhw_heat_level].valve_open_time[current_valve] > 0) {
-                        // If there are no valves open using a heat-level cycle time interval ...
-                        if (valve_open_timer == 0) {
-                            // Set the valve opening time (delay) and open it ...
-                            valve_open_timer = (heat_level[p_system->dhw_heat_level].valve_open_time[current_valve] * cycle_time / 100);
-                            if (gas_valve[current_valve].status == 0) {
-                                // printf(" ( ) Opening valve %d for %d ms!\n\r", current_valve + 1, valve_open_timer);
-                                gas_valve[current_valve].status = 1; /* [ ] OPEN VALVE [ ] */
+
+                        if (heat_level[p_system->dhw_heat_level].valve_open_time[current_valve] > 0) {
+
+                            if (((p_system->output_flags >> gas_valve[current_valve].valve_number) & true) == false) {
+                                valve_open_timer = (heat_level[p_system->dhw_heat_level].valve_open_time[current_valve] * cycle_time / 100);
                                 SetFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
-                            } else {
-                                // printf(" (=) Valve %d already open, keeping it as is for %d ms!\n\r", current_valve + 1, valve_open_timer);
-                            }
-                            // Close all other valves
-                            for (uint8_t valve_to_close = 0; valve_to_close < system_valves; valve_to_close++) {
-                                if (valve_to_close != current_valve) {
-                                    if (gas_valve[valve_to_close].status != 0) {
-                                        //printf(" (x) Closing valve %d ...\n\r", valve_to_close + 1);
-                                        gas_valve[valve_to_close].status = 0; /* [x] CLOSE VALVE [x] */
+                                for (uint8_t valve_to_close = 0; valve_to_close < system_valves; valve_to_close++) {
+                                    if (valve_to_close != current_valve) {
                                         ClearFlag(p_system, OUTPUT_FLAGS, gas_valve[valve_to_close].valve_number);
+                                    }
+                                }
+                            } else {
+                                if (valve_open_timer-- == 0) {
+                                    ClearFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
+                                    if (current_valve++ >= 3) {
+                                        cycle_in_progress = 0;
+
                                     }
                                 }
                             }
                         }
-                    } else {
-                        // printf(" ||| Valve %d not set to be open in heat level %d (%d Kcal/h) ...\n\r", current_valve + 1, dhw_heat_level + 1, heat_level[dhw_heat_level].kcal_h);
-                        valve_open_timer++; /* This is necessary to move to the next valve */
-                    }
-                    // Open-valve delay
-                    if (!(--valve_open_timer)) {
-                        //printf("\n\r");
-                        valve_open_timer = 0;
-                        current_valve++;
-                        // Valve-toggling cycle end
-                        if (current_valve >= system_valves) {
-                            // printf("============== >>> Cycle end: Heat level %d = %d Kcal/h... <<< ==============\n\n\r", dhw_heat_level + 1, heat_level[dhw_heat_level].kcal_h);
-                            // printf(" .......\n\r .......\n\r .......\n\r .......\n\r .......\n\r");
-                            current_valve = 0;
-                            cycle_in_progress = 0;
-                            // Read the DHW potentiometer to determine the desired heat level
-                            //===p_system->dhw_heat_level = GetHeatLevel(p_system->ch_setting, DHW_SETTING_STEPS);
-                            // // Move to the next heat level
-                            if (p_system->dhw_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
-                                p_system->dhw_heat_level = 0;
-                                //break;
-                            }
 
-                            // After running a given heat level, close all valves and wait 3 seconds ...
-                            for (uint8_t valve_to_close = 0; valve_to_close < system_valves; valve_to_close++) {
-                                gas_valve[valve_to_close].status = 0; /* [x] CLOSE VALVE [x] */
-                                ClearFlag(p_system, OUTPUT_FLAGS, gas_valve[valve_to_close].valve_number);
-                            }
-                            ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN);
-                            _delay_ms(3000);
-                            SetFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN);
-
-                        }
-                    } else {
-                        //_delay_ms(1);
+                    
+                    
+                    
                     }
                 }
+                        
+                        
+                        
+                        
+                        // // printf("\n\r============== >>> Cycle start: Heat level %d = %d Kcal/h... <<< ==============\n\r", dhw_heat_level + 1, heat_level[dhw_heat_level].kcal_h);
+                        // uint8_t heat_level_time_usage = 0;
+                        // // Check that the sum of the time slots used by the valves at a given heat level is consistent and equals 100%
+                        // for (uint8_t valve = 0; valve < system_valves; valve++) {
+                        //     heat_level_time_usage += heat_level[p_system->dhw_heat_level].valve_open_time[valve];
+                        // }
+                        // // printf("\n\rCycle slot minimal duration: %d\n\r", cycle_slot_duration);
+                        // // printf("Heat level time usage: %d\n\n\r", heat_level_time_usage);
+                        // // If the heat level time usage is not 100%, raise an error and exit
+                        // if (heat_level_time_usage != 100) {
+                        //     // printf("<<< Heat level %d setting error, the sum of the opening time of all valves must be 100! >>>\n\r", dhw_heat_level + 1, heat_level_time_usage);
+                        //     GasOff(p_system); /* Close gas, turn igniter and fan off */
+                        //     p_system->error = ERROR_011;
+                        //     p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
+                        //     break;
+                        // }
+
+                    // // If a heat-level cycle's current valve has an activation time setting other than zero ...
+                    // if (heat_level[p_system->dhw_heat_level].valve_open_time[current_valve] > 0) {
+                    //     // If there are no valves open using a heat-level cycle time interval ...
+                    //     if (valve_open_timer == 0) {
+                    //         // Set the valve opening time (delay) and open it ...
+                    //         valve_open_timer = (heat_level[p_system->dhw_heat_level].valve_open_time[current_valve] * cycle_time / 100);
+                    //         if (gas_valve[current_valve].status == 0) {
+                    //             // printf(" ( ) Opening valve %d for %d ms!\n\r", current_valve + 1, valve_open_timer);
+                    //             gas_valve[current_valve].status = 1; /* [ ] OPEN VALVE [ ] */
+                    //             SetFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
+                    //         } else {
+                    //             // printf(" (=) Valve %d already open, keeping it as is for %d ms!\n\r", current_valve + 1, valve_open_timer);
+                    //         }
+                    //         // Close all other valves
+                    //         for (uint8_t valve_to_close = 0; valve_to_close < system_valves; valve_to_close++) {
+                    //             if (valve_to_close != current_valve) {
+                    //                 if (gas_valve[valve_to_close].status != 0) {
+                    //                     //printf(" (x) Closing valve %d ...\n\r", valve_to_close + 1);
+                    //                     gas_valve[valve_to_close].status = 0; /* [x] CLOSE VALVE [x] */
+                    //                     ClearFlag(p_system, OUTPUT_FLAGS, gas_valve[valve_to_close].valve_number);
+                    //                 }
+                    //             }
+                    //         }
+                    //     }
+                    // } else {
+                    //     // printf(" ||| Valve %d not set to be open in heat level %d (%d Kcal/h) ...\n\r", current_valve + 1, dhw_heat_level + 1, heat_level[dhw_heat_level].kcal_h);
+                    //     valve_open_timer++; /* This is necessary to move to the next valve */
+                    // }
+                    // // Open-valve delay
+                    // if (!(--valve_open_timer)) {
+                    //     //printf("\n\r");
+                    //     valve_open_timer = 0;
+                    //     current_valve++;
+                    //     // Valve-toggling cycle end
+                    //     if (current_valve >= system_valves) {
+                    //         // printf("============== >>> Cycle end: Heat level %d = %d Kcal/h... <<< ==============\n\n\r", dhw_heat_level + 1, heat_level[dhw_heat_level].kcal_h);
+                    //         // printf(" .......\n\r .......\n\r .......\n\r .......\n\r .......\n\r");
+                    //         current_valve = 0;
+                    //         cycle_in_progress = 0;
+                    //         // Read the DHW potentiometer to determine the desired heat level
+                    //         //===p_system->dhw_heat_level = GetHeatLevel(p_system->ch_setting, DHW_SETTING_STEPS);
+                    //         // // Move to the next heat level
+                    //         if (p_system->dhw_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
+                    //             p_system->dhw_heat_level = 0;
+                    //             //break;
+                    //         }
+
+                    //         // After running a given heat level, close all valves and wait 3 seconds ...
+                    //         for (uint8_t valve_to_close = 0; valve_to_close < system_valves; valve_to_close++) {
+                    //             gas_valve[valve_to_close].status = 0; /* [x] CLOSE VALVE [x] */
+                    //             ClearFlag(p_system, OUTPUT_FLAGS, gas_valve[valve_to_close].valve_number);
+                    //         }
+                    //         ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN);
+                    //         _delay_ms(3000);
+                    //         SetFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN);
+
+                    //     }
+                    // } else {
+                    //     //_delay_ms(1);
+                    // }
          
                 _delay_ms(2);
 

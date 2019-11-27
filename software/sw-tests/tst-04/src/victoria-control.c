@@ -48,7 +48,8 @@ int main(void) {
     static const uint16_t cycle_time = 50000;
     //uint8_t cycle_slots = 6;
     bool cycle_in_progress = 0;
-    uint8_t system_valves = (sizeof(gas_valve) / sizeof(gas_valve[0]));
+    uint8_t system_valves = 3;
+    //uint8_t system_valves = (sizeof(gas_valve) / sizeof(gas_valve[0]));
     //uint8_t dhw_heat_level = 7; /* This level is determined by the CH temperature potentiometer */
     //uint8_t dhw_heat_level = GetHeatLevel(p_system->ch_setting, DHW_SETTING_STEPS);
     uint8_t current_valve = 0;
@@ -536,40 +537,48 @@ int main(void) {
 
 //gas_valve[current_valve].valve_number);
 
+                // If there are valves to process within this heat level ...
                 if (current_valve < system_valves) {
-                    //Valve-toggling cycle start
+
+                    // If the cycle_in_progress flag is inactive, raise it to active ...
                     if (cycle_in_progress == 0) {
-                        
                         cycle_in_progress = 1;
+                        SetFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN);
+                    }
 
-                        if (heat_level[p_system->dhw_heat_level].valve_open_time[current_valve] > 0) {
-
-                            if (((p_system->output_flags >> gas_valve[current_valve].valve_number) & true) == false) {
-                                valve_open_timer = (heat_level[p_system->dhw_heat_level].valve_open_time[current_valve] * cycle_time / 100);
-                                SetFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
-                                for (uint8_t valve_to_close = 0; valve_to_close < system_valves; valve_to_close++) {
-                                    if (valve_to_close != current_valve) {
-                                        ClearFlag(p_system, OUTPUT_FLAGS, gas_valve[valve_to_close].valve_number);
-                                    }
-                                }
-                            } else {
-                                if (valve_open_timer-- == 0) {
-                                    ClearFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
-                                    if (current_valve++ >= 3) {
-                                        cycle_in_progress = 0;
-
-                                    }
+                    // If the current valve's open time is bigger than 0 ...
+                    if (heat_level[p_system->dhw_heat_level].valve_open_time[current_valve] > 0) {
+                        // If the current valve is closed ...
+                        if (((p_system->output_flags >> gas_valve[current_valve].valve_number) & true) == false) {
+                            // Set the valve open timer equal to the valve's open timer ...
+                            valve_open_timer = (heat_level[p_system->dhw_heat_level].valve_open_time[current_valve] * cycle_time / 100);
+                            // Open the current valve gas ...
+                            SetFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
+                            for (uint8_t valve_to_close = 0; valve_to_close < system_valves; valve_to_close++) {
+                                if (valve_to_close != current_valve) {
+                                    ClearFlag(p_system, OUTPUT_FLAGS, gas_valve[valve_to_close].valve_number);
                                 }
                             }
+                        // If the current valve is open ...    
+                        } else {
+                            if (valve_open_timer-- <= 0) {
+                                ClearFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
+                                ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN);
+                            }
                         }
-
-                    
-                    
-                    
+                    // If the current valve's open time is 0, skip to the next valve ...
+                    } else {
+                        current_valve++;
                     }
+
+                // There are no more valves within this heat level, the cycle is over ...
+                } else {
+                    current_valve = 0;
+                    valve_open_timer = 0;
+                    cycle_in_progress = 0;
+                    ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN);
+                    _delay_ms(2000);
                 }
-                        
-                        
                         
                         
                         // // printf("\n\r============== >>> Cycle start: Heat level %d = %d Kcal/h... <<< ==============\n\r", dhw_heat_level + 1, heat_level[dhw_heat_level].kcal_h);

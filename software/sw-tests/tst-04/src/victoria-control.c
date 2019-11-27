@@ -554,6 +554,7 @@ int main(void) {
                             valve_open_timer = (heat_level[p_system->dhw_heat_level].valve_open_time[current_valve] * cycle_time / 100);
                             // Open the current valve gas ...
                             SetFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
+                            // Close all valves except the current one ...
                             for (uint8_t valve_to_close = 0; valve_to_close < system_valves; valve_to_close++) {
                                 if (valve_to_close != current_valve) {
                                     ClearFlag(p_system, OUTPUT_FLAGS, gas_valve[valve_to_close].valve_number);
@@ -561,7 +562,8 @@ int main(void) {
                             }
                         // If the current valve is open ...    
                         } else {
-                            if (valve_open_timer-- <= 0) {
+                            // Decrease the valve open timer, if is 0, close the current valve gas ...
+                            if (valve_open_timer-- == 0) {
                                 ClearFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
                                 ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN);
                             }

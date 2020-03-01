@@ -23,6 +23,11 @@
 #include "errors.h"
 #include "hw_mapping.h"
 
+// This software
+#define FW_NAME "OPEN-BOILER"
+#define FW_VERSION "v0.7b"
+#define FW_ALIAS "\"Juan, Sandra & Gustavo\"  "
+
 // Serial comm settings
 #define BAUDRATE 38400
 #define BAUD_PRESCALER (((F_CPU / (BAUDRATE * 16UL))) - 1)
@@ -301,8 +306,8 @@ const HeatLevel __flash heat_level[] = {
 };
 
 // Console UI literals
-const char __flash str_header_01[] = {" OPEN-BOILER v0.7b  "};
-const char __flash str_header_02[] = {"\"Juan, Sandra & Gustavo\" "};
+const char __flash str_header_01[] = {" " FW_NAME " " FW_VERSION " "};
+const char __flash str_header_02[] = {FW_ALIAS};
 const char __flash str_iflags[] = {"Inputs: "};
 const char __flash str_oflags[] = {"Outputs: "};
 const char __flash str_lit_00[] = {"DHW request: "};

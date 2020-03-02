@@ -1,3 +1,0 @@
-(fp_lib_table
-  (lib (name ESP32-DEVKITC-32D)(type Legacy)(uri C:/Users/gcasanova/source/repos/GitHub/open-boiler/electronics/kicad-components/esp32-devkitc-32d/ESP32-DEVKITC-32D.mod)(options "")(descr ""))
-)

@@ -128,16 +128,19 @@ int main(void) {
         //if (!(p_system->output_flags >> VALVE_1) & true) {
             //GasOff(p_system);
             SetFlag(p_system, OUTPUT_FLAGS, VALVE_1);
+            ClearFlag(p_system, OUTPUT_FLAGS, VALVE_3);
             _delay_ms(1000);
         //}
         //if (!(p_system->output_flags >> VALVE_2) & true) {
             //GasOff(p_system);
             SetFlag(p_system, OUTPUT_FLAGS, VALVE_2);
+            ClearFlag(p_system, OUTPUT_FLAGS, VALVE_1);
             _delay_ms(1000);
         //}
         //if (!(p_system->output_flags >> VALVE_3) & true) {
             //GasOff(p_system);
             SetFlag(p_system, OUTPUT_FLAGS, VALVE_3);
+            ClearFlag(p_system, OUTPUT_FLAGS, VALVE_2);
             _delay_ms(1000);
         //}
 

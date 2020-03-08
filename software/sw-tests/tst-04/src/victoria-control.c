@@ -17,6 +17,63 @@ int main(void) {
     // Disable watch dog timer
     wdt_disable();
 
+    //Timer setup
+    //asm ("sei \n");
+
+#define clockCyclesPerMicrosecond() (F_CPU / 1000000L)
+#define clockCyclesToMicroseconds (a)(((a)*1000L) / (F_CPU / 1000L))
+#define MICROSECONDS_PER_TIMER0_OVERFLOW (clockCyclesToMicroseconds(64 * 256))
+// The whole number of milliseconds per timer0 overflow
+#define MILLIS_INC (MICROSECONDS_PER_TIMER0_OVERFLOW / 1000)
+// The fractional number of milliseconds per timer0 overflow. we shift right
+// by three to fit these numbers into a byte. (for the clock speeds we care
+// about - 8 and 16 MHz - this doesn't lose precision.)
+#define FRACT_INC ((MICROSECONDS_PER_TIMER0_OVERFLOW % 1000) >> 3)
+#define FRACT_MAX (1000 >> 3)
+
+    //unsigned long millis(void);
+
+    unsigned long fofo = millis();
+
+    // Enable global interrupts
+    sei();
+    // Set prescaler factor 64
+    TCCR0B |= (1 << CS00);
+    TCCR0B |= (1 << CS01);
+    // Enable timer 0 overflow interrupt
+    TIMSK0 |= (1 << TOIE0);
+
+    // SIGNAL(TIMER0_OVF_vect) {
+    //     // copy these to local variables so they can be stored in registers
+    //     // (volatile variables must be read from memory on every access)
+    //     unsigned long m = timer0_millis;
+    //     unsigned char f = timer0_fract;
+
+    //     m += MILLIS_INC;
+    //     f += FRACT_INC;
+    //     if (f >= FRACT_MAX) {
+    //         f -= FRACT_MAX;
+    //         m += 1;
+    //     }
+
+    //     timer0_fract = f;
+    //     timer0_millis = m;
+    //     timer0_overflow_count++;
+    // }
+
+    // unsigned long millis() {
+    //     unsigned long m;
+    //     uint8_t oldSREG = SREG;
+
+    //     // disable interrupts while we read timer0_millis or we might get an
+    //     // inconsistent value (e.g. in the middle of a write to timer0_millis)
+    //     cli();
+    //     m = timer0_millis;
+    //     SREG = oldSREG;
+
+    //     return m;
+    // }
+
     //System state initialization
     SysInfo sys_info;
     SysInfo *p_system = &sys_info;
@@ -42,8 +99,7 @@ int main(void) {
     GasValve gas_valve[] = {
         {VALVE_1, 7000, 0.87, 0},
         {VALVE_2, 12000, 1.46, 0},
-        {VALVE_3, 20000, 2.39, 0}
-    };
+        {VALVE_3, 20000, 2.39, 0}};
 
     static const uint16_t cycle_time = 50000;
     //uint8_t cycle_slots = 6;
@@ -115,33 +171,32 @@ int main(void) {
         //Dashboard(p_system, false);
 
         // Test outputs
-        //if (!(p_system->output_flags >> VALVE_S) & true) {
-            //GasOff(p_system);
+        if (!(GetFlag(p_system, OUTPUT_FLAGS, VALVE_S))) {
             SetFlag(p_system, OUTPUT_FLAGS, VALVE_S);
             _delay_ms(1000);
-        //}
-        //if (!(p_system->output_flags >> SPARK_IGNITER) & true) {
-            //GasOff(p_system);
+        }
+
+        if (!(GetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER))) {
             SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER);
             _delay_ms(1000);
-        //}
+        }
         //if (!(p_system->output_flags >> VALVE_1) & true) {
-            //GasOff(p_system);
-            SetFlag(p_system, OUTPUT_FLAGS, VALVE_1);
-            ClearFlag(p_system, OUTPUT_FLAGS, VALVE_3);
-            _delay_ms(1000);
+        //GasOff(p_system);
+        SetFlag(p_system, OUTPUT_FLAGS, VALVE_1);
+        ClearFlag(p_system, OUTPUT_FLAGS, VALVE_3);
+        _delay_ms(1000);
         //}
         //if (!(p_system->output_flags >> VALVE_2) & true) {
-            //GasOff(p_system);
-            SetFlag(p_system, OUTPUT_FLAGS, VALVE_2);
-            ClearFlag(p_system, OUTPUT_FLAGS, VALVE_1);
-            _delay_ms(1000);
+        //GasOff(p_system);
+        SetFlag(p_system, OUTPUT_FLAGS, VALVE_2);
+        ClearFlag(p_system, OUTPUT_FLAGS, VALVE_1);
+        _delay_ms(1000);
         //}
         //if (!(p_system->output_flags >> VALVE_3) & true) {
-            //GasOff(p_system);
-            SetFlag(p_system, OUTPUT_FLAGS, VALVE_3);
-            ClearFlag(p_system, OUTPUT_FLAGS, VALVE_2);
-            _delay_ms(1000);
+        //GasOff(p_system);
+        SetFlag(p_system, OUTPUT_FLAGS, VALVE_3);
+        ClearFlag(p_system, OUTPUT_FLAGS, VALVE_2);
+        _delay_ms(1000);
         //}
 
     } /* Main loop end */
@@ -680,7 +735,8 @@ int GetNtcTempTenths(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
     uint16_t min, max;
     uint8_t i;
     // Search the table interval where the ADC value is located
-    for (i = 0; (i < NTC_VALUES) && (ntc_adc_value < (ntc_adc_table[i])); i++);
+    for (i = 0; (i < NTC_VALUES) && (ntc_adc_value < (ntc_adc_table[i])); i++)
+        ;
     if ((i == 0) || (i == NTC_VALUES)) {  // If there is not located, return an error
         return -32767;
     }
@@ -699,7 +755,8 @@ float GetNtcTempDegrees(uint16_t ntc_adc_value, int temp_offset, int temp_delta)
     uint16_t min, max;
     uint8_t i;
     // Search the table interval where the ADC value is located
-    for (i = 0; (i < NTC_VALUES) && (ntc_adc_value < (ntc_adc_table[i])); i++);
+    for (i = 0; (i < NTC_VALUES) && (ntc_adc_value < (ntc_adc_table[i])); i++)
+        ;
     if ((i == 0) || (i == NTC_VALUES)) {  // If there is not located, return an error
         return -32767.0;
     }
@@ -714,7 +771,8 @@ float GetNtcTempDegrees(uint16_t ntc_adc_value, int temp_offset, int temp_delta)
 // Function GetHeatLevel
 uint8_t GetHeatLevel(int16_t pot_adc_value, uint8_t knob_steps) {
     uint8_t heat_level = 0;
-    for (heat_level = 0; (pot_adc_value < (ADC_MAX - ((ADC_MAX / knob_steps) * (heat_level + 1)))); heat_level++);
+    for (heat_level = 0; (pot_adc_value < (ADC_MAX - ((ADC_MAX / knob_steps) * (heat_level + 1)))); heat_level++)
+        ;
     if (heat_level >= knob_steps) {
         heat_level = --knob_steps;
     }
@@ -972,7 +1030,7 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
 
         SerialTxStr(str_lit_18);
         SerialTxChr(32); /* Space (_) */
-        
+
         SerialTxStr(str_lit_15);
         SerialTxNum(p_sys->dhw_setting, DIGITS_4);
         SerialTxChr(32); /* Space (_) */

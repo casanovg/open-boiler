@@ -18,6 +18,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 //#include <time.h>
+#include <avr/interrupt.h>
 #include <util/delay.h>
 #include "delays.h"
 #include "errors.h"
@@ -45,11 +46,11 @@
 
 #ifndef AIRFLOW_OVERRIDE
 #define AIRFLOW_OVERRIDE true /* True: Flue airflow sensor override */
-#endif                         /* AIRFLOW_OVERRIDE */
+#endif                        /* AIRFLOW_OVERRIDE */
 
 #ifndef FAN_TEST_OVERRIDE
 #define FAN_TEST_OVERRIDE true /* True: Flue airflow sensor override */
-#endif                          /* FAN_TEST_OVERRIDE */
+#endif                         /* FAN_TEST_OVERRIDE */
 
 #ifndef FAST_FLAME_DETECTION
 #define FAST_FLAME_DETECTION false /* True: Spark igniter is turned off when the flame is detected */

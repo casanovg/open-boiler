@@ -30,7 +30,8 @@
 #define FW_ALIAS "\"eXperimental Test-04\"    "
 
 // Serial comm settings
-#define BAUDRATE 38400
+//#define BAUDRATE 38400
+#define BAUDRATE 57600
 #define BAUD_PRESCALER (((F_CPU / (BAUDRATE * 16UL))) - 1)
 
 #define CH_SETPOINT_HIGH 241 /* ADC-NTC CH temperature ~ 55°C */

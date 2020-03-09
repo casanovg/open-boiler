@@ -105,7 +105,7 @@ int main(void) {
     }
 
     // Show system operation status
-    Dashboard(p_system, false);
+    //Dashboard(p_system, false);
 
     // Add a 2 seconds delay before activating the WDT
     _delay_ms(2000);
@@ -121,8 +121,14 @@ int main(void) {
     // Force activating watch dog
     //for(;;) {};
 
-    unsigned long startTime = GetMilliseconds();
-    unsigned long interval = 500;
+    unsigned long fsm_start_time = GetMilliseconds();
+    unsigned long fsm_interval = 500;
+    unsigned long fan_start_time = GetMilliseconds();
+    unsigned long fan_interval = 50;
+    unsigned long pump_start_time = GetMilliseconds();
+    unsigned long pump_interval = 2300;    
+    bool f_fan = false;
+    bool f_pump = false;
     uint8_t m_fsm = 0;
 
     for (;;) {
@@ -131,7 +137,7 @@ int main(void) {
 
         //Dashboard(p_system, false);
 
-        if (GetMilliseconds() - startTime >= interval) {
+        if (GetMilliseconds() - fsm_start_time >= fsm_interval) {
             // do something
 
             switch (m_fsm) {
@@ -156,9 +162,6 @@ int main(void) {
                     if (!(GetFlag(p_system, OUTPUT_FLAGS, VALVE_1))) {
                         SetFlag(p_system, OUTPUT_FLAGS, VALVE_1);
                         ClearFlag(p_system, OUTPUT_FLAGS, VALVE_3);
-                        if (GetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER)) {
-                            ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER);
-                        }
                         m_fsm = 3;
                     }
                     break;
@@ -177,7 +180,11 @@ int main(void) {
                     if (!(GetFlag(p_system, OUTPUT_FLAGS, VALVE_3))) {
                         SetFlag(p_system, OUTPUT_FLAGS, VALVE_3);
                         ClearFlag(p_system, OUTPUT_FLAGS, VALVE_2);
+                        if (GetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER)) {
+                            ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER);
+                        }
                         m_fsm = 2;
+                        f_fan = true;
                     }
                     break;
                 }
@@ -185,9 +192,35 @@ int main(void) {
                     break;
             }
 
-            startTime = GetMilliseconds();            
+            fsm_start_time = GetMilliseconds();
 
         }
+
+        // Toggle fan
+        if ((GetMilliseconds() - fan_start_time >= fan_interval) && f_fan) {
+            // do something
+            if (!(GetFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN))) {
+                SetFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN);
+            }
+            else {
+                ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN);
+            }
+            fan_start_time = GetMilliseconds();
+            f_pump = true;
+        }
+
+        // Toggle pump
+        if ((GetMilliseconds() - pump_start_time >= pump_interval) && f_pump) {
+            // do something
+            if (!(GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP))) {
+                SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP);
+            }
+            else {
+                ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP);
+            }
+            pump_start_time = GetMilliseconds();
+            f_pump = true;
+        }        
 
     } /* Main loop end */
 

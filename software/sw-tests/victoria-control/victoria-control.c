@@ -4,7 +4,7 @@
 // Heat modulation algorithm - new
 // ---------------------------------------------
 
-#include "victoria-control.h"
+#include "include/victoria-control.h"
 
 // Main function
 int main(void) {
@@ -22,11 +22,12 @@ int main(void) {
 
     // Enable global interrupts
     sei();
+    // Set timer for 1 ms tick rate
     SetTickTimer();
 
     unsigned long fofo = GetMilliseconds();
     fofo++;
-
+    
     //System state initialization
     SysInfo sys_info;
     SysInfo *p_system = &sys_info;
@@ -49,24 +50,21 @@ int main(void) {
     p_debounce->ch_request_deb = DLY_DEBOUNCE_AIRFLOW;
 
     // NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW
-    GasValve gas_valve[] = {
-        {VALVE_1, 7000, 0.87, 0},
-        {VALVE_2, 12000, 1.46, 0},
-        {VALVE_3, 20000, 2.39, 0}};
+    // GasValve gas_valve[] = {
+        // {VALVE_1, 7000, 0.87, 0},
+        // {VALVE_2, 12000, 1.46, 0},
+        // {VALVE_3, 20000, 2.39, 0}};
 
-    static const uint16_t cycle_time = 50000;
-    //uint8_t cycle_slots = 6;
-    bool cycle_in_progress = 0;
-    uint8_t system_valves = 3;
-    //uint8_t system_valves = (sizeof(gas_valve) / sizeof(gas_valve[0]));
-    //uint8_t dhw_heat_level = 7; /* This level is determined by the CH temperature potentiometer */
-    //uint8_t dhw_heat_level = GetHeatLevel(p_system->ch_setting, DHW_SETTING_STEPS);
-    uint8_t current_valve = 0;
-    uint32_t valve_open_timer = 0;
+    // static const uint16_t cycle_time = 50000;
+    // //uint8_t cycle_slots = 6;
+    // bool cycle_in_progress = 0;
+    // uint8_t system_valves = 3;
+    // //uint8_t system_valves = (sizeof(gas_valve) / sizeof(gas_valve[0]));
+    // //uint8_t dhw_heat_level = 7; /* This level is determined by the CH temperature potentiometer */
+    // //uint8_t dhw_heat_level = GetHeatLevel(p_system->ch_setting, DHW_SETTING_STEPS);
+    // uint8_t current_valve = 0;
+    // uint32_t valve_open_timer = 0;
     // NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW
-
-    // Delay
-    uint16_t delay = 0;
 
     // ADC buffers initialization
     AdcBuffers buffer_pack;
@@ -183,7 +181,7 @@ ISR(TIMER0_OVF_vect) {
 
 	timer0_fractions = f;
 	timer0_milliseconds = m;
-	timer0_overflow_cnt++;
+	timer0_overflow_count++;
 }
 
 // Function GetMilliseconds
@@ -377,7 +375,7 @@ void ClearFlag(SysInfo *p_sys, FlagsType flags_type, uint8_t flag_position) {
 
 // Function GetFlag
 bool GetFlag(SysInfo *p_sys, FlagsType flags_type, uint8_t flag_position) {
-    bool flag;
+    bool flag = 0;
     switch (flags_type) {
         case INPUT_FLAGS: {
             flag = ((p_sys->input_flags >> flag_position) & true);
@@ -828,7 +826,7 @@ void SerialTxNum(uint32_t data, DigitLength digits) {
         }
         case DIGITS_7: {
             //sprintf(str, "%07lu", data);
-            sprintf(str, "%0lu", (unsigned long int)data);            
+            sprintf(str, "%0lu", (unsigned long int)data);
             break;
         }
         case DIGITS_FREE:

@@ -24,6 +24,10 @@
 #include "errors.h"
 #include "hw_mapping.h"
 
+#include "delays.h"
+#include "errors.h"
+#include "hw_mapping.h"
+
 // This software
 #define FW_NAME "OPEN-BOILER"
 #define FW_VERSION "v0.7x"
@@ -280,7 +284,7 @@ unsigned long GetMilliseconds(void);
 // Globals
 
 // Timer function variables
-volatile unsigned long timer0_overflow_cnt = 0;
+volatile unsigned long timer0_overflow_count = 0;
 volatile unsigned long timer0_milliseconds = 0;
 static unsigned char timer0_fractions = 0;
 

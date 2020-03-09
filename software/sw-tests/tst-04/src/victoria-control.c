@@ -122,7 +122,7 @@ int main(void) {
     //for(;;) {};
 
     unsigned long startTime = GetMilliseconds();
-    unsigned long interval = 250;
+    unsigned long interval = 500;
     uint8_t m_fsm = 0;
 
     for (;;) {

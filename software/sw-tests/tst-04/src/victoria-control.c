@@ -117,40 +117,77 @@ int main(void) {
        |     Main Loop     |
        |___________________|
     */
+
+    // Force activating watch dog
+    //for(;;) {};
+
+    unsigned long startTime = GetMilliseconds();
+    unsigned long interval = 250;
+    uint8_t m_fsm = 0;
+
     for (;;) {
         // Reset the WDT
         wdt_reset();
 
         //Dashboard(p_system, false);
 
-        // Test outputs
-        if (!(GetFlag(p_system, OUTPUT_FLAGS, VALVE_S))) {
-            SetFlag(p_system, OUTPUT_FLAGS, VALVE_S);
-            _delay_ms(1000);
-        }
+        if (GetMilliseconds() - startTime >= interval) {
+            // do something
 
-        if (!(GetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER))) {
-            SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER);
-            _delay_ms(1000);
+            switch (m_fsm) {
+                case 0 : {
+                    // Open security valve
+                    if (!(GetFlag(p_system, OUTPUT_FLAGS, VALVE_S))) {
+                        SetFlag(p_system, OUTPUT_FLAGS, VALVE_S);
+                        m_fsm = 1;
+                    }
+                    break;
+                }
+                case 1 : {
+                    // Activate spark igniter
+                    if (!(GetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER))) {
+                        SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER);
+                        m_fsm = 2;
+                    }
+                    break;
+                }
+                case 2 : {
+                    // Open valve 1 - close valve 3
+                    if (!(GetFlag(p_system, OUTPUT_FLAGS, VALVE_1))) {
+                        SetFlag(p_system, OUTPUT_FLAGS, VALVE_1);
+                        ClearFlag(p_system, OUTPUT_FLAGS, VALVE_3);
+                        if (GetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER)) {
+                            ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER);
+                        }
+                        m_fsm = 3;
+                    }
+                    break;
+                }
+                case 3 : {
+                    // Open valve 2 - close valve 1
+                    if (!(GetFlag(p_system, OUTPUT_FLAGS, VALVE_2))) {
+                        SetFlag(p_system, OUTPUT_FLAGS, VALVE_2);
+                        ClearFlag(p_system, OUTPUT_FLAGS, VALVE_1);
+                        m_fsm = 4;
+                    }
+                    break;
+                }
+                case 4 : {
+                    // Open valve 3 - close valve 2
+                    if (!(GetFlag(p_system, OUTPUT_FLAGS, VALVE_3))) {
+                        SetFlag(p_system, OUTPUT_FLAGS, VALVE_3);
+                        ClearFlag(p_system, OUTPUT_FLAGS, VALVE_2);
+                        m_fsm = 2;
+                    }
+                    break;
+                }
+                default:
+                    break;
+            }
+
+            startTime = GetMilliseconds();            
+
         }
-        //if (!(p_system->output_flags >> VALVE_1) & true) {
-        //GasOff(p_system);
-        SetFlag(p_system, OUTPUT_FLAGS, VALVE_1);
-        ClearFlag(p_system, OUTPUT_FLAGS, VALVE_3);
-        _delay_ms(1000);
-        //}
-        //if (!(p_system->output_flags >> VALVE_2) & true) {
-        //GasOff(p_system);
-        SetFlag(p_system, OUTPUT_FLAGS, VALVE_2);
-        ClearFlag(p_system, OUTPUT_FLAGS, VALVE_1);
-        _delay_ms(1000);
-        //}
-        //if (!(p_system->output_flags >> VALVE_3) & true) {
-        //GasOff(p_system);
-        SetFlag(p_system, OUTPUT_FLAGS, VALVE_3);
-        ClearFlag(p_system, OUTPUT_FLAGS, VALVE_2);
-        _delay_ms(1000);
-        //}
 
     } /* Main loop end */
 

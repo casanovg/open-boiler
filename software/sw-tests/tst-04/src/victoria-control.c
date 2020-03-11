@@ -118,7 +118,12 @@ int main(void) {
        |___________________|
     */
 
-    // Force activating watch dog
+    // #############################
+    // #
+    // # Force activating watch dog 
+    // #............................
+    // # ONLY FOR BOOTLOADER TESTS!
+    // #############################
     //for(;;) {};
 
     unsigned long fsm_start_time = GetMilliseconds();

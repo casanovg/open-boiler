@@ -306,6 +306,13 @@ const HeatLevel __flash heat_level[] = {
 };
 
 // Console UI literals
+const char __flash str_preboot_01[] = {" > Initializing ADC buffers ..."};
+const char __flash str_preboot_02[] = {" > Initializing actuator controls ..."};
+const char __flash str_preboot_03[] = {" > Turning all actuators off ..."};
+const char __flash str_preboot_04[] = {" > Initializing digital sensor flags ..."};
+const char __flash str_preboot_05[] = {" > Initializing analog sensor inputs ..."};
+const char __flash str_preboot_06[] = {" > Pre-loading analog sensor values ..."};
+const char __flash str_preboot_07[] = {"Starting normal FSM cycle ..."};
 const char __flash str_header_01[] = {" " FW_NAME " " FW_VERSION " "};
 const char __flash str_header_02[] = {FW_ALIAS};
 const char __flash str_iflags[] = {"Inputs: "};

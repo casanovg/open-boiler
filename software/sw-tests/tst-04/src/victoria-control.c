@@ -23,6 +23,17 @@ int main(void) {
     // Enable global interrupts
     sei();
     SetTickTimer();
+    
+    // Initialize USART for serial communications (38400, N, 8, 1)
+    SerialInit();    
+
+    ClrScr();
+    SerialTxStr(str_crlf);    
+    SerialTxStr(str_header_01);
+    SerialTxStr(str_crlf);
+    DrawLine(19, 46);
+    SerialTxStr(str_crlf);     
+    SerialTxStr(str_crlf);    
 
     unsigned long fofo = GetMilliseconds();
     fofo++;
@@ -69,35 +80,50 @@ int main(void) {
     uint16_t delay = 0;
 
     // ADC buffers initialization
+    SerialTxStr(str_preboot_01);     
+    SerialTxStr(str_crlf);
+    SerialTxStr(str_crlf);
     AdcBuffers buffer_pack;
     AdcBuffers *p_buffer_pack = &buffer_pack;
     InitAdcBuffers(p_buffer_pack, BUFFER_LENGTH);
 
-    // Initialize USART for serial communications (38400, N, 8, 1)
-    SerialInit();
-
     // Initialize actuator controls
+    SerialTxStr(str_preboot_02);     
+    SerialTxStr(str_crlf);
+    SerialTxStr(str_crlf);
     for (OutputFlag device = EXHAUST_FAN; device <= LED_UI; device++) {
         InitActuator(p_system, device);
     }
 
     // Turn all actuators off
+    SerialTxStr(str_preboot_03);     
+    SerialTxStr(str_crlf);
+    SerialTxStr(str_crlf);
     for (OutputFlag device = EXHAUST_FAN; device <= LED_UI; device++) {
         ClearFlag(p_system, OUTPUT_FLAGS, device);
         _delay_ms(5);
     }
 
     // Initialize digital sensor flags
+    SerialTxStr(str_preboot_04);     
+    SerialTxStr(str_crlf);
+    SerialTxStr(str_crlf);     
     for (InputFlag digital_sensor = DHW_REQUEST; digital_sensor <= OVERHEAT; digital_sensor++) {
         InitDigitalSensor(p_system, digital_sensor);
     }
 
     // Initialize analog sensor inputs
+    SerialTxStr(str_preboot_05);     
+    SerialTxStr(str_crlf);
+    SerialTxStr(str_crlf);
     for (AnalogInput analog_sensor = DHW_SETTING; analog_sensor <= CH_TEMPERATURE; analog_sensor++) {
         InitAnalogSensor(p_system, analog_sensor);
     }
 
     // Pre-load analog sensor values
+    SerialTxStr(str_preboot_06);     
+    SerialTxStr(str_crlf);
+    SerialTxStr(str_crlf);     
     for (uint8_t i = 0; i < BUFFER_LENGTH; i++) {
         for (AnalogInput analog_sensor = DHW_SETTING; analog_sensor <= CH_TEMPERATURE; analog_sensor++) {
             CheckAnalogSensor(p_system, p_buffer_pack, analog_sensor, false);
@@ -111,6 +137,10 @@ int main(void) {
     _delay_ms(2000);
     // If the system freezes, reset the microcontroller after 8 seconds
     wdt_enable(WDTO_8S);
+
+    SerialTxStr(str_preboot_07);     
+    SerialTxStr(str_crlf);
+    SerialTxStr(str_crlf);      
 
     /*  ___________________
        |                   | 

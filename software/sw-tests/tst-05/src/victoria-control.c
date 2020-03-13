@@ -950,9 +950,11 @@ void SerialTxNum(uint32_t data, DigitLength digits) {
 // Function SerialTxStr
 //void SerialTxStr(const __flash char *ptr_string) 
 void SerialTxStr(const char *ptr_string) {
-    for (uint8_t k = 0; k < strlen_P(ptr_string); k++) {
-        char my_char = pgm_read_byte_near(ptr_string + k);
-        SerialTxChr(my_char);
+    //for (uint8_t k = 0; k < strlen_P(ptr_string); k++) {
+    for (uint8_t k = 0; k < strlen(ptr_string); k++) {
+        //char my_char = pgm_read_byte_near(ptr_string + k);
+        //SerialTxChr(my_char);
+        SerialTxChr(ptr_string + k);
     }
 }
 

@@ -23,17 +23,17 @@ int main(void) {
     // Enable global interrupts
     sei();
     SetTickTimer();
-    
+
     // Initialize USART for serial communications (38400, N, 8, 1)
-    SerialInit();    
+    SerialInit();
 
     ClrScr();
-    SerialTxStr(str_crlf);    
+    SerialTxStr(str_crlf);
     SerialTxStr("Open-Boiler Tst-05");
     SerialTxStr(str_crlf);
     DrawLine(19, 46);
-    SerialTxStr(str_crlf);     
-    SerialTxStr(str_crlf);    
+    SerialTxStr(str_crlf);
+    SerialTxStr(str_crlf);
 
     //System state initialization
     SysInfo sys_info;
@@ -73,11 +73,18 @@ int main(void) {
     uint32_t valve_open_timer = 0;
     // NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW
 
+    // Clear all available system timers
+    for (int i = 0; i < TIMER_BUFFER_SIZE; i++) {
+        timer_buffer[i].timer_id = TIMER_EMPTY;
+        timer_buffer[i].timer_start_time = 0;
+        timer_buffer[i].timer_time_lapse = 0;
+    }
+
     // Delay
     uint16_t delay = 0;
 
     // ADC buffers initialization
-    SerialTxStr(" > Initializing ADC buffers ...");     
+    SerialTxStr(" > Initializing ADC buffers ...");
     SerialTxStr(str_crlf);
     SerialTxStr(str_crlf);
     AdcBuffers buffer_pack;
@@ -85,7 +92,7 @@ int main(void) {
     InitAdcBuffers(p_buffer_pack, BUFFER_LENGTH);
 
     // Initialize actuator controls
-    SerialTxStr(" > Initializing actuator controls ...");     
+    SerialTxStr(" > Initializing actuator controls ...");
     SerialTxStr(str_crlf);
     SerialTxStr(str_crlf);
     for (OutputFlag device = EXHAUST_FAN; device <= LED_UI; device++) {
@@ -93,7 +100,7 @@ int main(void) {
     }
 
     // Turn all actuators off
-    SerialTxStr(" > Turning all actuators off ...");     
+    SerialTxStr(" > Turning all actuators off ...");
     SerialTxStr(str_crlf);
     SerialTxStr(str_crlf);
     for (OutputFlag device = EXHAUST_FAN; device <= LED_UI; device++) {
@@ -102,15 +109,15 @@ int main(void) {
     }
 
     // Initialize digital sensor flags
-    SerialTxStr(" > Initializing digital sensor flags ...");     
+    SerialTxStr(" > Initializing digital sensor flags ...");
     SerialTxStr(str_crlf);
-    SerialTxStr(str_crlf);     
+    SerialTxStr(str_crlf);
     for (InputFlag digital_sensor = DHW_REQUEST; digital_sensor <= OVERHEAT; digital_sensor++) {
         InitDigitalSensor(p_system, digital_sensor);
     }
 
     // Initialize analog sensor inputs
-    SerialTxStr(" > Initializing analog sensor inputs ...");     
+    SerialTxStr(" > Initializing analog sensor inputs ...");
     SerialTxStr(str_crlf);
     SerialTxStr(str_crlf);
     for (AnalogInput analog_sensor = DHW_SETTING; analog_sensor <= CH_TEMPERATURE; analog_sensor++) {
@@ -118,9 +125,9 @@ int main(void) {
     }
 
     // Pre-load analog sensor values
-    SerialTxStr(" > Pre-loading analog sensor values ...");     
+    SerialTxStr(" > Pre-loading analog sensor values ...");
     SerialTxStr(str_crlf);
-    SerialTxStr(str_crlf);     
+    SerialTxStr(str_crlf);
     for (uint8_t i = 0; i < BUFFER_LENGTH; i++) {
         for (AnalogInput analog_sensor = DHW_SETTING; analog_sensor <= CH_TEMPERATURE; analog_sensor++) {
             CheckAnalogSensor(p_system, p_buffer_pack, analog_sensor, false);
@@ -135,9 +142,9 @@ int main(void) {
     // If the system freezes, reset the microcontroller after 8 seconds
     wdt_enable(WDTO_8S);
 
-    SerialTxStr(" Starting normal FSM cycle ...");     
+    SerialTxStr(" Starting normal FSM cycle ...");
     SerialTxStr(str_crlf);
-    SerialTxStr(str_crlf);      
+    SerialTxStr(str_crlf);
 
     /*  ___________________
        |                   | 
@@ -147,21 +154,41 @@ int main(void) {
 
     // #############################
     // #
-    // # Force activating watch dog 
+    // # Force activating watch dog
     // #............................
     // # ONLY FOR BOOTLOADER TESTS!
     // #############################
     //for(;;) {};
+
+#define LOOP_TIMER_ID 1
+#define LOOP_TIMER_DURATION 250
+#define LOOP_TIMER_MODE RUN_ONCE_AND_HOLD
+// .............................................
+#define FAN_TIMER_ID 2
+#define FAN_TIMER_DURATION 500
+#define FAN_TIMER_MODE RUN_CONTINUOUSLY
+// .............................................
+#define PUMP_TIMER_ID 3
+#define PUMP_TIMER_DURATION 500
+#define PUMP_TIMER_MODE RUN_CONTINUOUSLY
+// .............................................
+#define SPARK_TIMER_ID 4
+#define SPARK_TIMER_ON_DURATION 2000
+#define SPARK_TIMER_OFF_DURATION 2000
+#define SPARK_TIMER_MODE RUN_ONCE_AND_HOLD
+
+    SetTimer(LOOP_TIMER_ID, LOOP_TIMER_DURATION, LOOP_TIMER_MODE);
 
     unsigned long fsm_start_time = GetMilliseconds();
     unsigned long fsm_interval = 500;
     unsigned long fan_start_time = GetMilliseconds();
     unsigned long fan_interval = 50;
     unsigned long pump_start_time = GetMilliseconds();
-    unsigned long pump_interval = 2300;    
+    unsigned long pump_interval = 2300;
     bool f_fan = false;
     bool f_pump = false;
     uint8_t m_fsm = 0;
+    uint8_t ix = 255;
 
     for (;;) {
         // Reset the WDT
@@ -169,11 +196,12 @@ int main(void) {
 
         //Dashboard(p_system, false);
 
-        if (GetMilliseconds() - fsm_start_time >= fsm_interval) {
+        //if (GetMilliseconds() - fsm_start_time >= fsm_interval) {
+        if (TimerRunning(LOOP_TIMER_ID) == false) {
             // do something
 
             switch (m_fsm) {
-                case 0 : {
+                case 0: {
                     // Open security valve
                     if (!(GetFlag(p_system, OUTPUT_FLAGS, VALVE_S))) {
                         SetFlag(p_system, OUTPUT_FLAGS, VALVE_S);
@@ -181,7 +209,7 @@ int main(void) {
                     }
                     break;
                 }
-                case 1 : {
+                case 1: {
                     // Activate spark igniter
                     if (!(GetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER))) {
                         SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER);
@@ -189,7 +217,7 @@ int main(void) {
                     }
                     break;
                 }
-                case 2 : {
+                case 2: {
                     // Open valve 1 - close valve 3
                     if (!(GetFlag(p_system, OUTPUT_FLAGS, VALVE_1))) {
                         SetFlag(p_system, OUTPUT_FLAGS, VALVE_1);
@@ -198,7 +226,7 @@ int main(void) {
                     }
                     break;
                 }
-                case 3 : {
+                case 3: {
                     // Open valve 2 - close valve 1
                     if (!(GetFlag(p_system, OUTPUT_FLAGS, VALVE_2))) {
                         SetFlag(p_system, OUTPUT_FLAGS, VALVE_2);
@@ -207,7 +235,7 @@ int main(void) {
                     }
                     break;
                 }
-                case 4 : {
+                case 4: {
                     // Open valve 3 - close valve 2
                     if (!(GetFlag(p_system, OUTPUT_FLAGS, VALVE_3))) {
                         SetFlag(p_system, OUTPUT_FLAGS, VALVE_3);
@@ -225,7 +253,12 @@ int main(void) {
                     break;
             }
 
-            fsm_start_time = GetMilliseconds();
+            //RestartTimer(LOOP_TIMER_ID);
+            ResetTimerLapse(LOOP_TIMER_ID, LOOP_TIMER_DURATION + ix);
+
+            if (ix-- <= 1) {
+                ix = 255;
+            }
 
         }
 
@@ -234,8 +267,7 @@ int main(void) {
             // do something
             if (!(GetFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN))) {
                 SetFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN);
-            }
-            else {
+            } else {
                 ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN);
             }
             fan_start_time = GetMilliseconds();
@@ -247,17 +279,122 @@ int main(void) {
             // do something
             if (!(GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP))) {
                 SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP);
-            }
-            else {
+            } else {
                 ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP);
             }
             pump_start_time = GetMilliseconds();
             f_pump = true;
-        }        
+        }
 
     } /* Main loop end */
 
     return 0;
+}
+
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////       MAIN FUNCTION END       ////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////////////
+
+// Function SetTimer
+void SetTimer(uint8_t timer_id, unsigned long time_lapse, TimerMode timer_mode) {
+    // Disable timers..
+    //#asm(“cli”);
+    for (uint8_t i = 0; i < TIMER_BUFFER_SIZE; i++) {   // loop through and check for free spot, then place timer in there...
+        if (timer_buffer[i].timer_id == TIMER_EMPTY) {  // place new timer here...
+            timer_buffer[i].timer_id = timer_id;
+            timer_buffer[i].timer_start_time = GetMilliseconds();
+            timer_buffer[i].timer_time_lapse = time_lapse;
+            timer_buffer[i].timer_mode = timer_mode;
+            return;
+        }
+    }
+    // Re-enable timers..
+    //#asm("sei");
+}
+
+// Function TimerRunning
+bool TimerRunning(uint8_t timer_id) {
+    //bool is_running = true;
+    for (uint8_t i = 0; i < TIMER_BUFFER_SIZE; i++) {
+        if (timer_buffer[i].timer_id == timer_id) {
+            if ((GetMilliseconds() - timer_buffer[i].timer_start_time) >= timer_buffer[i].timer_time_lapse) {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+// Function RestartTimer
+uint8_t RestartTimer(uint8_t timer_id) {
+    for (uint8_t i = 0; i < TIMER_BUFFER_SIZE; i++) {
+        if ((timer_buffer[i].timer_id == timer_id) &&
+            (timer_buffer[i].timer_mode == RUN_ONCE_AND_HOLD) &&
+            (TimerRunning(i) == false)) {
+            timer_buffer[i].timer_start_time = GetMilliseconds();
+            return 0;
+        } else {
+            return 255; /* Error: The timer is empty or its type doesn't allow restarts or is running */
+        }
+    }
+}
+
+// Function ResetTimerLapse
+uint8_t ResetTimerLapse(uint8_t timer_id, unsigned long time_lapse) {
+    for (uint8_t i = 0; i < TIMER_BUFFER_SIZE; i++) {    
+        if ((timer_buffer[i].timer_id == timer_id) &&
+            (timer_buffer[i].timer_mode == RUN_ONCE_AND_HOLD) &&
+            (TimerRunning(i) == false)) {
+            timer_buffer[i].timer_start_time = GetMilliseconds();
+            timer_buffer[i].timer_time_lapse = time_lapse;
+            return 0;
+        } else {
+            return 255; /* Error: The timer is empty or its type doesn't allow restarts or is running */
+        }
+    }
+}
+
+// Function ProcessTimers
+void ProcessTimers() {
+    for (uint8_t i = 0; i < TIMER_BUFFER_SIZE; i++) {
+        if ((GetMilliseconds() - timer_buffer[i].timer_start_time >= timer_buffer[i].timer_time_lapse) &&
+            (timer_buffer[i].timer_id != TIMER_EMPTY)) {
+            switch (timer_buffer[i].timer_mode) {
+                case RUN_ONCE_AND_HOLD: {
+                    break;
+                }
+                case RUN_CONTINUOUSLY: {
+                    timer_buffer[i].timer_start_time = GetMilliseconds();
+                    break;
+                }
+                default: { /* RUN_ONCE_AND_DELETE */
+                    timer_buffer[i].timer_id = TIMER_EMPTY;
+                    timer_buffer[i].timer_start_time = 0;
+                    timer_buffer[i].timer_time_lapse = 0;
+                    break;
+                }
+            }
+            //OnTimer(timer_buffer[i].timer_id);
+        }
+    }
+}
+
+// Function DeleteTimers (Deletes all timers of the same type)
+void DeleteTimer(uint8_t timer_id) {
+    // Disable timer interrupt
+    //#asm("cli");
+    for (uint8_t i = 0; i < TIMER_BUFFER_SIZE; i++) {  // loop through and check for timers of this type, then kill them...
+        if (timer_buffer[i].timer_id == timer_id) {    // kill timers...
+            timer_buffer[i].timer_id = TIMER_EMPTY;
+            timer_buffer[i].timer_start_time = 0;
+            timer_buffer[i].timer_time_lapse = 0;
+            return;
+        }
+    }
+    // Enable Timer Interrupts
+    //#asm("sei");
 }
 
 // Function SetTickTimer
@@ -271,36 +408,37 @@ void SetTickTimer(void) {
 
 // Timer 0 overflow interrupt service routine
 ISR(TIMER0_OVF_vect) {
+    // copy these to local variables so they can be stored in registers
+    // (volatile variables must be read from memory on every access)
+    unsigned long m = timer0_milliseconds;
+    unsigned char f = timer0_fractions;
 
-	// copy these to local variables so they can be stored in registers
-	// (volatile variables must be read from memory on every access)
-	unsigned long m = timer0_milliseconds;
-	unsigned char f = timer0_fractions;
+    m += MILLIS_INC;
+    f += FRACT_INC;
+    if (f >= FRACT_MAX) {
+        f -= FRACT_MAX;
+        m += 1;
+    }
 
-	m += MILLIS_INC;
-	f += FRACT_INC;
-	if (f >= FRACT_MAX) {
-		f -= FRACT_MAX;
-		m += 1;
-	}
+    timer0_fractions = f;
+    timer0_milliseconds = m;
+    timer0_overflow_cnt++;
 
-	timer0_fractions = f;
-	timer0_milliseconds = m;
-	timer0_overflow_cnt++;
+    ProcessTimers();
 }
 
 // Function GetMilliseconds
 unsigned long GetMilliseconds(void) {
-	unsigned long m;
-	uint8_t oldSREG = SREG;
+    unsigned long m;
+    uint8_t oldSREG = SREG;
 
-	// disable interrupts while we read timer0_milliseconds or we might get an
-	// inconsistent value (e.g. in the middle of a write to timer0_millis)
-	cli();
-	m = timer0_milliseconds;
-	SREG = oldSREG;
+    // disable interrupts while we read timer0_milliseconds or we might get an
+    // inconsistent value (e.g. in the middle of a write to timer0_millis)
+    cli();
+    m = timer0_milliseconds;
+    SREG = oldSREG;
 
-	return m;
+    return m;
 }
 
 // Function GasOff
@@ -931,7 +1069,7 @@ void SerialTxNum(uint32_t data, DigitLength digits) {
         }
         case DIGITS_7: {
             //sprintf(str, "%07lu", data);
-            sprintf(str, "%0lu", (unsigned long int)data);            
+            sprintf(str, "%0lu", (unsigned long int)data);
             break;
         }
         case DIGITS_FREE:
@@ -948,7 +1086,7 @@ void SerialTxNum(uint32_t data, DigitLength digits) {
 }
 
 // Function SerialTxStr
-//void SerialTxStr(const __flash char *ptr_string) 
+//void SerialTxStr(const __flash char *ptr_string)
 void SerialTxStr(const char *ptr_string) {
     //for (uint8_t k = 0; k < strlen_P(ptr_string); k++) {
     for (uint8_t k = 0; k < strlen(ptr_string); k++) {
@@ -960,334 +1098,334 @@ void SerialTxStr(const char *ptr_string) {
 
 // Function Dashboard
 void Dashboard(SysInfo *p_sys, bool force_display) {
-// #define DASH_WIDTH 65
-// #define H_ELINE 46
-// #define H_ILINE 46
-// #define V_LINE 46
-
-//     if (force_display |
-//         (p_sys->input_flags != p_sys->last_displayed_iflags) |
-//         (p_sys->output_flags != p_sys->last_displayed_oflags)) {
-//         p_sys->last_displayed_iflags = p_sys->input_flags;
-//         p_sys->last_displayed_oflags = p_sys->output_flags;
-
-//         ClrScr();
-
-//         DrawLine(DASH_WIDTH, H_ELINE); /* Dashed line (= 61) */
-//         SerialTxStr(str_crlf);         /* CR + new line */
-
-//         SerialTxChr(V_LINE); /* Horizontal separator (|) */
-//         SerialTxStr(str_header_01);
-//         SerialTxStr(str_header_02);
-
-//         // Mode display
-//         switch (p_sys->system_state) {
-//             case OFF: {
-//                 SerialTxStr(str_mode_00);
-//                 break;
-//             }
-//             case READY: {
-//                 SerialTxStr(str_mode_10);
-//                 break;
-//             }
-//             case IGNITING: {
-//                 SerialTxStr(str_mode_20);
-//                 break;
-//             }
-//             case DHW_ON_DUTY: {
-//                 SerialTxStr(str_mode_30);
-//                 break;
-//             }
-//             case CH_ON_DUTY: {
-//                 SerialTxStr(str_mode_40);
-//                 break;
-//             }
-//             case ERROR: {
-//                 SerialTxStr(str_mode_100);
-//                 break;
-//             }
-//         }
-
-//         SerialTxChr(V_LINE); /* Horizontal separator (|) */
-//         SerialTxChr(32);     /* Space (_) */
-
-//         DrawLine(DASH_WIDTH - 4, H_ILINE); /* Dotted line */
-//         SerialTxChr(32);
-//         SerialTxChr(V_LINE); /* Horizontal separator (|) */
-
-//         SerialTxStr(str_crlf); /* CR + new line */
-
-//         SerialTxChr(V_LINE); /* Horizontal separator (|) */
-//         SerialTxChr(32);     /* Space (_) */
-
-//         // Input flags
-//         SerialTxStr(str_iflags);
-//         SerialTxNum(p_sys->input_flags, DIGITS_3);
-
-//         SerialTxChr(32); /* Space (_) */
-//         SerialTxChr(32); /* Space (_) */
-
-//         // DHW temperature
-//         SerialTxStr(str_lit_13);
-//         SerialTxNum(p_sys->dhw_temperature, DIGITS_4);
-//         SerialTxChr(32); /* Space (_) */
-//         SerialTxNum(GetNtcTemperature(p_sys->dhw_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_3);
-
-//         SerialTxChr(32); /* Space (_) */
-//         SerialTxChr(32); /* Space (_) */
-
-//         // CH temperature
-//         SerialTxStr(str_lit_14);
-//         SerialTxNum(p_sys->ch_temperature, DIGITS_4);
-//         SerialTxChr(32); /* Space (_) */
-//         SerialTxNum(GetNtcTemperature(p_sys->ch_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_3);
-
-//         SerialTxChr(32); /* Space (_) */
-//         SerialTxChr(32); /* Space (_) */
-
-//         // Overheat
-// #if !(OVERHEAT_OVERRIDE)
-//         SerialTxStr(str_lit_04);
-// #else
-//         SerialTxStr(str_lit_04_override);
-// #endif /* OVERHEAT_OVERRIDE */
-//         if (GetFlag(p_sys, INPUT_FLAGS, OVERHEAT)) {
-//             SerialTxStr(str_true);
-//         } else {
-//             SerialTxStr(str_false);
-//         }
-
-//         SerialTxChr(32);     /* Space (_) */
-//         SerialTxChr(32);     /* Space (_) */
-//         SerialTxChr(32);     /* Space (_) */
-//         SerialTxChr(32);     /* Space (_) */
-//         SerialTxChr(V_LINE); /* Horizontal separator (|) */
-
-//         SerialTxStr(str_crlf); /* CR + new line */
-
-//         SerialTxChr(V_LINE); /* Horizontal separator (|) */
-//         SerialTxChr(32);     /* Space (_) */
-
-//         // DHW Request
-//         SerialTxStr(str_lit_00);
-//         if (GetFlag(p_sys, INPUT_FLAGS, DHW_REQUEST)) {
-//             SerialTxStr(str_true);
-//         } else {
-//             SerialTxStr(str_false);
-//         }
-
-//         SerialTxChr(32); /* Space (_) */
-//         SerialTxChr(32); /* Space (_) */
-
-//         //CH Request
-//         SerialTxStr(str_lit_01);
-//         if (GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST)) {
-//             SerialTxStr(str_true);
-//         } else {
-//             SerialTxStr(str_false);
-//         }
-
-//         SerialTxChr(32); /* Space (_) */
-//         SerialTxChr(32); /* Space (_) */
-
-//         // Airflow
-// #if !(AIRFLOW_OVERRIDE)
-//         SerialTxStr(str_lit_02);
-// #else
-//         SerialTxStr(str_lit_02_override);
-// #endif /* AIRFLOW_OVERRIDE */
-//         if (GetFlag(p_sys, INPUT_FLAGS, AIRFLOW)) {
-//             SerialTxStr(str_true);
-//         } else {
-//             SerialTxStr(str_false);
-//         }
-
-//         SerialTxChr(32); /* Space (_) */
-//         SerialTxChr(32); /* Space (_) */
-
-//         // Flame
-//         SerialTxStr(str_lit_03);
-//         if (GetFlag(p_sys, INPUT_FLAGS, FLAME)) {
-//             SerialTxStr(str_true);
-//         } else {
-//             SerialTxStr(str_false);
-//         }
-
-//         SerialTxChr(32);     /* Space (_) */
-//         SerialTxChr(32);     /* Space (_) */
-//         SerialTxChr(V_LINE); /* Horizontal separator (|) */
-
-//         SerialTxStr(str_crlf); /* CR + new line */
-
-//         SerialTxChr(V_LINE); /* Horizontal separator (|) */
-//         SerialTxChr(32);     /* Space (_) */
-
-//         DrawLine(DASH_WIDTH - 4, H_ILINE); /* Dotted line */
-//         SerialTxChr(32);                   /* Space (_) */
-//         SerialTxChr(V_LINE);               /* Horizontal separator (|) */
-
-//         SerialTxStr(str_crlf); /* CR + new line */
-
-//         SerialTxChr(V_LINE); /* Horizontal separator (|) */
-//         SerialTxChr(32);     /* Space (_) */
-
-//         SerialTxStr(str_lit_18);
-//         SerialTxChr(32); /* Space (_) */
-
-//         SerialTxStr(str_lit_15);
-//         SerialTxNum(p_sys->dhw_setting, DIGITS_4);
-//         SerialTxChr(32); /* Space (_) */
-//         //===SerialTxNum(GetHeatLevel(p_sys->dhw_setting, DHW_SETTING_STEPS), DIGITS_2);
-//         SerialTxNum(p_sys->dhw_heat_level, DIGITS_2);
-
-//         SerialTxChr(32); /* Space (_) */
-//         SerialTxChr(32); /* Space (_) */
-
-//         SerialTxStr(str_lit_16);
-//         SerialTxNum(p_sys->ch_setting, DIGITS_4);
-//         SerialTxChr(32); /* Space (_) */
-//         SerialTxNum(GetHeatLevel(p_sys->ch_setting, DHW_SETTING_STEPS), DIGITS_2);
-
-//         SerialTxChr(32); /* Space (_) */
-//         SerialTxChr(32); /* Space (_) */
-
-//         SerialTxStr(str_lit_17);
-//         SerialTxNum(p_sys->system_setting, DIGITS_4);
-
-//         SerialTxChr(32);     /* Space (_) */
-//         SerialTxChr(32);     /* Space (_) */
-//         SerialTxChr(32);     /* Space (_) */
-//         SerialTxChr(32);     /* Space (_) */
-//         SerialTxChr(32);     /* Space (_) */
-//         SerialTxChr(32);     /* Space (_) */
-//         SerialTxChr(32);     /* Space (_) */
-//         SerialTxChr(V_LINE); /* Horizontal separator (|) */
-
-//         SerialTxStr(str_crlf); /* CR + new line */
-
-//         SerialTxChr(V_LINE); /* Horizontal separator (|) */
-//         SerialTxChr(32);     /* Space (_) */
-
-//         DrawLine(DASH_WIDTH - 4, H_ILINE); /* Dotted line */
-//         SerialTxChr(32);
-//         SerialTxChr(V_LINE); /* Horizontal separator (|) */
-
-//         SerialTxStr(str_crlf);
-
-//         SerialTxChr(V_LINE); /* Horizontal separator (|) */
-//         SerialTxChr(32);     /* Space (_) */
-
-//         SerialTxStr(str_oflags);
-//         SerialTxNum(p_sys->output_flags, DIGITS_3);
-
-//         SerialTxChr(32); /* Space (_) */
-//         SerialTxChr(32); /* Space (_) */
-
-//         // Exhaust fan
-//         SerialTxStr(str_lit_05);
-//         if (GetFlag(p_sys, OUTPUT_FLAGS, EXHAUST_FAN)) {
-//             SerialTxStr(str_true);
-//         } else {
-//             SerialTxStr(str_false);
-//         }
-
-//         SerialTxChr(32); /* Space (_) */
-//         SerialTxChr(32); /* Space (_) */
-
-//         // Water pump
-//         SerialTxStr(str_lit_06);
-//         if (GetFlag(p_sys, OUTPUT_FLAGS, WATER_PUMP)) {
-//             SerialTxStr(str_true);
-//         } else {
-//             SerialTxStr(str_false);
-//         }
-
-//         SerialTxChr(32); /* Space (_) */
-//         SerialTxChr(32); /* Space (_) */
-
-//         // Spark igniter
-//         SerialTxStr(str_lit_07);
-//         if (GetFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER)) {
-//             SerialTxStr(str_true);
-//         } else {
-//             SerialTxStr(str_false);
-//         }
-
-//         SerialTxChr(32); /* Space (_) */
-//         SerialTxChr(32); /* Space (_) */
-
-//         // LED UI
-//         SerialTxStr(str_lit_12);
-//         if (GetFlag(p_sys, OUTPUT_FLAGS, LED_UI)) {
-//             SerialTxStr(str_true);
-//         } else {
-//             SerialTxStr(str_false);
-//         }
-
-//         SerialTxChr(32);     /* Space (_) */
-//         SerialTxChr(32);     /* Space (_) */
-//         SerialTxChr(V_LINE); /* Horizontal separator (|) */
-
-//         SerialTxStr(str_crlf); /* CR + new line */
-
-//         SerialTxChr(V_LINE); /* Horizontal separator (|) */
-//         SerialTxChr(32);     /* Space (_) */
-
-//         // Security valve
-//         SerialTxStr(str_lit_08);
-//         if (GetFlag(p_sys, OUTPUT_FLAGS, VALVE_S)) {
-//             SerialTxStr(str_true);
-//         } else {
-//             SerialTxStr(str_false);
-//         }
-
-//         SerialTxChr(32); /* Space (_) */
-//         SerialTxChr(32); /* Space (_) */
-
-//         // Valve 1
-//         SerialTxStr(str_lit_09);
-//         if (GetFlag(p_sys, OUTPUT_FLAGS, VALVE_1)) {
-//             SerialTxStr(str_true);
-//         } else {
-//             SerialTxStr(str_false);
-//         }
-
-//         SerialTxChr(32); /* Space (_) */
-//         SerialTxChr(32); /* Space (_) */
-
-//         // Valve 2
-//         SerialTxStr(str_lit_10);
-//         if (GetFlag(p_sys, OUTPUT_FLAGS, VALVE_2)) {
-//             SerialTxStr(str_true);
-//         } else {
-//             SerialTxStr(str_false);
-//         }
-
-//         SerialTxChr(32); /* Space (_) */
-//         SerialTxChr(32); /* Space (_) */
-
-//         // Valve 3
-//         SerialTxStr(str_lit_11);
-//         if (GetFlag(p_sys, OUTPUT_FLAGS, VALVE_3)) {
-//             SerialTxStr(str_true);
-//         } else {
-//             SerialTxStr(str_false);
-//         }
-
-//         SerialTxChr(32);     /* Space (_) */
-//         SerialTxChr(V_LINE); /* Horizontal separator (|) */
-
-//         SerialTxStr(str_crlf);         /* CR + new line */
-//         DrawLine(DASH_WIDTH, H_ELINE); /* Dashed line */
-//         SerialTxStr(str_crlf);         /* CR + new line */
-
-// #if SHOW_PUMP_TIMER
-//         SerialTxStr(str_crlf);
-//         SerialTxStr(str_wptimer);
-//         SerialTxNum(p_sys->pump_delay, DIGITS_7);
-//         SerialTxStr(str_crlf);
-// #endif /* SHOW_PUMP_TIMER */
-//     }
+    // #define DASH_WIDTH 65
+    // #define H_ELINE 46
+    // #define H_ILINE 46
+    // #define V_LINE 46
+
+    //     if (force_display |
+    //         (p_sys->input_flags != p_sys->last_displayed_iflags) |
+    //         (p_sys->output_flags != p_sys->last_displayed_oflags)) {
+    //         p_sys->last_displayed_iflags = p_sys->input_flags;
+    //         p_sys->last_displayed_oflags = p_sys->output_flags;
+
+    //         ClrScr();
+
+    //         DrawLine(DASH_WIDTH, H_ELINE); /* Dashed line (= 61) */
+    //         SerialTxStr(str_crlf);         /* CR + new line */
+
+    //         SerialTxChr(V_LINE); /* Horizontal separator (|) */
+    //         SerialTxStr(str_header_01);
+    //         SerialTxStr(str_header_02);
+
+    //         // Mode display
+    //         switch (p_sys->system_state) {
+    //             case OFF: {
+    //                 SerialTxStr(str_mode_00);
+    //                 break;
+    //             }
+    //             case READY: {
+    //                 SerialTxStr(str_mode_10);
+    //                 break;
+    //             }
+    //             case IGNITING: {
+    //                 SerialTxStr(str_mode_20);
+    //                 break;
+    //             }
+    //             case DHW_ON_DUTY: {
+    //                 SerialTxStr(str_mode_30);
+    //                 break;
+    //             }
+    //             case CH_ON_DUTY: {
+    //                 SerialTxStr(str_mode_40);
+    //                 break;
+    //             }
+    //             case ERROR: {
+    //                 SerialTxStr(str_mode_100);
+    //                 break;
+    //             }
+    //         }
+
+    //         SerialTxChr(V_LINE); /* Horizontal separator (|) */
+    //         SerialTxChr(32);     /* Space (_) */
+
+    //         DrawLine(DASH_WIDTH - 4, H_ILINE); /* Dotted line */
+    //         SerialTxChr(32);
+    //         SerialTxChr(V_LINE); /* Horizontal separator (|) */
+
+    //         SerialTxStr(str_crlf); /* CR + new line */
+
+    //         SerialTxChr(V_LINE); /* Horizontal separator (|) */
+    //         SerialTxChr(32);     /* Space (_) */
+
+    //         // Input flags
+    //         SerialTxStr(str_iflags);
+    //         SerialTxNum(p_sys->input_flags, DIGITS_3);
+
+    //         SerialTxChr(32); /* Space (_) */
+    //         SerialTxChr(32); /* Space (_) */
+
+    //         // DHW temperature
+    //         SerialTxStr(str_lit_13);
+    //         SerialTxNum(p_sys->dhw_temperature, DIGITS_4);
+    //         SerialTxChr(32); /* Space (_) */
+    //         SerialTxNum(GetNtcTemperature(p_sys->dhw_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_3);
+
+    //         SerialTxChr(32); /* Space (_) */
+    //         SerialTxChr(32); /* Space (_) */
+
+    //         // CH temperature
+    //         SerialTxStr(str_lit_14);
+    //         SerialTxNum(p_sys->ch_temperature, DIGITS_4);
+    //         SerialTxChr(32); /* Space (_) */
+    //         SerialTxNum(GetNtcTemperature(p_sys->ch_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_3);
+
+    //         SerialTxChr(32); /* Space (_) */
+    //         SerialTxChr(32); /* Space (_) */
+
+    //         // Overheat
+    // #if !(OVERHEAT_OVERRIDE)
+    //         SerialTxStr(str_lit_04);
+    // #else
+    //         SerialTxStr(str_lit_04_override);
+    // #endif /* OVERHEAT_OVERRIDE */
+    //         if (GetFlag(p_sys, INPUT_FLAGS, OVERHEAT)) {
+    //             SerialTxStr(str_true);
+    //         } else {
+    //             SerialTxStr(str_false);
+    //         }
+
+    //         SerialTxChr(32);     /* Space (_) */
+    //         SerialTxChr(32);     /* Space (_) */
+    //         SerialTxChr(32);     /* Space (_) */
+    //         SerialTxChr(32);     /* Space (_) */
+    //         SerialTxChr(V_LINE); /* Horizontal separator (|) */
+
+    //         SerialTxStr(str_crlf); /* CR + new line */
+
+    //         SerialTxChr(V_LINE); /* Horizontal separator (|) */
+    //         SerialTxChr(32);     /* Space (_) */
+
+    //         // DHW Request
+    //         SerialTxStr(str_lit_00);
+    //         if (GetFlag(p_sys, INPUT_FLAGS, DHW_REQUEST)) {
+    //             SerialTxStr(str_true);
+    //         } else {
+    //             SerialTxStr(str_false);
+    //         }
+
+    //         SerialTxChr(32); /* Space (_) */
+    //         SerialTxChr(32); /* Space (_) */
+
+    //         //CH Request
+    //         SerialTxStr(str_lit_01);
+    //         if (GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST)) {
+    //             SerialTxStr(str_true);
+    //         } else {
+    //             SerialTxStr(str_false);
+    //         }
+
+    //         SerialTxChr(32); /* Space (_) */
+    //         SerialTxChr(32); /* Space (_) */
+
+    //         // Airflow
+    // #if !(AIRFLOW_OVERRIDE)
+    //         SerialTxStr(str_lit_02);
+    // #else
+    //         SerialTxStr(str_lit_02_override);
+    // #endif /* AIRFLOW_OVERRIDE */
+    //         if (GetFlag(p_sys, INPUT_FLAGS, AIRFLOW)) {
+    //             SerialTxStr(str_true);
+    //         } else {
+    //             SerialTxStr(str_false);
+    //         }
+
+    //         SerialTxChr(32); /* Space (_) */
+    //         SerialTxChr(32); /* Space (_) */
+
+    //         // Flame
+    //         SerialTxStr(str_lit_03);
+    //         if (GetFlag(p_sys, INPUT_FLAGS, FLAME)) {
+    //             SerialTxStr(str_true);
+    //         } else {
+    //             SerialTxStr(str_false);
+    //         }
+
+    //         SerialTxChr(32);     /* Space (_) */
+    //         SerialTxChr(32);     /* Space (_) */
+    //         SerialTxChr(V_LINE); /* Horizontal separator (|) */
+
+    //         SerialTxStr(str_crlf); /* CR + new line */
+
+    //         SerialTxChr(V_LINE); /* Horizontal separator (|) */
+    //         SerialTxChr(32);     /* Space (_) */
+
+    //         DrawLine(DASH_WIDTH - 4, H_ILINE); /* Dotted line */
+    //         SerialTxChr(32);                   /* Space (_) */
+    //         SerialTxChr(V_LINE);               /* Horizontal separator (|) */
+
+    //         SerialTxStr(str_crlf); /* CR + new line */
+
+    //         SerialTxChr(V_LINE); /* Horizontal separator (|) */
+    //         SerialTxChr(32);     /* Space (_) */
+
+    //         SerialTxStr(str_lit_18);
+    //         SerialTxChr(32); /* Space (_) */
+
+    //         SerialTxStr(str_lit_15);
+    //         SerialTxNum(p_sys->dhw_setting, DIGITS_4);
+    //         SerialTxChr(32); /* Space (_) */
+    //         //===SerialTxNum(GetHeatLevel(p_sys->dhw_setting, DHW_SETTING_STEPS), DIGITS_2);
+    //         SerialTxNum(p_sys->dhw_heat_level, DIGITS_2);
+
+    //         SerialTxChr(32); /* Space (_) */
+    //         SerialTxChr(32); /* Space (_) */
+
+    //         SerialTxStr(str_lit_16);
+    //         SerialTxNum(p_sys->ch_setting, DIGITS_4);
+    //         SerialTxChr(32); /* Space (_) */
+    //         SerialTxNum(GetHeatLevel(p_sys->ch_setting, DHW_SETTING_STEPS), DIGITS_2);
+
+    //         SerialTxChr(32); /* Space (_) */
+    //         SerialTxChr(32); /* Space (_) */
+
+    //         SerialTxStr(str_lit_17);
+    //         SerialTxNum(p_sys->system_setting, DIGITS_4);
+
+    //         SerialTxChr(32);     /* Space (_) */
+    //         SerialTxChr(32);     /* Space (_) */
+    //         SerialTxChr(32);     /* Space (_) */
+    //         SerialTxChr(32);     /* Space (_) */
+    //         SerialTxChr(32);     /* Space (_) */
+    //         SerialTxChr(32);     /* Space (_) */
+    //         SerialTxChr(32);     /* Space (_) */
+    //         SerialTxChr(V_LINE); /* Horizontal separator (|) */
+
+    //         SerialTxStr(str_crlf); /* CR + new line */
+
+    //         SerialTxChr(V_LINE); /* Horizontal separator (|) */
+    //         SerialTxChr(32);     /* Space (_) */
+
+    //         DrawLine(DASH_WIDTH - 4, H_ILINE); /* Dotted line */
+    //         SerialTxChr(32);
+    //         SerialTxChr(V_LINE); /* Horizontal separator (|) */
+
+    //         SerialTxStr(str_crlf);
+
+    //         SerialTxChr(V_LINE); /* Horizontal separator (|) */
+    //         SerialTxChr(32);     /* Space (_) */
+
+    //         SerialTxStr(str_oflags);
+    //         SerialTxNum(p_sys->output_flags, DIGITS_3);
+
+    //         SerialTxChr(32); /* Space (_) */
+    //         SerialTxChr(32); /* Space (_) */
+
+    //         // Exhaust fan
+    //         SerialTxStr(str_lit_05);
+    //         if (GetFlag(p_sys, OUTPUT_FLAGS, EXHAUST_FAN)) {
+    //             SerialTxStr(str_true);
+    //         } else {
+    //             SerialTxStr(str_false);
+    //         }
+
+    //         SerialTxChr(32); /* Space (_) */
+    //         SerialTxChr(32); /* Space (_) */
+
+    //         // Water pump
+    //         SerialTxStr(str_lit_06);
+    //         if (GetFlag(p_sys, OUTPUT_FLAGS, WATER_PUMP)) {
+    //             SerialTxStr(str_true);
+    //         } else {
+    //             SerialTxStr(str_false);
+    //         }
+
+    //         SerialTxChr(32); /* Space (_) */
+    //         SerialTxChr(32); /* Space (_) */
+
+    //         // Spark igniter
+    //         SerialTxStr(str_lit_07);
+    //         if (GetFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER)) {
+    //             SerialTxStr(str_true);
+    //         } else {
+    //             SerialTxStr(str_false);
+    //         }
+
+    //         SerialTxChr(32); /* Space (_) */
+    //         SerialTxChr(32); /* Space (_) */
+
+    //         // LED UI
+    //         SerialTxStr(str_lit_12);
+    //         if (GetFlag(p_sys, OUTPUT_FLAGS, LED_UI)) {
+    //             SerialTxStr(str_true);
+    //         } else {
+    //             SerialTxStr(str_false);
+    //         }
+
+    //         SerialTxChr(32);     /* Space (_) */
+    //         SerialTxChr(32);     /* Space (_) */
+    //         SerialTxChr(V_LINE); /* Horizontal separator (|) */
+
+    //         SerialTxStr(str_crlf); /* CR + new line */
+
+    //         SerialTxChr(V_LINE); /* Horizontal separator (|) */
+    //         SerialTxChr(32);     /* Space (_) */
+
+    //         // Security valve
+    //         SerialTxStr(str_lit_08);
+    //         if (GetFlag(p_sys, OUTPUT_FLAGS, VALVE_S)) {
+    //             SerialTxStr(str_true);
+    //         } else {
+    //             SerialTxStr(str_false);
+    //         }
+
+    //         SerialTxChr(32); /* Space (_) */
+    //         SerialTxChr(32); /* Space (_) */
+
+    //         // Valve 1
+    //         SerialTxStr(str_lit_09);
+    //         if (GetFlag(p_sys, OUTPUT_FLAGS, VALVE_1)) {
+    //             SerialTxStr(str_true);
+    //         } else {
+    //             SerialTxStr(str_false);
+    //         }
+
+    //         SerialTxChr(32); /* Space (_) */
+    //         SerialTxChr(32); /* Space (_) */
+
+    //         // Valve 2
+    //         SerialTxStr(str_lit_10);
+    //         if (GetFlag(p_sys, OUTPUT_FLAGS, VALVE_2)) {
+    //             SerialTxStr(str_true);
+    //         } else {
+    //             SerialTxStr(str_false);
+    //         }
+
+    //         SerialTxChr(32); /* Space (_) */
+    //         SerialTxChr(32); /* Space (_) */
+
+    //         // Valve 3
+    //         SerialTxStr(str_lit_11);
+    //         if (GetFlag(p_sys, OUTPUT_FLAGS, VALVE_3)) {
+    //             SerialTxStr(str_true);
+    //         } else {
+    //             SerialTxStr(str_false);
+    //         }
+
+    //         SerialTxChr(32);     /* Space (_) */
+    //         SerialTxChr(V_LINE); /* Horizontal separator (|) */
+
+    //         SerialTxStr(str_crlf);         /* CR + new line */
+    //         DrawLine(DASH_WIDTH, H_ELINE); /* Dashed line */
+    //         SerialTxStr(str_crlf);         /* CR + new line */
+
+    // #if SHOW_PUMP_TIMER
+    //         SerialTxStr(str_crlf);
+    //         SerialTxStr(str_wptimer);
+    //         SerialTxNum(p_sys->pump_delay, DIGITS_7);
+    //         SerialTxStr(str_crlf);
+    // #endif /* SHOW_PUMP_TIMER */
+    //     }
 }
 
 // Function DrawDashedLine

@@ -108,6 +108,10 @@
 #define FRACT_INC ((MICROSECONDS_PER_TIMER0_OVERFLOW % 1000) >> 3)
 #define FRACT_MAX (1000 >> 3)
 
+#define TIMER_BUFFER_SIZE 5
+#define TIMER_EMPTY 0
+
+
 // Types
 typedef enum states {
     OFF = 0,
@@ -192,6 +196,19 @@ typedef enum average_type {
     MOVING = 2
 } AverageType;
 
+typedef enum timer_mode {
+    RUN_ONCE_AND_DELETE = 0,
+    RUN_ONCE_AND_HOLD = 1,    
+    RUN_CONTINUOUSLY = 2
+} TimerMode;
+
+typedef struct timers {
+    uint8_t timer_id;    
+    unsigned long timer_start_time;
+    unsigned long timer_time_lapse;
+    TimerMode timer_mode;
+} SystemTimers;
+
 typedef struct sys_info {
     State system_state;            /* System running state */
     InnerStep inner_step;          /* State inner step (sub-states) */
@@ -210,6 +227,7 @@ typedef struct sys_info {
     InnerStep ch_on_duty_step;     /* CH inner step before handing over control to DHW */
     uint8_t dhw_heat_level;
     uint8_t ch_heat_level;
+    SystemTimers timer_buffer[3];
 } SysInfo;
 
 typedef struct heat_level {
@@ -279,12 +297,25 @@ uint8_t GetHeatLevel(int16_t, uint8_t);
 void SetTickTimer(void);
 unsigned long GetMilliseconds(void);
 
+void SetTimer(uint8_t, unsigned long, TimerMode);
+bool TimerRunning(uint8_t);
+void ProcessTimers();
+void DeleteTimer(uint8_t);
+uint8_t RestartTimer(uint8_t);
+uint8_t ResetTimerLapse(uint8_t, unsigned long);
+
+//void OnTimer(uint8_t);
+void OnTimer(SysInfo, uint8_t);
+
 // Globals
 
 // Timer function variables
 volatile unsigned long timer0_overflow_cnt = 0;
 volatile unsigned long timer0_milliseconds = 0;
 static unsigned char timer0_fractions = 0;
+
+// System Timers
+SystemTimers timer_buffer[TIMER_BUFFER_SIZE];
 
 // Temperature to ADC readings conversion table
 //  T°C:  -20, -10,   0,  10,  20,  30,  40,  50,  60,  70,  80, 90

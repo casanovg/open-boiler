@@ -25,7 +25,7 @@ int main(void) {
     SetTickTimer();
 
 #define SERIAL_DEBUG true
-#define LED_DEBUG true
+#define LED_DEBUG false
 
 #if SERIAL_DEBUG
     // Initialize USART for serial communications (38400, N, 8, 1)
@@ -71,7 +71,7 @@ int main(void) {
 
     uint8_t current_heat_level = 0; /* This level is determined by the CH temperature potentiometer */
 
-    static const unsigned long cycle_time = 2000;
+    static const unsigned long cycle_time = 5000;
     //uint8_t cycle_slots = 6;
     bool cycle_in_progress = 0;
     uint8_t system_valves = 3;
@@ -195,79 +195,101 @@ int main(void) {
         // *********************************************************************************************
         // Read the current heat level setup to determine what valves should be opened and for how long
         //if (current_valve < system_valves) {
-            //Valve-toggling cycle start
-            if (cycle_in_progress == 0) {
-                //printf("\n\r============== >>> Cycle start: Heat level %d = %d Kcal/h... <<< ==============\n\r", current_heat_level + 1, heat_level[current_heat_level].kcal_h);
-                uint8_t heat_level_time_usage = 0;
-                //int16_t cycle_slot_duration = cycle_time / cycle_slots;
-
-                // Check heat level integrity
-                for (uint8_t vt_check = 0; vt_check < system_valves; vt_check++) {
-                    heat_level_time_usage += heat_level[current_heat_level].valve_open_time[vt_check];
-                }
-                if (heat_level_time_usage != 100) {
-#if LED_DEBUG
-                    SetFlag(p_system, OUTPUT_FLAGS, VALVE_S);  // Heat level setting error, the sum of the opening time of all valves must be 100!
-                    _delay_ms(5000);
-                    ClearFlag(p_system, OUTPUT_FLAGS, VALVE_S);
+        //Valve-toggling cycle start
+        if (cycle_in_progress == 0) {
+            //printf("\n\r============== >>> Cycle start: Heat level %d = %d Kcal/h... <<< ==============\n\r", current_heat_level + 1, heat_level[current_heat_level].kcal_h);
+            uint8_t heat_level_time_usage = 0;
+            //int16_t cycle_slot_duration = cycle_time / cycle_slots;
+#if SERIAL_DEBUG
+            //SerialTxStr(str_crlf);
+            SerialTxStr(str_heat_mod_01);
+            SerialTxNum(current_heat_level, DIGITS_2);
 #endif
-                    if (current_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
-                        current_heat_level = 0;
-                    }
-                    cycle_in_progress = 0;
-                    //return 1;
-                } else {
-                    // Set cycle in progress
-                    cycle_in_progress = 1;
-                    current_valve = 0;
-                    ResetTimerLapse(VALVE_OPEN_TIMER_ID, (unsigned long)(heat_level[current_heat_level].valve_open_time[current_valve] * cycle_time / 100));
+            // Check heat level integrity
+            for (uint8_t vt_check = 0; vt_check < system_valves; vt_check++) {
+                heat_level_time_usage += heat_level[current_heat_level].valve_open_time[vt_check];
+            }
+            if (heat_level_time_usage != 100) {
+#if LED_DEBUG
+                SetFlag(p_system, OUTPUT_FLAGS, VALVE_S);  // Heat level setting error, the sum of the opening time of all valves must be 100!
+                _delay_ms(5000);
+                ClearFlag(p_system, OUTPUT_FLAGS, VALVE_S);
+#endif
+#if SERIAL_DEBUG
+                SerialTxStr(str_heat_mod_03);
+#endif
+                if (current_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
+                    current_heat_level = 0;
                 }
+                cycle_in_progress = 0;
+                //return 1;
             } else {
-
-                if (TimerFinished(VALVE_OPEN_TIMER_ID)) {
-                    if (GetFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number)) {
-                        ClearFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
-                    }
-                    // Prepare timing for next valve
-                    current_valve++;
-                    ResetTimerLapse(VALVE_OPEN_TIMER_ID, (heat_level[current_heat_level].valve_open_time[current_valve] * cycle_time / 100));
-                    if (current_valve >= system_valves) {
-                        // Cycle end: Reset to first valve
+                // Set cycle in progress
+#if SERIAL_DEBUG
+                SerialTxStr(str_heat_mod_02);
+#endif
+                cycle_in_progress = 1;
+                current_valve = 0;
+                ResetTimerLapse(VALVE_OPEN_TIMER_ID, (unsigned long)(heat_level[current_heat_level].valve_open_time[current_valve] * cycle_time / 100));
+            }
+        } else {
+            if (TimerFinished(VALVE_OPEN_TIMER_ID)) {
+                if (GetFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number)) {
+                    ClearFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
+#if SERIAL_DEBUG
+                    SerialTxStr(str_heat_mod_06);
+                    SerialTxStr(str_heat_mod_04);
+                    SerialTxNum(current_valve + 1, DIGITS_1);
+#endif
+                }
+                // Prepare timing for next valve
+                current_valve++;
+                ResetTimerLapse(VALVE_OPEN_TIMER_ID, (heat_level[current_heat_level].valve_open_time[current_valve] * cycle_time / 100));
+                if (current_valve >= system_valves) {
+                    // Cycle end: Reset to first valve
 #if LED_DEBUG
                     SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER);  // Heat level setting error, the sum of the opening time of all valves must be 100!
                     _delay_ms(500);
                     ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER);
-#endif                        
-                        cycle_in_progress = 0;
-                        if (current_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
-                            current_heat_level = 0;
-                        }
-                    }
-                } else {
-                    if (GetFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number) == false) {
-                        SetFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
+#endif
+#if SERIAL_DEBUG
+                    SerialTxStr(str_crlf);
+#endif
+                    cycle_in_progress = 0;
+                    if (current_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
+                        current_heat_level = 0;
                     }
                 }
+            } else {
+                if (GetFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number) == false) {
+                    SetFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
+#if SERIAL_DEBUG
+                    SerialTxStr(str_heat_mod_05);
+                    SerialTxStr(str_heat_mod_04);
+                    SerialTxNum(current_valve + 1, DIGITS_1);
+                    SerialTxChr(32);
+                    SerialTxNum((heat_level[current_heat_level].valve_open_time[current_valve] * cycle_time / 100), DIGITS_FREE);
+                    SerialTxStr(str_heat_mod_07);
+#endif
+                }
             }
-        //}
+        }
 
     } /* Main loop end */
 
     return 0;
 }
 
-            // if (current_valve >= system_valves) {
-            //     // Cycle end: Reset to first valve
-            //     current_valve = 0;
-            //     cycle_in_progress = 0;
-            //     // Move to the next heat level
-            //     if (current_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
-            //         current_heat_level = 0;
-            //         //break;
-            //     }
-            // }
-
-
+// if (current_valve >= system_valves) {
+//     // Cycle end: Reset to first valve
+//     current_valve = 0;
+//     cycle_in_progress = 0;
+//     // Move to the next heat level
+//     if (current_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
+//         current_heat_level = 0;
+//         //break;
+//     }
+// }
 
 // End of valves' toggling cycle
 // ******************************************************************************************

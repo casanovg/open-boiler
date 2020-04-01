@@ -366,13 +366,13 @@ const HeatLevel heat_level[] = {
 
 // Console UI literals
 
-const char __flash str_vs[] = {" V-S "};
-const char __flash str_v1[] = {" V-1 "};
-const char __flash str_v2[] = {" V-2 "};
-const char __flash str_v3[] = {" V-3 "};
-const char __flash str_spark[] = {" IGNITING "};
-const char __flash str_fan[] = {" F "};
-const char __flash str_pump[] = {" PUMP "};
+// const char __flash str_vs[] = {" V-S "};
+// const char __flash str_v1[] = {" V-1 "};
+// const char __flash str_v2[] = {" V-2 "};
+// const char __flash str_v3[] = {" V-3 "};
+// const char __flash str_spark[] = {" IGNITING "};
+// const char __flash str_fan[] = {" F "};
+// const char __flash str_pump[] = {" PUMP "};
 
 const char __flash str_preboot_01[] = {" > Initializing ADC buffers ..."};
 const char __flash str_preboot_02[] = {" > Initializing actuator controls ..."};
@@ -383,6 +383,14 @@ const char __flash str_preboot_06[] = {" > Pre-loading analog sensor values ..."
 const char __flash str_preboot_07[] = {" Starting normal FSM cycle ..."};
 const char __flash str_header_01[] = {" " FW_NAME " " FW_VERSION " "};
 const char __flash str_header_02[] = {FW_ALIAS};
+const char __flash str_heat_mod_01[] = {" Heat Mode: "};
+const char __flash str_heat_mod_02[] = {" (OK)"};
+const char __flash str_heat_mod_03[] = {" (VALVE TIME ERROR)"};
+const char __flash str_heat_mod_04[] = {"V-"};
+const char __flash str_heat_mod_05[] = {" | (O)"};
+const char __flash str_heat_mod_06[] = {" | (X)"};
+const char __flash str_heat_mod_07[] = {" ms"};
+
 // const char __flash str_iflags[] = {"Inputs: "};
 // const char __flash str_oflags[] = {"Outputs: "};
 // const char __flash str_lit_00[] = {"DHW request: "};

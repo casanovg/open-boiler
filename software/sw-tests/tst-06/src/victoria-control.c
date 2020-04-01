@@ -71,7 +71,7 @@ int main(void) {
 
     uint8_t current_heat_level = 0; /* This level is determined by the CH temperature potentiometer */
 
-    static const unsigned long cycle_time = 6000;
+    static const unsigned long cycle_time = 2000;
     //uint8_t cycle_slots = 6;
     bool cycle_in_progress = 0;
     uint8_t system_valves = 3;
@@ -211,7 +211,9 @@ int main(void) {
                     _delay_ms(5000);
                     ClearFlag(p_system, OUTPUT_FLAGS, VALVE_S);
 #endif
-                    current_heat_level++;
+                    if (current_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
+                        current_heat_level = 0;
+                    }
                     cycle_in_progress = 0;
                     //return 1;
                 } else {
@@ -223,7 +225,9 @@ int main(void) {
             } else {
 
                 if (TimerFinished(VALVE_OPEN_TIMER_ID)) {
-                    ClearFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
+                    if (GetFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number)) {
+                        ClearFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
+                    }
                     // Prepare timing for next valve
                     current_valve++;
                     ResetTimerLapse(VALVE_OPEN_TIMER_ID, (heat_level[current_heat_level].valve_open_time[current_valve] * cycle_time / 100));
@@ -235,10 +239,14 @@ int main(void) {
                     ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER);
 #endif                        
                         cycle_in_progress = 0;
-                        current_heat_level++;
+                        if (current_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
+                            current_heat_level = 0;
+                        }
                     }
                 } else {
-                    SetFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
+                    if (GetFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number) == false) {
+                        SetFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
+                    }
                 }
             }
         //}

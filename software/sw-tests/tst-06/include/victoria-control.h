@@ -71,7 +71,11 @@
 #define DHW_SETTING_STEPS 12 /* DHW setting potentiometer steps */
 #define CH_SETTING_STEPS 12  /* CH setting potentiometer steps */
 
-#define VALVES 3 /* Number of system valves for heat modulation */
+#define HEAT_CYCLE_TIME 10000                   /* Heat modulator cycle time (milliseconds) */
+#define VALVES 3                                /* Number of gas modulator valves */
+#define VALVE_OPEN_TIMER_ID 1                   /* Valve open timer id */
+#define VALVE_OPEN_TIMER_DURATION 0             /* Valve open timer time-lapse */
+#define VALVE_OPEN_TIMER_MODE RUN_ONCE_AND_HOLD /* Valve open timer mode */
 
 #define ADC_MIN 0
 #define ADC_MAX 1023
@@ -236,12 +240,12 @@ typedef struct heat_level {
     float gas_usage;
 } HeatLevel;
 
-typedef struct gas_valve {
+typedef struct gas_modulator {
     uint8_t valve_number; /* Valve number */
     uint16_t kcal_h;      /* Kcal per hour */
     float gas_usage;      /* Gas usage per hour */
     bool status;          /* Valve status */
-} GasValve;
+} GasModulator;
 
 typedef struct debounce_sw {
     uint16_t ch_request_deb; /* CH request switch debouncing delay */
@@ -332,7 +336,7 @@ const uint16_t __flash fir_table[FIR_LEN] = {
 
 // Heat levels valve settings
 //const HeatLevel __flash heat_level[] = {
-const HeatLevel heat_level[] = {    
+const HeatLevel heat_level[] = {
     /* { { %valve-1, %valve-3, %valve-3 }, Kcal/h, G20_m3 } */
     {{100, 0, 0}, 7000, 0.870},   /* Heat level 0 = 7000 Kcal/h */
     {{83, 17, 0}, 7833, 0.968},   /* Heat level 1 = 7833 Kcal/h */
@@ -389,7 +393,8 @@ const char __flash str_heat_mod_03[] = {" (VALVE TIME ERROR)"};
 const char __flash str_heat_mod_04[] = {"V-"};
 const char __flash str_heat_mod_05[] = {" | (O)"};
 const char __flash str_heat_mod_06[] = {" | (X)"};
-const char __flash str_heat_mod_07[] = {" ms"};
+const char __flash str_heat_mod_07[] = {" | (=)"};
+const char __flash str_heat_mod_08[] = {" ms"};
 
 // const char __flash str_iflags[] = {"Inputs: "};
 // const char __flash str_oflags[] = {"Outputs: "};

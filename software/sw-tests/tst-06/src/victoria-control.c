@@ -26,6 +26,7 @@ int main(void) {
 
 #define SERIAL_DEBUG true
 #define LED_DEBUG false
+#define HEAT_MODULATOR_DEMO true
 
 #if SERIAL_DEBUG
     // Initialize USART for serial communications (38400, N, 8, 1)
@@ -62,36 +63,26 @@ int main(void) {
     p_debounce->ch_request_deb = DLY_DEBOUNCE_AIRFLOW;
 
     // NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW
-
-    // gas_modulator
-    GasValve gas_valve[] = {
+    // Gas modulator properties
+    GasModulator gas_modulator[] = {
         {VALVE_1, 7000, 0.87, 0},
         {VALVE_2, 12000, 1.46, 0},
         {VALVE_3, 20000, 2.39, 0}};
 
-    uint8_t current_heat_level = 0; /* This level is determined by the CH temperature potentiometer */
-
-    static const unsigned long cycle_time = 5000;
-    //uint8_t cycle_slots = 6;
-    bool cycle_in_progress = 0;
-    uint8_t system_valves = 3;
-    //uint8_t system_valves = (sizeof(gas_valve) / sizeof(gas_valve[0]));
-    //uint8_t dhw_heat_level = 7; /* This level is determined by the CH temperature potentiometer */
-    //uint8_t dhw_heat_level = GetHeatLevel(p_system->ch_setting, DHW_SETTING_STEPS);
+    // Gas modulator variables
+    uint8_t current_heat_level = 0; /* The heat level is determined by the CH temperature potentiometer */
+    //static const unsigned long heat_cycle_time = 5000;
+    uint8_t system_valves = (sizeof(gas_modulator) / sizeof(gas_modulator[0]));
     uint8_t current_valve = 0;
-    //uint32_t valve_open_timer = 0;
-
+    bool cycle_in_progress = false;
     // NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW
 
-    // Clear all available system timers
+    // Initialize all available system timers
     for (int i = 0; i < TIMER_BUFFER_SIZE; i++) {
         timer_buffer[i].timer_id = TIMER_EMPTY;
         timer_buffer[i].timer_start_time = 0;
         timer_buffer[i].timer_time_lapse = 0;
     }
-
-    // Delay
-    //uint16_t delay = 0;
 
     // ADC buffers initialization
 #if SERIAL_DEBUG
@@ -185,21 +176,16 @@ int main(void) {
     // #############################
     //for(;;) {};
 
-#define VALVE_OPEN_TIMER_ID 1
-#define VALVE_OPEN_TIMER_DURATION 0
-#define VALVE_OPEN_TIMER_MODE RUN_ONCE_AND_HOLD
-
+    // Set timer for gas valve modulation
     SetTimer(VALVE_OPEN_TIMER_ID, (unsigned long)VALVE_OPEN_TIMER_DURATION, RUN_ONCE_AND_HOLD);
 
     for (;;) {
-        // *********************************************************************************************
-        // Read the current heat level setup to determine what valves should be opened and for how long
-        //if (current_valve < system_valves) {
-        //Valve-toggling cycle start
-        if (cycle_in_progress == 0) {
+        // {}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}
+        // Valve-toggling heat modulation cycle START
+        // ............................................
+        if (cycle_in_progress == false) {
             //printf("\n\r============== >>> Cycle start: Heat level %d = %d Kcal/h... <<< ==============\n\r", current_heat_level + 1, heat_level[current_heat_level].kcal_h);
             uint8_t heat_level_time_usage = 0;
-            //int16_t cycle_slot_duration = cycle_time / cycle_slots;
 #if SERIAL_DEBUG
             //SerialTxStr(str_crlf);
             SerialTxStr(str_heat_mod_01);
@@ -218,33 +204,24 @@ int main(void) {
 #if SERIAL_DEBUG
                 SerialTxStr(str_heat_mod_03);
 #endif
-                if (current_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
-                    current_heat_level = 0;
-                }
-                cycle_in_progress = 0;
+                // FAIL-SAFE: One level auto cool down in case of heat cycle error
+                current_heat_level--;
+                cycle_in_progress = false;
                 //return 1;
             } else {
                 // Set cycle in progress
 #if SERIAL_DEBUG
                 SerialTxStr(str_heat_mod_02);
 #endif
-                cycle_in_progress = 1;
+                cycle_in_progress = true;
                 current_valve = 0;
-                ResetTimerLapse(VALVE_OPEN_TIMER_ID, (unsigned long)(heat_level[current_heat_level].valve_open_time[current_valve] * cycle_time / 100));
+                ResetTimerLapse(VALVE_OPEN_TIMER_ID, (unsigned long)(heat_level[current_heat_level].valve_open_time[current_valve] * HEAT_CYCLE_TIME / 100));
             }
         } else {
             if (TimerFinished(VALVE_OPEN_TIMER_ID)) {
-                if (GetFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number)) {
-                    ClearFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
-#if SERIAL_DEBUG
-                    SerialTxStr(str_heat_mod_06);
-                    SerialTxStr(str_heat_mod_04);
-                    SerialTxNum(current_valve + 1, DIGITS_1);
-#endif
-                }
                 // Prepare timing for next valve
                 current_valve++;
-                ResetTimerLapse(VALVE_OPEN_TIMER_ID, (heat_level[current_heat_level].valve_open_time[current_valve] * cycle_time / 100));
+                ResetTimerLapse(VALVE_OPEN_TIMER_ID, (heat_level[current_heat_level].valve_open_time[current_valve] * HEAT_CYCLE_TIME / 100));
                 if (current_valve >= system_valves) {
                     // Cycle end: Reset to first valve
 #if LED_DEBUG
@@ -255,44 +232,52 @@ int main(void) {
 #if SERIAL_DEBUG
                     SerialTxStr(str_crlf);
 #endif
-                    cycle_in_progress = 0;
+                    cycle_in_progress = false;
+#if HEAT_MODULATOR_DEMO
+                    // DEMO MODE: Heat cycle loop ...
                     if (current_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
                         current_heat_level = 0;
                     }
+#endif
                 }
             } else {
-                if (GetFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number) == false) {
-                    SetFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
+                // Turn all heat valves off except the current valve
+                for (uint8_t valve_to_close = 0; valve_to_close < system_valves; valve_to_close++) {
+                    if (valve_to_close != current_valve) {
+                        if (GetFlag(p_system, OUTPUT_FLAGS, gas_modulator[valve_to_close].valve_number)) {
+                            //printf(" (X) Closing valve %d ...\n\r", valve_to_close + 1);
+                            ClearFlag(p_system, OUTPUT_FLAGS, gas_modulator[valve_to_close].valve_number);
+#if SERIAL_DEBUG
+                            SerialTxStr(str_heat_mod_06);
+                            SerialTxStr(str_heat_mod_04);
+                            SerialTxNum(valve_to_close + 1, DIGITS_1);
+#endif
+                        }
+                    }
+                }
+
+                // Turn current valve on
+                if (GetFlag(p_system, OUTPUT_FLAGS, gas_modulator[current_valve].valve_number) == false) {
+                    SetFlag(p_system, OUTPUT_FLAGS, gas_modulator[current_valve].valve_number);
 #if SERIAL_DEBUG
                     SerialTxStr(str_heat_mod_05);
                     SerialTxStr(str_heat_mod_04);
                     SerialTxNum(current_valve + 1, DIGITS_1);
                     SerialTxChr(32);
-                    SerialTxNum((heat_level[current_heat_level].valve_open_time[current_valve] * cycle_time / 100), DIGITS_FREE);
-                    SerialTxStr(str_heat_mod_07);
+                    SerialTxNum((heat_level[current_heat_level].valve_open_time[current_valve] * HEAT_CYCLE_TIME / 100), DIGITS_FREE);
+                    SerialTxStr(str_heat_mod_08);
 #endif
                 }
             }
         }
+        // ............................................
+        // Valve-toggling heat modulation cycle END
+        // {}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}{}
 
     } /* Main loop end */
 
     return 0;
 }
-
-// if (current_valve >= system_valves) {
-//     // Cycle end: Reset to first valve
-//     current_valve = 0;
-//     cycle_in_progress = 0;
-//     // Move to the next heat level
-//     if (current_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
-//         current_heat_level = 0;
-//         //break;
-//     }
-// }
-
-// End of valves' toggling cycle
-// ******************************************************************************************
 
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////

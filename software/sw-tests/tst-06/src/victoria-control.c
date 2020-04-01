@@ -24,7 +24,8 @@ int main(void) {
     sei();
     SetTickTimer();
 
-#define SERIAL_DEBUG true    
+#define SERIAL_DEBUG true
+#define LED_DEBUG true
 
 #if SERIAL_DEBUG
     // Initialize USART for serial communications (38400, N, 8, 1)
@@ -61,12 +62,16 @@ int main(void) {
     p_debounce->ch_request_deb = DLY_DEBOUNCE_AIRFLOW;
 
     // NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW
+
+    // gas_modulator
     GasValve gas_valve[] = {
         {VALVE_1, 7000, 0.87, 0},
         {VALVE_2, 12000, 1.46, 0},
         {VALVE_3, 20000, 2.39, 0}};
 
-    static const uint16_t cycle_time = 50000;
+    uint8_t current_heat_level = 0; /* This level is determined by the CH temperature potentiometer */
+
+    static const unsigned long cycle_time = 6000;
     //uint8_t cycle_slots = 6;
     bool cycle_in_progress = 0;
     uint8_t system_valves = 3;
@@ -74,7 +79,8 @@ int main(void) {
     //uint8_t dhw_heat_level = 7; /* This level is determined by the CH temperature potentiometer */
     //uint8_t dhw_heat_level = GetHeatLevel(p_system->ch_setting, DHW_SETTING_STEPS);
     uint8_t current_valve = 0;
-    uint32_t valve_open_timer = 0;
+    //uint32_t valve_open_timer = 0;
+
     // NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW
 
     // Clear all available system timers
@@ -156,7 +162,7 @@ int main(void) {
     // Add a 2 seconds delay before activating the WDT
     _delay_ms(2000);
     // If the system freezes, reset the microcontroller after 8 seconds
-    wdt_enable(WDTO_8S);
+    //************************************************************************wdt_enable(WDTO_8S);
 
     // Starting FSM cycle
 #if SERIAL_DEBUG
@@ -179,146 +185,84 @@ int main(void) {
     // #############################
     //for(;;) {};
 
-#define LOOP_TIMER_ID 1
-#define LOOP_TIMER_DURATION 1000
-#define LOOP_TIMER_MODE RUN_ONCE_AND_HOLD
-// .............................................
-#define FAN_TIMER_ID 2
-#define FAN_TIMER_DURATION 50
-#define FAN_TIMER_MODE RUN_ONCE_AND_HOLD
-// .............................................
-#define PUMP_TIMER_ID 3
-#define PUMP_TIMER_DURATION 500
-#define PUMP_TIMER_MODE RUN_ONCE_AND_HOLD
+#define VALVE_OPEN_TIMER_ID 1
+#define VALVE_OPEN_TIMER_DURATION 0
+#define VALVE_OPEN_TIMER_MODE RUN_ONCE_AND_HOLD
 
-    SetTimer(LOOP_TIMER_ID, LOOP_TIMER_DURATION, LOOP_TIMER_MODE);
-    SetTimer(FAN_TIMER_ID, FAN_TIMER_DURATION, FAN_TIMER_MODE);
-    SetTimer(PUMP_TIMER_ID, PUMP_TIMER_DURATION, PUMP_TIMER_MODE);
-
-    uint8_t m_fsm = 0;
-    uint16_t loop_delay = LOOP_TIMER_DURATION;
+    SetTimer(VALVE_OPEN_TIMER_ID, (unsigned long)VALVE_OPEN_TIMER_DURATION, RUN_ONCE_AND_HOLD);
 
     for (;;) {
-        // Reset the WDT
-        wdt_reset();
+        // *********************************************************************************************
+        // Read the current heat level setup to determine what valves should be opened and for how long
+        //if (current_valve < system_valves) {
+            //Valve-toggling cycle start
+            if (cycle_in_progress == 0) {
+                //printf("\n\r============== >>> Cycle start: Heat level %d = %d Kcal/h... <<< ==============\n\r", current_heat_level + 1, heat_level[current_heat_level].kcal_h);
+                uint8_t heat_level_time_usage = 0;
+                //int16_t cycle_slot_duration = cycle_time / cycle_slots;
 
-        //Dashboard(p_system, false);
-
-        if (TimerFinished(LOOP_TIMER_ID)) {
-            switch (m_fsm) {
-                case 0: {
-                    // Open security valve
-                    if (!(GetFlag(p_system, OUTPUT_FLAGS, VALVE_S))) {
-                        SetFlag(p_system, OUTPUT_FLAGS, VALVE_S);
-#if SERIAL_DEBUG
-                        SerialTxStr(str_crlf);
-                        SerialTxStr(str_vs);
-                        SerialTxStr(str_crlf);
-#endif
-                        m_fsm = 1;
-                    }
-                    break;
+                // Check heat level integrity
+                for (uint8_t vt_check = 0; vt_check < system_valves; vt_check++) {
+                    heat_level_time_usage += heat_level[current_heat_level].valve_open_time[vt_check];
                 }
-                case 1: {
-                    // Activate spark igniter
-                    if (!(GetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER))) {
-                        SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER);
-#if SERIAL_DEBUG
-                        SerialTxStr(str_crlf);
-                        SerialTxStr(str_spark);
-                        SerialTxStr(str_crlf);
+                if (heat_level_time_usage != 100) {
+#if LED_DEBUG
+                    SetFlag(p_system, OUTPUT_FLAGS, VALVE_S);  // Heat level setting error, the sum of the opening time of all valves must be 100!
+                    _delay_ms(5000);
+                    ClearFlag(p_system, OUTPUT_FLAGS, VALVE_S);
 #endif
-                        m_fsm = 2;
-                    }
-                    break;
+                    current_heat_level++;
+                    cycle_in_progress = 0;
+                    //return 1;
+                } else {
+                    // Set cycle in progress
+                    cycle_in_progress = 1;
+                    current_valve = 0;
+                    ResetTimerLapse(VALVE_OPEN_TIMER_ID, (unsigned long)(heat_level[current_heat_level].valve_open_time[current_valve] * cycle_time / 100));
                 }
-                case 2: {
-                    // Open valve 1 - close valve 3
-                    if (!(GetFlag(p_system, OUTPUT_FLAGS, VALVE_1))) {
-                        SetFlag(p_system, OUTPUT_FLAGS, VALVE_1);
-#if SERIAL_DEBUG
-                        SerialTxStr(str_crlf);
-                        SerialTxStr(str_v1);
-                        SerialTxStr(str_crlf);
-#endif
-                        ClearFlag(p_system, OUTPUT_FLAGS, VALVE_3);
-                        m_fsm = 3;
-                    }
-                    break;
-                }
-                case 3: {
-                    // Open valve 2 - close valve 1
-                    if (!(GetFlag(p_system, OUTPUT_FLAGS, VALVE_2))) {
-                        SetFlag(p_system, OUTPUT_FLAGS, VALVE_2);
-#if SERIAL_DEBUG
-                        SerialTxStr(str_crlf);
-                        SerialTxStr(str_v2);
-                        SerialTxStr(str_crlf);
-#endif
-                        ClearFlag(p_system, OUTPUT_FLAGS, VALVE_1);
-                        m_fsm = 4;
-                    }
-                    break;
-                }
-                case 4: {
-                    // Open valve 3 - close valve 2
-                    if (!(GetFlag(p_system, OUTPUT_FLAGS, VALVE_3))) {
-                        SetFlag(p_system, OUTPUT_FLAGS, VALVE_3);
-#if SERIAL_DEBUG
-                        SerialTxStr(str_crlf);
-                        SerialTxStr(str_v3);
-                        SerialTxStr(str_crlf);
-#endif
-                        ClearFlag(p_system, OUTPUT_FLAGS, VALVE_2);
-                        if (GetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER)) {
-                            ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER);
-                        }
-                        //SerialTxStr("FSM cycle finished ...");
-                        m_fsm = 2;
-                    }
-                    break;
-                }
-                default:
-                    break;
-            }
-
-            //RestartTimer(LOOP_TIMER_ID);
-            ResetTimerLapse(LOOP_TIMER_ID, loop_delay--);
-            if (loop_delay <= 0) {
-                loop_delay = LOOP_TIMER_DURATION;
-            }
-        }
-
-        // Toggle fan
-        if (TimerFinished(FAN_TIMER_ID)) {
-            if (GetFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN)) {
-                ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN);
             } else {
-                SetFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN);
-#if SERIAL_DEBUG
-                SerialTxStr(str_fan);
-#endif
-            }
-            RestartTimer(FAN_TIMER_ID);
-        }
 
-        // Toggle pump
-        if (TimerFinished(PUMP_TIMER_ID)) {
-            if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP)) {
-                ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP);
-            } else {
-                SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP);
-#if SERIAL_DEBUG
-                SerialTxStr(str_pump);
-#endif
+                if (TimerFinished(VALVE_OPEN_TIMER_ID)) {
+                    ClearFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
+                    // Prepare timing for next valve
+                    current_valve++;
+                    ResetTimerLapse(VALVE_OPEN_TIMER_ID, (heat_level[current_heat_level].valve_open_time[current_valve] * cycle_time / 100));
+                    if (current_valve >= system_valves) {
+                        // Cycle end: Reset to first valve
+#if LED_DEBUG
+                    SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER);  // Heat level setting error, the sum of the opening time of all valves must be 100!
+                    _delay_ms(500);
+                    ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER);
+#endif                        
+                        cycle_in_progress = 0;
+                        current_heat_level++;
+                    }
+                } else {
+                    SetFlag(p_system, OUTPUT_FLAGS, gas_valve[current_valve].valve_number);
+                }
             }
-            RestartTimer(PUMP_TIMER_ID);
-        }
+        //}
 
     } /* Main loop end */
 
     return 0;
 }
+
+            // if (current_valve >= system_valves) {
+            //     // Cycle end: Reset to first valve
+            //     current_valve = 0;
+            //     cycle_in_progress = 0;
+            //     // Move to the next heat level
+            //     if (current_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
+            //         current_heat_level = 0;
+            //         //break;
+            //     }
+            // }
+
+
+
+// End of valves' toggling cycle
+// ******************************************************************************************
 
 ///////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////

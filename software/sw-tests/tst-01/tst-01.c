@@ -164,6 +164,7 @@ int main(void) {
                         }
                     }
                 }
+                
             } else {
                 printf(" ||| Valve %d not set to be open in heat level %d (%d Kcal/h) ...\n\r", current_valve + 1, current_heat_level + 1, heat_level[current_heat_level].kcal_h);
                 valve_open_timer++; /* This is necessary to move to the next valve */

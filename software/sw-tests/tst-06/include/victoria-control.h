@@ -71,7 +71,7 @@
 #define DHW_SETTING_STEPS 12 /* DHW setting potentiometer steps */
 #define CH_SETTING_STEPS 12  /* CH setting potentiometer steps */
 
-#define HEAT_CYCLE_TIME 10000                   /* Heat modulator cycle time (milliseconds) */
+#define HEAT_CYCLE_TIME 1000                   /* Heat modulator cycle time (milliseconds) */
 #define VALVES 3                                /* Number of gas modulator valves */
 #define VALVE_OPEN_TIMER_ID 1                   /* Valve open timer id */
 #define VALVE_OPEN_TIMER_DURATION 0             /* Valve open timer time-lapse */

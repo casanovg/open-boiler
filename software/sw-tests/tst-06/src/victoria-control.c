@@ -25,7 +25,7 @@ int main(void) {
     SetTickTimer();
 
 #define SERIAL_DEBUG true
-#define LED_DEBUG false
+#define LED_DEBUG true
 #define HEAT_MODULATOR_DEMO true
 
 #if SERIAL_DEBUG
@@ -226,7 +226,7 @@ int main(void) {
                     // Cycle end: Reset to first valve
 #if LED_DEBUG
                     SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER);  // Heat level setting error, the sum of the opening time of all valves must be 100!
-                    _delay_ms(500);
+                    _delay_ms(50);
                     ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER);
 #endif
 #if SERIAL_DEBUG

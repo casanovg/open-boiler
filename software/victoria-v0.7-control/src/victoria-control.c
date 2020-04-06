@@ -563,7 +563,7 @@ int main(void) {
                         // Close valve 3
                         ClearFlag(p_system, OUTPUT_FLAGS, VALVE_3);
                         // Open valve 1
-                        SetFlag(p_system, OUTPUT_FLAGS, VALVE_1);
+                        SetFlag(p_system, OUTPUT_FLAGS, VALVE_2);
                         if (!(delay--)) { /* DLY_L_FLAME_MODULATION / 3 */
                             delay = DLY_L_FLAME_MODULATION / 3;
                             p_system->inner_step = DHW_ON_DUTY_1;

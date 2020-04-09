@@ -559,7 +559,7 @@ int main(void) {
                     // .......................................
                     case DHW_ON_DUTY_3: {
                         // Close valve 2
-                        ClearFlag(p_system, OUTPUT_FLAGS, VALVE_2);
+                        ClearFlag(p_system, OUTPUT_FLAGS, VALVE_1);
                         // Close valve 3
                         ClearFlag(p_system, OUTPUT_FLAGS, VALVE_3);
                         // Open valve 1

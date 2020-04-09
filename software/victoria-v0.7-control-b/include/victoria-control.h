@@ -48,7 +48,7 @@
 #endif                         /* AIRFLOW_OVERRIDE */
 
 #ifndef FAN_TEST_OVERRIDE
-#define FAN_TEST_OVERRIDE false /* True: Flue airflow sensor override */
+#define FAN_TEST_OVERRIDE true /* True: Flue airflow sensor override */
 #endif                          /* FAN_TEST_OVERRIDE */
 
 #ifndef FAST_FLAME_DETECTION

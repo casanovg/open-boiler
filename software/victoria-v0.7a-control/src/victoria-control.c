@@ -1,12 +1,12 @@
 /*
  *  Open-Boiler Control - Victoria 20-20 T/F boiler control
  *  Author: Gustavo Casanova
- *  ........................................................
+ *  ........................................................................
  *  File: victoria-control.c (main code) for ATmega328
- *  ........................................................
- *  Version: 0.7 "Juan" / 2019-10-11 (News)
+ *  ........................................................................
+ *  Version: 0.7 "Juan" / 2019-10-11 ("News" Basic 3-state heat modulation)
  *  gustavo.casanova@nicebots.com
- *  ........................................................
+ *  ........................................................................
  */
 
 #include "victoria-control.h"
@@ -523,15 +523,12 @@ int main(void) {
                     // . DHW_ON_DUTY_1 : Flame modulation 1/3 .
                     // .......................................
                     case DHW_ON_DUTY_1: {
-                        // Close valve 1
-                        //=== ClearFlag(p_system, OUTPUT_FLAGS, VALVE_1);
+                        // Close non-operating valves for state 1/3
                         ClearFlag(p_system, OUTPUT_FLAGS, VALVE_2);
-                        // Close valve 3
-                        //=== ClearFlag(p_system, OUTPUT_FLAGS, VALVE_3);
                         ClearFlag(p_system, OUTPUT_FLAGS, VALVE_3);
-                        // Open valve 2
-                        //=== SetFlag(p_system, OUTPUT_FLAGS, VALVE_2);
+                        // Open operating valve for state 1/3
                         SetFlag(p_system, OUTPUT_FLAGS, VALVE_1);
+                        // "State 1/3" timing
                         if (!(delay--)) { /* DLY_L_FLAME_MODULATION / 3 */
                             delay = DLY_L_FLAME_MODULATION / 3;
                             p_system->inner_step = DHW_ON_DUTY_2;
@@ -542,12 +539,12 @@ int main(void) {
                     // . DHW_ON_DUTY_2 : Flame modulation 2/3 .
                     // .......................................
                     case DHW_ON_DUTY_2: {
-                        // Close valve 2
+                        // Close non-operating valves for state 2/3
                         ClearFlag(p_system, OUTPUT_FLAGS, VALVE_2);
-                        // Close valve 3
                         ClearFlag(p_system, OUTPUT_FLAGS, VALVE_3);
-                        // Open valve 1
+                        // Open operating valve for state 2/3
                         SetFlag(p_system, OUTPUT_FLAGS, VALVE_1);
+                        // "State 2/3" timing
                         if (!(delay--)) { /* DLY_L_FLAME_MODULATION / 3 */
                             delay = DLY_L_FLAME_MODULATION / 3;
                             p_system->inner_step = DHW_ON_DUTY_3;
@@ -558,12 +555,12 @@ int main(void) {
                     // . DHW_ON_DUTY_3 : Flame modulation 3/3 .
                     // .......................................
                     case DHW_ON_DUTY_3: {
-                        // Close valve 2
+                        // Close non-operating valves for state 3/3
                         ClearFlag(p_system, OUTPUT_FLAGS, VALVE_1);
-                        // Close valve 3
                         ClearFlag(p_system, OUTPUT_FLAGS, VALVE_3);
-                        // Open valve 1
+                        // Open operating valve for state 3/3
                         SetFlag(p_system, OUTPUT_FLAGS, VALVE_2);
+                        // "State 3/3" timing
                         if (!(delay--)) { /* DLY_L_FLAME_MODULATION / 3 */
                             delay = DLY_L_FLAME_MODULATION / 3;
                             p_system->inner_step = DHW_ON_DUTY_1;

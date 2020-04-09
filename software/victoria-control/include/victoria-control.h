@@ -1,12 +1,12 @@
 /*
  *  Open-Boiler Control - Victoria 20-20 T/F boiler control
  *  Author: Gustavo Casanova
- *  ........................................................
+ *  ........................................................................
  *  File: victoria-control.h (headers) for ATmega328
- *  ........................................................
- *  Version: 0.6 "Juan" / 2019-09-22
+ *  ........................................................................
+ *  Version: 0.7 "Juan" / 2019-10-11 ("News" Basic 3-state heat modulation)
  *  gustavo.casanova@nicebots.com
- *  ........................................................
+ *  ........................................................................
  */
 
 #ifndef VICTORIA_CONTROL_H_
@@ -14,43 +14,52 @@
 
 #include <avr/io.h>
 #include <avr/pgmspace.h>
+#include <avr/wdt.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <util/delay.h>
 #include "delays.h"
 #include "errors.h"
-#include <avr/wdt.h>
 
 // Serial comm settings
 #define BAUDRATE 38400
 #define BAUD_PRESCALER (((F_CPU / (BAUDRATE * 16UL))) - 1)
 
-#define CH_SETPOINT_HIGH        241     /* ADC-NTC CH temperature ~ 55°C */
-#define CH_SETPOINT_LOW         379     /* ADC-NTC CH temperature ~ 38°C */
+#define CH_SETPOINT_HIGH 241        /* ADC-NTC CH temperature ~ 55°C */
+#define CH_SETPOINT_LOW 379         /* ADC-NTC CH temperature ~ 38°C */
 
 #ifndef MAX_IGNITION_RETRIES
-#define MAX_IGNITION_RETRIES    3       /* Number of ignition retries when no flame is detected */
+#define MAX_IGNITION_RETRIES 3      /* Number of ignition retries when no flame is detected */
 #endif /* IGNITION_RETRIES */
 
 #ifndef OVERHEAT_OVERRIDE
-#define OVERHEAT_OVERRIDE       false   /* True: Overheating thermostat override */
+#define OVERHEAT_OVERRIDE false     /* True: Overheating thermostat override */
 #endif /* OVERHEAT_OVERRIDE */
 
 #ifndef AIRFLOW_OVERRIDE
-#define AIRFLOW_OVERRIDE        false   /* True: Flue airflow sensor override */
+#define AIRFLOW_OVERRIDE true      /* True: Flue airflow sensor override */
 #endif /* AIRFLOW_OVERRIDE */
 
+#ifndef FAN_TEST_OVERRIDE
+#define FAN_TEST_OVERRIDE false     /* True: Flue airflow sensor override */
+#endif /* FAN_TEST_OVERRIDE */
+
 #ifndef FAST_FLAME_DETECTION
-#define FAST_FLAME_DETECTION    false   /* True: Spark igniter is turned off when the flame is detected */
-#endif /* FAST_FLAME_DETECTION */       /*       instead of checking the flame sensor after a delay     */
+#define FAST_FLAME_DETECTION false  /* True: Spark igniter is turned off when the flame is detected */
+#endif /* FAST_FLAME_DETECTION */   /*       instead of checking the flame sensor after a delay     */
 
 #ifndef LED_UI_FOR_FLAME
-#define LED_UI_FOR_FLAME        true    /* True: Activates onboard LED when the flame detector is on */
+#define LED_UI_FOR_FLAME true       /* True: Activates onboard LED when the flame detector is on */
 #endif /* LED_UI_FOR_FLAME */
 
 #ifndef SHOW_PUMP_TIMER
-#define SHOW_PUMP_TIMER         true    /* True: Shows the CH water pump auto-shutdown timer */
+#define SHOW_PUMP_TIMER true        /* True: Shows the CH water pump auto-shutdown timer */
 #endif /* SHOW_PUMP_TIMER */
+
+#define BUFFER_LENGTH 34            /* Circular buffers length */
+
+#define DHW_SETTING_STEPS 12        /* DHW setting potentiometer steps */
+#define CH_SETTING_STEPS 12         /* CH setting potentiometer steps */
 
 // Flame detector (mini-pro pin 2 - input)
 #define FLAME_DDR DDRD
@@ -133,6 +142,22 @@
 
 #define CH_TEMP_MASK 0x3FE
 
+// Filter settings
+#define FIR_SUM 11872
+#define IR_VAL 50
+#define FIR_LEN 31
+
+// Number of NTC ADC values used for calculating temperature
+#define NTC_VALUES 12
+
+// Temperature calculation settings
+#define TO_CELSIUS -200    /* Celsius offset value */
+#define DT_CELSIUS 100     /* Celsius delta T (difference between two consecutive table entries) */
+#define TO_KELVIN 2530     /* Kelvin offset value */
+#define DT_KELVIN 100      /* Kelvin delta T (difference between two consecutive table entries) */
+#define TO_FAHRENHEIT -40  /* Fahrenheit offset value */
+#define DT_FAHRENHEIT 180  /* Fahrenheit delta T (difference between two consecutive table entries) */
+
 // Types
 typedef enum states {
     OFF = 0,
@@ -142,6 +167,7 @@ typedef enum states {
     CH_ON_DUTY = 40,
     ERROR = 100
 } State;
+
 typedef enum inner_steps {
     OFF_1 = 1,
     OFF_2 = 2,
@@ -160,10 +186,12 @@ typedef enum inner_steps {
     CH_ON_DUTY_1 = 41,
     CH_ON_DUTY_2 = 42
 } InnerStep;
+
 typedef enum flags_types {
     INPUT_FLAGS = 0,
     OUTPUT_FLAGS = 1
 } FlagsType;
+
 typedef enum input_flags {
     DHW_REQUEST = 0,
     CH_REQUEST = 1,
@@ -171,6 +199,7 @@ typedef enum input_flags {
     FLAME = 3,
     OVERHEAT = 4
 } InputFlag;
+
 typedef enum analog_inputs {
     DHW_TEMPERATURE = 6,
     CH_TEMPERATURE = 7,
@@ -178,6 +207,7 @@ typedef enum analog_inputs {
     CH_SETTING = 1,
     SYSTEM_SETTING = 2
 } AnalogInput;
+
 typedef enum output_flags {
     EXHAUST_FAN = 0,
     WATER_PUMP = 1,
@@ -188,10 +218,12 @@ typedef enum output_flags {
     VALVE_3 = 6,
     LED_UI = 7
 } OutputFlag;
+
 typedef enum hw_switch {
     TURN_ON = 1,
     TURN_OFF = 0
 } HwSwitch;
+
 typedef enum digit_length {
     DIGITS_1 = 1,
     DIGITS_2 = 2,
@@ -200,34 +232,57 @@ typedef enum digit_length {
     DIGITS_5 = 5,
     DIGITS_6 = 6,
     DIGITS_7 = 7,
+    FLOAT_TEMP = 8,
     DIGITS_FREE = 0
 } DigitLength;
+
+typedef enum average_type {
+    MEAN = 0,
+    ROBUST = 1,
+    MOVING = 2
+} AverageType;
+
 typedef struct sys_info {
-    State system_state;             /* System running state */
-    InnerStep inner_step;           /* State inner step (sub-states) */
-    uint8_t input_flags;            /* Flags signaling input sensor status */
-    uint8_t output_flags;           /* Flags signaling hardware activation status */
-    uint16_t dhw_temperature;       /* DHW NTC thermistor temperature readout */
-    uint16_t ch_temperature;        /* CH NTC thermistor temperature readout */
-    uint16_t dhw_setting;           /* DWH setting potentiometer readout */
-    uint16_t ch_setting;            /* CH setting potentiometer readout */
-    uint16_t system_setting;        /* System mode potentiometer readout */
-    uint8_t last_displayed_iflags;  /* Input sensor flags last shown status */
-    uint8_t last_displayed_oflags;  /* Hardware activation flags last shown status */
-    uint8_t ignition_retries;       /* Ignition retry counter */
-    uint8_t error;                  /* System error code */
-    uint32_t pump_delay;            /* CH water pump auto-shutdown timer */
-    InnerStep ch_on_duty_step;      /* CH inner step before handing over control to DHW */
+    State system_state;            /* System running state */
+    InnerStep inner_step;          /* State inner step (sub-states) */
+    uint8_t input_flags;           /* Flags signaling input sensor status */
+    uint8_t output_flags;          /* Flags signaling hardware activation status */
+    uint16_t dhw_temperature;      /* DHW NTC thermistor temperature readout */
+    uint16_t ch_temperature;       /* CH NTC thermistor temperature readout */
+    uint16_t dhw_setting;          /* DWH setting potentiometer readout */
+    uint16_t ch_setting;           /* CH setting potentiometer readout */
+    uint16_t system_setting;       /* System mode potentiometer readout */
+    uint8_t last_displayed_iflags; /* Input sensor flags last shown status */
+    uint8_t last_displayed_oflags; /* Hardware activation flags last shown status */
+    uint8_t ignition_retries;      /* Ignition retry counter */
+    uint8_t error;                 /* System error code */
+    uint32_t pump_delay;           /* CH water pump auto-shutdown timer */
+    InnerStep ch_on_duty_step;     /* CH inner step before handing over control to DHW */
 } SysInfo;
+
 typedef struct heat_power {
     bool valve_3_state;
     bool valve_2_state;
     bool valve_1_state;
 } HeatPower;
+
 typedef struct debounce_sw {
-    uint16_t ch_request_deb;        /* CH request switch debouncing delay */
-    uint16_t airflow_deb;           /* Airflow sensor switch debouncing delay*/
+    uint16_t ch_request_deb; /* CH request switch debouncing delay */
+    uint16_t airflow_deb;    /* Airflow sensor switch debouncing delay*/
 } DebounceSw;
+
+typedef struct ring_buffer {
+    uint16_t data[BUFFER_LENGTH];
+    uint8_t ix;
+} RingBuffer;
+
+typedef struct adc_buffers {
+    RingBuffer dhw_temp_adc_buffer;
+    RingBuffer ch_temp_adc_buffer;
+    RingBuffer dhw_set_adc_buffer;
+    RingBuffer ch_set_adc_buffer;
+    RingBuffer sys_set_adc_buffer;
+} AdcBuffers;
 
 // Prototypes
 void SerialInit(void);
@@ -250,12 +305,37 @@ void ControlActuator(SysInfo *, OutputFlag, HwSwitch, bool);
 void InitDigitalSensor(SysInfo *, InputFlag);
 bool CheckDigitalSensor(SysInfo *, InputFlag, DebounceSw *, bool);
 void InitAnalogSensor(SysInfo *, AnalogInput);
-uint16_t CheckAnalogSensor(SysInfo *, AnalogInput, bool);
+uint16_t CheckAnalogSensor(SysInfo *, AdcBuffers *, AnalogInput, bool);
 void GasOff(SysInfo *);
 void SystemRestart(void);
+void InitAdcBuffers(AdcBuffers *, uint8_t);
+uint16_t AverageAdc(uint16_t[], uint8_t, uint8_t, AverageType);
+uint16_t FilterFir(uint16_t[], uint8_t, uint8_t);
+uint16_t FilterIir(uint16_t);
+int GetNtcTemperature(uint16_t, int, int);
+int GetNtcTempTenths(uint16_t, int, int);
+float GetNtcTempDegrees(uint16_t, int, int);
+uint8_t GetHeatLevel(int16_t, uint8_t);
 
 // Globals
-const char __flash str_header_01[] = {" OPEN-BOILER v0.6   "};
+const uint16_t fir_table[FIR_LEN] = {
+    1, 3, 9, 23, 48, 89, 149, 230, 333, 454, 586, 719, 840, 938, 1002, 1024,
+    1002, 938, 840, 719, 586, 454, 333, 230, 149, 89, 48, 23, 9, 3, 1};
+
+/* Original article table
+const uint16_t ntc_adc_temp[NTC_VALUES] = {
+    939, 892, 828, 749, 657, 560, 464, 377, 300, 237, 186};
+*/
+const uint16_t ntc_adc_table[NTC_VALUES] = {
+    929, 869, 787, 685, 573, 461, 359, 274, 206, 154, 116, 87};
+
+ /*
+ -20, -10, 0, 10, 20, 30, 40, 50, 60, 70, 80, 90
+98,66	56,25	33,21	20,24	12,71	8,19	5,42	3,66	2,53	1,78	1,28	0,93
+929, 869, 787, 685, 573, 461, 359, 274, 206, 154, 116, 87
+ */   
+
+const char __flash str_header_01[] = {" OPEN-BOILER v0.7   "};
 const char __flash str_header_02[] = {"\"Juan, Sandra & Gustavo\" "};
 const char __flash str_iflags[] = {"Inputs: "};
 const char __flash str_oflags[] = {"Outputs: "};
@@ -296,33 +376,5 @@ const char __flash str_mode_100[] = {"        [ ERROR ] .\n\r"};
 const char __flash str_wptimer[] = {"  CH water pump auto-shutdown timer: "};
 #endif /* SHOW_PUMP_TIMER */
 //const char __flash str_bug[] = {"  FORCED BUG !!! "};
-
-const bool __flash heat_modes[5][3][3] = {
-    {
-        {0, 0, 1},
-        {0, 0, 1},
-        {0, 0, 1}
-    },
-    {
-        {0, 1, 0},
-        {0, 0, 1},
-        {0, 0, 1}
-    },
-    {
-        {0, 1, 0},
-        {0, 1, 0},
-        {0, 0, 1}
-    },
-    {
-        {1, 0, 0},
-        {0, 0, 1},
-        {0, 0, 1}
-    },
-    {
-        {0, 1, 0},
-        {0, 1, 0},
-        {0, 1, 0}
-    }
-};
 
 #endif /* VICTORIA_CONTROL_H_ */

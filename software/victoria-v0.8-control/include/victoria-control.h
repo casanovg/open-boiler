@@ -19,7 +19,6 @@
 #include <serial-ui.h>
 #include <stdbool.h>
 #include <stdio.h>
-#include <temp-calc.h>
 #include <timers.h>
 #include <util/delay.h>
 
@@ -30,10 +29,7 @@
 #define CH_SETPOINT_HIGH 241 /* ADC-NTC CH temperature ~ 55°C */
 #define CH_SETPOINT_LOW 379  /* ADC-NTC CH temperature ~ 38°C */
 
-#define HEAT_CYCLE_TIME 1000 /* Heat modulator cycle time (milliseconds) */
-
-#define DHW_SETTING_STEPS 12 /* DHW setting potentiometer steps */
-#define CH_SETTING_STEPS 12  /* CH setting potentiometer steps */
+#define HEAT_CYCLE_TIME 10000 /* Heat modulator cycle time (milliseconds) */
 
 #ifndef MAX_IGNITION_RETRIES
 #define MAX_IGNITION_RETRIES 3 /* Number of ignition retries when no flame is detected */
@@ -59,9 +55,17 @@
 #define LED_UI_FOR_FLAME true /* True: Activates onboard LED when the flame detector is on */
 #endif                        /* LED_UI_FOR_FLAME */
 
-#ifndef SHOW_PUMP_TIMER
-#define SHOW_PUMP_TIMER true /* True: Shows the CH water pump auto-shutdown timer */
-#endif                       /* SHOW_PUMP_TIMER */
+#ifndef HEAT_MODULATOR_DEMO
+#define HEAT_MODULATOR_DEMO true /* True: ONLY FOR DEMO!!! Loop through all heat levels, from lower to higher */
+#endif /* HEAT_MODULATOR_DEMO */  /* False: Heat modulator code reads DHW potentiometer to determine current level */
+
+#ifndef SERIAL_DEBUG
+#define SERIAL_DEBUG false
+#endif /* SERIAL_DEBUG */
+
+#ifndef LED_DEBUG
+#define LED_DEBUG true
+#endif /* SERIAL_DEBUG */
 
 typedef struct heat_level {
     uint8_t valve_open_time[VALVES];

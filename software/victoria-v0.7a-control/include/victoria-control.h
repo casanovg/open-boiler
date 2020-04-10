@@ -22,7 +22,7 @@
 #include "errors.h"
 
 // Serial comm settings
-#define BAUDRATE 38400
+#define BAUDRATE 57600
 #define BAUD_PRESCALER (((F_CPU / (BAUDRATE * 16UL))) - 1)
 
 #define CH_SETPOINT_HIGH 241        /* ADC-NTC CH temperature ~ 55°C */
@@ -41,7 +41,7 @@
 #endif /* AIRFLOW_OVERRIDE */
 
 #ifndef FAN_TEST_OVERRIDE
-#define FAN_TEST_OVERRIDE false     /* True: Flue airflow sensor override */
+#define FAN_TEST_OVERRIDE true     /* True: Flue airflow sensor override */
 #endif /* FAN_TEST_OVERRIDE */
 
 #ifndef FAST_FLAME_DETECTION

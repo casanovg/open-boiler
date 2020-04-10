@@ -263,8 +263,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
         SerialTxStr(str_lit_15);
         SerialTxNum(p_sys->dhw_setting, DIGITS_4);
         SerialTxChr(32); /* Space (_) */
-        //===SerialTxNum(GetHeatLevel(p_sys->dhw_setting, DHW_SETTING_STEPS), DIGITS_2);
-        SerialTxNum(p_sys->dhw_heat_level, DIGITS_2);
+        SerialTxNum(GetHeatLevel(p_sys->dhw_setting, DHW_SETTING_STEPS), DIGITS_2);
+        //SerialTxNum(p_sys->dhw_heat_level, DIGITS_2);
 
         SerialTxChr(32); /* Space (_) */
         SerialTxChr(32); /* Space (_) */

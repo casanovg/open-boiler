@@ -51,13 +51,13 @@
                                     /* Time: 600000 / 60 / 1000 = 15 min aprox */
                                     /* Time: 900000 / 60 / 1000 = 15 min aprox */
                                     /* Time: 1800000 / 60 / 1000 = 30 min aprox     */
-#define DLY_DEBOUNCE_CH_REQ 1000    /* Debounce delay for CH request thermostat switch */
-#define DLY_DEBOUNCE_AIRFLOW 10     /* Debounce delay for airflow sensor switch */
+//#define DLY_DEBOUNCE_CH_REQ 1000    /* Debounce delay for CH request thermostat switch */
+//#define DLY_DEBOUNCE_AIRFLOW 10     /* Debounce delay for airflow sensor switch */
 #define DLY_FLAME_OFF 100           /* Delay before checking if the flame is off after closing gas */
 #define DLY_AIRFLOW_OFF 2000        /* Delay before checking if the airflow sensor switches off when the fan gets turned off */
 
-#define TIMER_BUFFER_SIZE 5
-#define TIMER_EMPTY 0
+#define TIMER_BUFFER_SIZE ((uint8_t)3) /* Number of system timers */
+#define TIMER_EMPTY ((uint8_t)0)       /* Timer empty value */
 
 typedef enum timer_mode {
     RUN_ONCE_AND_DELETE = 0,
@@ -72,6 +72,7 @@ typedef struct timers {
     TimerMode timer_mode;
 } SystemTimers;
 
+// Prototypes
 void SetTickTimer(void);
 unsigned long GetMilliseconds(void);
 uint8_t SetTimer(uint8_t, unsigned long, TimerMode);
@@ -87,9 +88,9 @@ uint8_t ResetTimerLapse(uint8_t, unsigned long);
 // Globals
 
 // Timer function variables
-static unsigned long timer0_overflow_cnt = 0;
-static unsigned long timer0_milliseconds = 0;
-static unsigned char timer0_fractions = 0;
+volatile static unsigned long timer0_overflow_cnt = 0;
+volatile static unsigned long timer0_milliseconds = 0;
+volatile static unsigned char timer0_fractions = 0;
 
 // System Timers globals
 SystemTimers timer_buffer[TIMER_BUFFER_SIZE];

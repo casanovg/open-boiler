@@ -26,6 +26,7 @@ uint8_t SetTimer(uint8_t timer_id, unsigned long time_lapse, TimerMode timer_mod
     }
     // Re-enable timers..
     //#asm("sei");
+    return 0;
 }
 
 // Function TimerRunning
@@ -65,6 +66,7 @@ uint8_t RestartTimer(uint8_t timer_id) {
             }
         }
     }
+    return 0;
 }
 
 // Function ResetTimerLapse
@@ -81,6 +83,7 @@ uint8_t ResetTimerLapse(uint8_t timer_id, unsigned long time_lapse) {
             }
         }
     }
+    return 0;
 }
 
 // Function ProcessTimers

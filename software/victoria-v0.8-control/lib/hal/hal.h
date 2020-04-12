@@ -13,23 +13,15 @@
 #define _HAL_
 
 #include <avr/pgmspace.h>
+#include <avr/wdt.h>
 #include <stdbool.h>
 #include <temp-calc.h>
-#include <timers.h>
 
 #include "../../include/hw-mapping.h"
-#include "../../include/sys-types.h"
+#include "../../include/sys-setup.h"
 
-#define DHW_SETTING_STEPS 12 /* DHW setting potentiometer steps */
-#define CH_SETTING_STEPS 12  /* CH setting potentiometer steps */
-
-#define VALVES 3                                /* Number of gas modulator valves */
-#define VALVE_OPEN_TIMER_ID 1                   /* Valve open timer id */
-#define VALVE_OPEN_TIMER_DURATION 0             /* Valve open timer time-lapse */
-#define VALVE_OPEN_TIMER_MODE RUN_ONCE_AND_HOLD /* Valve open timer mode */
-
-#define DLY_DEBOUNCE_CH_REQ 1000 /* Debounce delay for CH request thermostat switch */
-#define DLY_DEBOUNCE_AIRFLOW 10  /* Debounce delay for airflow sensor switch */
+#define DLY_DEBOUNCE_CH_REQ ((uint16_t)1000) /* Debounce delay for CH request thermostat switch */
+#define DLY_DEBOUNCE_AIRFLOW ((uint16_t)10)  /* Debounce delay for airflow sensor switch */
 
 // Types
 typedef enum hw_switch {
@@ -61,13 +53,12 @@ typedef struct adc_buffers {
     RingBuffer sys_set_adc_buffer;
 } AdcBuffers;
 
-typedef struct gas_valve {
-    uint8_t valve_number; /* Valve number */
-    uint16_t kcal_h;      /* Kcal per hour */
-    float gas_usage;      /* Gas usage per hour */
-    bool status;          /* Valve status */
-} GasValve;
-
+// Prototypes
+void SystemRestart(void);
+void InitFlags(SysInfo *, FlagsType);
+void SetFlag(SysInfo *, FlagsType, uint8_t);
+void ClearFlag(SysInfo *, FlagsType, uint8_t);
+bool GetFlag(SysInfo *, FlagsType, uint8_t);
 void InitDigitalSensor(SysInfo *, InputFlag);
 bool CheckDigitalSensor(SysInfo *, InputFlag, DebounceSw *, bool);
 void InitAnalogSensor(SysInfo *, AnalogInput);
@@ -77,6 +68,8 @@ void ControlActuator(SysInfo *, OutputFlag, HwSwitch, bool);
 void InitAdcBuffers(AdcBuffers *, uint8_t);
 uint16_t AverageAdc(uint16_t[], uint8_t, uint8_t, AverageType);
 uint8_t GetHeatLevel(int16_t, uint8_t);
+void ModulateGas(SysInfo *, HeatValve);
+//void Open exclusively();
 void GasOff(SysInfo *);
 
 #endif /* _HAL_ */

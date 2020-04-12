@@ -15,9 +15,10 @@
 #include <avr/pgmspace.h>
 #include <hal.h>
 #include <stdbool.h>
+#include <stdio.h>
 #include <temp-calc.h>
 
-#include "../../include/sys-types.h"
+#include "../../include/sys-setup.h"
 
 // Serial comm settings
 #define BAUDRATE 57600

@@ -177,7 +177,7 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
 #else
         SerialTxStr(str_lit_04_override);
 #endif /* OVERHEAT_OVERRIDE */
-        if (GetFlag(p_sys, INPUT_FLAGS, OVERHEAT)) {
+        if (GetFlag(p_sys, INPUT_FLAGS, OVERHEAT_F)) {
             SerialTxStr(str_true);
         } else {
             SerialTxStr(str_false);
@@ -196,7 +196,7 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
 
         // DHW Request
         SerialTxStr(str_lit_00);
-        if (GetFlag(p_sys, INPUT_FLAGS, DHW_REQUEST)) {
+        if (GetFlag(p_sys, INPUT_FLAGS, DHW_REQUEST_F)) {
             SerialTxStr(str_true);
         } else {
             SerialTxStr(str_false);
@@ -207,7 +207,7 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
 
         //CH Request
         SerialTxStr(str_lit_01);
-        if (GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST)) {
+        if (GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F)) {
             SerialTxStr(str_true);
         } else {
             SerialTxStr(str_false);
@@ -222,7 +222,7 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
 #else
         SerialTxStr(str_lit_02_override);
 #endif /* AIRFLOW_OVERRIDE */
-        if (GetFlag(p_sys, INPUT_FLAGS, AIRFLOW)) {
+        if (GetFlag(p_sys, INPUT_FLAGS, AIRFLOW_F)) {
             SerialTxStr(str_true);
         } else {
             SerialTxStr(str_false);
@@ -233,7 +233,7 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
 
         // Flame
         SerialTxStr(str_lit_03);
-        if (GetFlag(p_sys, INPUT_FLAGS, FLAME)) {
+        if (GetFlag(p_sys, INPUT_FLAGS, FLAME_F)) {
             SerialTxStr(str_true);
         } else {
             SerialTxStr(str_false);
@@ -311,7 +311,7 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
 
         // Exhaust fan
         SerialTxStr(str_lit_05);
-        if (GetFlag(p_sys, OUTPUT_FLAGS, EXHAUST_FAN)) {
+        if (GetFlag(p_sys, OUTPUT_FLAGS, EXHAUST_FAN_F)) {
             SerialTxStr(str_true);
         } else {
             SerialTxStr(str_false);
@@ -322,7 +322,7 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
 
         // Water pump
         SerialTxStr(str_lit_06);
-        if (GetFlag(p_sys, OUTPUT_FLAGS, WATER_PUMP)) {
+        if (GetFlag(p_sys, OUTPUT_FLAGS, WATER_PUMP_F)) {
             SerialTxStr(str_true);
         } else {
             SerialTxStr(str_false);
@@ -333,7 +333,7 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
 
         // Spark igniter
         SerialTxStr(str_lit_07);
-        if (GetFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER)) {
+        if (GetFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER_F)) {
             SerialTxStr(str_true);
         } else {
             SerialTxStr(str_false);
@@ -344,7 +344,7 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
 
         // LED UI
         SerialTxStr(str_lit_12);
-        if (GetFlag(p_sys, OUTPUT_FLAGS, LED_UI)) {
+        if (GetFlag(p_sys, OUTPUT_FLAGS, LED_UI_F)) {
             SerialTxStr(str_true);
         } else {
             SerialTxStr(str_false);
@@ -361,7 +361,7 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
 
         // Security valve
         SerialTxStr(str_lit_08);
-        if (GetFlag(p_sys, OUTPUT_FLAGS, VALVE_S)) {
+        if (GetFlag(p_sys, OUTPUT_FLAGS, VALVE_S_F)) {
             SerialTxStr(str_true);
         } else {
             SerialTxStr(str_false);
@@ -372,7 +372,7 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
 
         // Valve 1
         SerialTxStr(str_lit_09);
-        if (GetFlag(p_sys, OUTPUT_FLAGS, VALVE_1)) {
+        if (GetFlag(p_sys, OUTPUT_FLAGS, VALVE_1_F)) {
             SerialTxStr(str_true);
         } else {
             SerialTxStr(str_false);
@@ -383,7 +383,7 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
 
         // Valve 2
         SerialTxStr(str_lit_10);
-        if (GetFlag(p_sys, OUTPUT_FLAGS, VALVE_2)) {
+        if (GetFlag(p_sys, OUTPUT_FLAGS, VALVE_2_F)) {
             SerialTxStr(str_true);
         } else {
             SerialTxStr(str_false);
@@ -394,7 +394,7 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
 
         // Valve 3
         SerialTxStr(str_lit_11);
-        if (GetFlag(p_sys, OUTPUT_FLAGS, VALVE_3)) {
+        if (GetFlag(p_sys, OUTPUT_FLAGS, VALVE_3_F)) {
             SerialTxStr(str_true);
         } else {
             SerialTxStr(str_false);

@@ -21,10 +21,12 @@
 #include "../../include/sys-setup.h"
 
 // Serial comm settings
+
 #define BAUDRATE 57600
 #define BAUD_PRESCALER (((F_CPU / (BAUDRATE * 16UL))) - 1)
 
 // Dashboard defines
+
 #define DASH_WIDTH 65
 #define H_ELINE 46
 #define H_ILINE 46
@@ -35,6 +37,7 @@
 #endif                       /* SHOW_PUMP_TIMER */
 
 // Types
+
 typedef enum digit_length {
     DIGITS_1 = 1,
     DIGITS_2 = 2,
@@ -48,6 +51,7 @@ typedef enum digit_length {
 } DigitLength;
 
 // Prototypes
+
 void SerialInit(void);
 unsigned char SerialRxChr(void);
 void SerialTxChr(unsigned char);
@@ -57,7 +61,7 @@ void ClrScr(void);
 void Dashboard(SysInfo *, bool);
 void DrawLine(uint8_t, char);
 
-// Console UI literals
+// Global console UI literals
 
 // static const char __flash str_vs[] = {" V-S "};
 // static const char __flash str_v1[] = {" V-1 "};

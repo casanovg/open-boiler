@@ -25,11 +25,13 @@ int main(void) {
     // Initialize USART for serial communications (57600, N, 8, 1)
     SerialInit();
 
+#if SERIAL_DEBUG
     ClrScr();
     SerialTxStr(str_crlf);
     SerialTxStr(str_header_01);
     SerialTxStr(str_crlf);
     SerialTxStr(str_crlf);
+#endif
 
     // System gas modulator
     GasModulator gas_modulator[] = {
@@ -60,19 +62,11 @@ int main(void) {
     p_debounce->airflow_deb = DLY_DEBOUNCE_CH_REQ;
     p_debounce->ch_request_deb = DLY_DEBOUNCE_AIRFLOW;
 
-    // NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW NEW
-
     //static const uint16_t cycle_time = 10000;
-    //uint8_t cycle_slots = 6;
     bool cycle_in_progress = 0;
     //uint8_t system_valves = (sizeof(gas_modulator) / sizeof(gas_modulator[0]));
     uint8_t current_heat_level = 1; /* This level is determined by the CH temperature potentiometer */
-    //uint8_t current_heat_level = GetHeatLevel(p_system->ch_setting, DHW_SETTING_STEPS);
     uint8_t current_valve = 0;
-    //uint32_t valve_open_timer = 0;
-
-    // Delay
-    uint16_t delay = 0;
 
     // ADC buffers initialization
 #if SERIAL_DEBUG
@@ -160,8 +154,9 @@ int main(void) {
     // If the system freezes, reset the microcontroller after 8 seconds
     wdt_enable(WDTO_8S);
 
-    // Set timer for gas valve modulation
-    SetTimer(VALVE_OPEN_TIMER_ID, (unsigned long)VALVE_OPEN_TIMER_DURATION, RUN_ONCE_AND_HOLD);
+    // Set system-wide timers
+    SetTimer(FSM_TIMER_ID, (unsigned long)FSM_TIMER_DURATION, FSM_TIMER_MODE);                      /* Main finite state machine timer*/
+    SetTimer(VALVE_OPEN_TIMER_ID, (unsigned long)VALVE_OPEN_TIMER_DURATION, VALVE_OPEN_TIMER_MODE); /* Gas valve modulation timer*/
 
     // Enable global interrupts
     sei();
@@ -259,7 +254,7 @@ int main(void) {
                     case OFF_1: {
                         // Turn all actuators off, except the CH water pump
                         GasOff(p_system);
-                        delay = DLY_L_OFF_2;
+                        ResetTimerLapse(FSM_TIMER_ID, DLY_OFF_2);
                         p_system->inner_step = OFF_2;
                         break;
                     }
@@ -268,9 +263,9 @@ int main(void) {
                     // ..................................................
                     case OFF_2: {
 #if (!(AIRFLOW_OVERRIDE) && !(FAN_TEST_OVERRIDE))
-                        if (!(delay--)) {                                   /* DLY_L_OFF_2 */
+                        if (TimerFinished(FSM_TIMER_ID)) {                  /* DLY_OFF_2 */
                             SetFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN_F); /* Turn exhaust fan on */
-                            delay = DLY_L_OFF_3;
+                            ResetTimerLapse(FSM_TIMER_ID, DLY_OFF_3);
                             p_system->inner_step = OFF_3;
                         }
 #else
@@ -286,11 +281,11 @@ int main(void) {
                         // Airflow sensor activated -> fan test successful
                         if (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F)) {
                             ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN_F);
-                            delay = DLY_L_OFF_4;
+                            ResetTimerLapse(FSM_TIMER_ID, DLY_OFF_4);
                             p_system->inner_step = OFF_4;
                         }
                         // Timeout: Airflow sensor didn't activate on time -> fan test failed
-                        if (!(delay--)) { /* DLY_L_OFF_3 */
+                        if (TimerFinished(FSM_TIMER_ID)) { /* DLY_OFF_3 */
                             ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN_F);
                             p_system->error = ERROR_004;
                             p_system->system_state = ERROR;
@@ -298,7 +293,7 @@ int main(void) {
 #else
                         // Airflow sensor check skipped
                         p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
-                        delay = DLY_L_OFF_4;
+                        ResetTimerLapse(FSM_TIMER_ID, DLY_OFF_4);
                         p_system->inner_step = OFF_4;
 #endif /* AIRFLOW_OVERRIDE && FAN_TEST_OVERRIDE */
                         break;
@@ -307,22 +302,20 @@ int main(void) {
                     // . Step OFF_4 : Fan test in progress: check airflow sensor deactivation .
                     // .......................................................................
                     case OFF_4: {
-                        //LED_UI_PORT |= (1 << LED_UI_PIN);       // @@@@@
-                        if (!(delay--)) { /* DLY_L_OFF_4 --- Let the fan to rev down --- */
-                                          //LED_UI_PORT &= ~(1 << LED_UI_PIN);  // @@@@@
+                        if (TimerFinished(FSM_TIMER_ID)) { /* DLY_OFF_4 --- Let the fan to rev down --- */
 #if (!(AIRFLOW_OVERRIDE) && !(FAN_TEST_OVERRIDE))
                             if (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F)) {
                                 p_system->error = ERROR_006;
                                 p_system->system_state = ERROR;
                             } else {
                                 p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
-                                delay = DLY_L_READY_1;
+                                ResetTimerLapse(FSM_TIMER_ID, (DLY_READY_1));
                                 p_system->inner_step = READY_1;
                                 p_system->system_state = READY;
                             }
 #else
                             p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
-                            delay = DLY_L_READY_1;
+                            ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
                             p_system->inner_step = READY_1;
                             p_system->system_state = READY;
 #endif /* AIRFLOW_OVERRIDE && FAN_TEST_OVERRIDE */
@@ -349,37 +342,36 @@ int main(void) {
             */
             case READY: {
                 // Give the flame sensor time before checking if it is off when the gas is closed
-                if (delay < (DLY_L_READY_1 - DLY_FLAME_OFF)) {
+                // Give the airflow sensor time before checking if it switches off when the fan gets turned off
+                //if (delay < (DLY_READY_1 - DLY_FLAME_OFF)) {
+                if (TimerFinished(FSM_TIMER_ID)) { /* DLY_READY_1 */
                     // Verify that the flame sensor is off at this point, otherwise, there's a failure
                     if (GetFlag(p_system, INPUT_FLAGS, FLAME_F)) {
                         p_system->error = ERROR_002;
                         p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
                     }
+#if !(AIRFLOW_OVERRIDE)
+                    // Verify that the airflow sensor is off at this point, otherwise, there's a failure
+                    if (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F)) {
+                        p_system->error = ERROR_003;
+                        p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
+                    }
+#endif /* AIRFLOW_OVERRIDE */
                 }
                 // If the water pump still has time to run before shutting
                 // down, let it run until the delay counter reaches zero
                 if (p_system->pump_delay > 0) {
                     SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
                 }
-#if !(AIRFLOW_OVERRIDE)
-                // Give the airflow sensor time before checking if it switches off when the fan gets turned off
-                if (delay < (DLY_L_READY_1 - DLY_AIRFLOW_OFF)) {
-                    // Verify that the airflow sensor is off at this point, otherwise, there's a failure
-                    if (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F)) {
-                        p_system->error = ERROR_003;
-                        p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
-                    }
-                }
-#endif /* AIRFLOW_OVERRIDE */
                 // Check if there a DHW or CH request. If both are requested, DHW will have higher priority after ignition
                 if ((GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) || (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F))) {
                     p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
-                    delay = DLY_L_IGNITING_1;
+                    ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
                     p_system->inner_step = IGNITING_1;
                     p_system->system_state = IGNITING;
                 }
-                if (!(delay--)) { /* DLY_L_READY_1 */
-                    delay = DLY_L_READY_1;
+                if (TimerFinished(FSM_TIMER_ID)) { /* DLY_READY_1 */
+                    ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
                     p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
                 }
                 break;
@@ -397,7 +389,7 @@ int main(void) {
                     // Request canceled, turn actuators off and return to "ready" state
                     GasOff(p_system);
                     p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
-                    delay = DLY_L_READY_1;
+                    ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
                     p_system->inner_step = READY_1;
                     p_system->system_state = READY;
                     break;  // *** *** *** *** *** *** *** *** *** *** *** *** //
@@ -407,9 +399,9 @@ int main(void) {
                     // . Step IGNITING_1 : Turn fan on  .
                     // .................................
                     case IGNITING_1: {
-                        if (!(delay--)) {                                   /* DLY_L_IGNITING_1 */
+                        if (TimerFinished(FSM_TIMER_ID)) {                  /* DLY_IGNITING_1 */
                             SetFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN_F); /* Turn exhaust fan on */
-                            delay = DLY_L_IGNITING_2;
+                            ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_2);
                             p_system->inner_step = IGNITING_2;
                         }
                         break;
@@ -421,11 +413,11 @@ int main(void) {
 #if !(AIRFLOW_OVERRIDE)
                         // Airflow sensor activated -> continue ignition sequence
                         if (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F)) {
-                            delay = DLY_L_IGNITING_3;
+                            ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_3);
                             p_system->inner_step = IGNITING_3;
                         }
                         // Airflow sensor activation timeout -> ignition sequence canceled
-                        if (!(delay--)) { /* DLY_L_IGNITING_2 */
+                        if (TimerFinished(FSM_TIMER_ID)) { /* DLY_IGNITING_2 */
                             ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN_F);
                             p_system->error = ERROR_004;
                             p_system->system_state = ERROR;
@@ -433,7 +425,7 @@ int main(void) {
 #else
                         // Airflow sensor check skipped
                         p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
-                        delay = DLY_L_IGNITING_3;
+                        ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_3);
                         p_system->inner_step = IGNITING_3;
 #endif /* AIRFLOW_OVERRIDE */
                         break;
@@ -442,9 +434,9 @@ int main(void) {
                     // . Step IGNITING_3 : Open gas security valve  .
                     // .............................................
                     case IGNITING_3: {
-                        if (!(delay--)) { /* DLY_L_IGNITING_3 */
+                        if (TimerFinished(FSM_TIMER_ID)) { /* DLY_IGNITING_3 */
                             SetFlag(p_system, OUTPUT_FLAGS, VALVE_S_F);
-                            delay = DLY_L_IGNITING_4;
+                            ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_4);
                             p_system->inner_step = IGNITING_4;
                         }
                         break;
@@ -453,7 +445,7 @@ int main(void) {
                     // . Step IGNITING_4 : Open gas valve 1 or 2 alternately .
                     // ......................................................
                     case IGNITING_4: {
-                        if (!(delay--)) { /* DLY_L_IGNITING_4 */
+                        if (TimerFinished(FSM_TIMER_ID)) { /* DLY_IGNITING_4 */
                             if (p_system->ignition_retries == 0) {
                                 ClearFlag(p_system, OUTPUT_FLAGS, VALVE_2_F);
                                 SetFlag(p_system, OUTPUT_FLAGS, VALVE_1_F);
@@ -461,7 +453,7 @@ int main(void) {
                                 ClearFlag(p_system, OUTPUT_FLAGS, VALVE_1_F);
                                 SetFlag(p_system, OUTPUT_FLAGS, VALVE_2_F);
                             }
-                            delay = DLY_L_IGNITING_5;
+                            ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_5);
                             p_system->inner_step = IGNITING_5;
                         }
                         break;
@@ -470,10 +462,10 @@ int main(void) {
                     // . Step IGNITING_5 : Turn spark igniter on .
                     // ..........................................
                     case IGNITING_5: {
-                        if (!(delay--)) { /* DLY_L_IGNITING_5 */
+                        if (TimerFinished(FSM_TIMER_ID)) { /* DLY_IGNITING_5 */
                             SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
                             // Stretch flame detection timeout on each ignition retry
-                            delay = DLY_L_IGNITING_6 * ((p_system->ignition_retries + 1) ^ 2);
+                            ResetTimerLapse(FSM_TIMER_ID, (DLY_IGNITING_6 * ((p_system->ignition_retries + 1) ^ 2)));
                             p_system->inner_step = IGNITING_6;
                         }
                         break;
@@ -492,8 +484,8 @@ int main(void) {
                             // Turn spark igniter off
                             ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
                         }
-#endif                                    /* FAST_FLAME_DETECTION */
-                        if (!(delay--)) { /* DLY_L_IGNITING_6 */
+#endif                                                     /* FAST_FLAME_DETECTION */
+                        if (TimerFinished(FSM_TIMER_ID)) { /* DLY_IGNITING_6 */
                             // Increment ignition retry counter
                             p_system->ignition_retries++;
                             // Turn spark igniter off
@@ -506,17 +498,17 @@ int main(void) {
                                 p_system->ignition_retries = 0;
                                 // Hand over control to the requested service (DHW has higher priority)
                                 if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
-                                    //delay = DLY_L_FLAME_MODULATION / 3;
+                                    ResetTimerLapse(FSM_TIMER_ID, 0);
                                     p_system->inner_step = DHW_ON_DUTY_1;
                                     p_system->system_state = DHW_ON_DUTY;
                                 } else if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F)) {
-                                    delay = DLY_L_CH_ON_DUTY_LOOP;
+                                    ResetTimerLapse(FSM_TIMER_ID, DLY_CH_ON_DUTY_LOOP);
                                     p_system->inner_step = CH_ON_DUTY_1;
                                     p_system->system_state = CH_ON_DUTY;
                                 } else {
                                     // Request canceled, turn actuators off and return to "ready" state
                                     GasOff(p_system);
-                                    delay = DLY_L_READY_1;
+                                    ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
                                     p_system->inner_step = READY_1;
                                     p_system->system_state = READY;
                                 }
@@ -527,7 +519,7 @@ int main(void) {
                                     p_system->error = ERROR_005;
                                     p_system->system_state = ERROR;
                                 } else {
-                                    delay = DLY_L_IGNITING_4;
+                                    ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_4);
                                     p_system->inner_step = IGNITING_4;
                                 }
                             }
@@ -539,7 +531,7 @@ int main(void) {
                     // .....................
                     default: {
                         if (p_system->system_state == IGNITING) {
-                            delay = DLY_L_IGNITING_1;
+                            ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
                             p_system->inner_step = IGNITING_1;
                         }
                         break;
@@ -558,7 +550,7 @@ int main(void) {
                 if (GetFlag(p_system, INPUT_FLAGS, FLAME_F) == false) {
                     // Turn all heat valves off except the valve 1
                     ModulateGas(p_system, VALVE_1);
-                    delay = DLY_L_IGNITING_1;
+                    ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
                     p_system->inner_step = IGNITING_1;
                     p_system->system_state = IGNITING;
                     break;
@@ -581,13 +573,13 @@ int main(void) {
                     // hand over control to CH service state
                     if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F)) {
                         p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
-                        delay = DLY_L_CH_ON_DUTY_LOOP;
+                        ResetTimerLapse(FSM_TIMER_ID, DLY_CH_ON_DUTY_LOOP);
                         p_system->inner_step = p_system->ch_on_duty_step;
                         p_system->system_state = CH_ON_DUTY;
                     } else {
                         // DHW request canceled, turn gas off and return to "ready" state
                         GasOff(p_system);
-                        delay = DLY_L_READY_1;
+                        ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
                         p_system->inner_step = READY_1;
                         p_system->system_state = READY;
                     }
@@ -626,7 +618,7 @@ int main(void) {
 #endif
                             cycle_in_progress = true;
                             current_valve = 0;
-                            ResetTimerLapse(VALVE_OPEN_TIMER_ID, (unsigned long)(heat_level[current_heat_level].valve_open_time[current_valve] * HEAT_CYCLE_TIME / 100));
+                            ResetTimerLapse(VALVE_OPEN_TIMER_ID, ((unsigned long)(heat_level[current_heat_level].valve_open_time[current_valve] * HEAT_CYCLE_TIME / 100)));
                         }
                     } else {
                         if (TimerFinished(VALVE_OPEN_TIMER_ID)) {
@@ -693,7 +685,7 @@ int main(void) {
                         if (GetFlag(p_system, INPUT_FLAGS, FLAME_F) == false) {
                             // Turn all heat valves off except the valve 1
                             ModulateGas(p_system, VALVE_1);
-                            delay = DLY_L_IGNITING_1;
+                            ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
                             p_system->inner_step = IGNITING_1;
                             p_system->system_state = IGNITING;
                         }
@@ -716,7 +708,7 @@ int main(void) {
                         if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
                             p_system->ch_on_duty_step = CH_ON_DUTY_1; /* Preserve current CH service step */
                             // ModulateGas(p_system, VALVE_1); /* Change to valve 1 before handing over control to DHW state */
-                            delay = DLY_L_FLAME_MODULATION / 3;
+                            ResetTimerLapse(FSM_TIMER_ID, 0);
                             p_system->inner_step = DHW_ON_DUTY_1;
                             p_system->system_state = DHW_ON_DUTY;
                         } else {
@@ -724,7 +716,7 @@ int main(void) {
                             if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F) == false) {
                                 // CH request canceled, turn gas off and return to "ready" state
                                 GasOff(p_system);
-                                delay = DLY_L_READY_1;
+                                ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
                                 p_system->inner_step = READY_1;
                                 p_system->system_state = READY;
                             }
@@ -767,7 +759,7 @@ int main(void) {
                         // NOTE: The temperature reading last bit is masked out to avoid oscillations
                         if ((p_system->ch_temperature & CH_TEMP_MASK) >= CH_SETPOINT_LOW) {
                             p_system->inner_step = CH_ON_DUTY_1;
-                            delay = DLY_L_IGNITING_1;
+                            ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
                             p_system->inner_step = IGNITING_1;
                             p_system->system_state = IGNITING;
                             break;
@@ -776,7 +768,7 @@ int main(void) {
                         if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
                             p_system->ch_on_duty_step = CH_ON_DUTY_2; /* Preserve current CH service step */
                             p_system->last_displayed_iflags = 0xFF;   /* Force a display dashboard refresh */
-                            delay = DLY_L_IGNITING_1;
+                            ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
                             p_system->inner_step = IGNITING_1;
                             p_system->system_state = IGNITING;
                         } else {
@@ -784,7 +776,7 @@ int main(void) {
                             if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F) == false) {
                                 // CH request canceled, turn gas off and return to "ready" state
                                 GasOff(p_system);
-                                delay = DLY_L_READY_1;
+                                ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
                                 p_system->inner_step = READY_1;
                                 p_system->system_state = READY;
                             }
@@ -796,14 +788,14 @@ int main(void) {
                     // .......................
                     default: {
                         if (p_system->system_state == CH_ON_DUTY) {
-                            delay = DLY_L_CH_ON_DUTY_LOOP;
+                            ResetTimerLapse(FSM_TIMER_ID, DLY_CH_ON_DUTY_LOOP);
                             p_system->inner_step = p_system->ch_on_duty_step;
                         }
                         break;
                     }
                 }
-                if (!(delay--)) { /* DLY_L_CH_ON_DUTY_1 */
-                    delay = DLY_L_CH_ON_DUTY_LOOP;
+                if (TimerFinished(FSM_TIMER_ID)) { /* DLY_CH_ON_DUTY_1 */
+                    ResetTimerLapse(FSM_TIMER_ID, DLY_CH_ON_DUTY_LOOP);
                     p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
                 }
                 break;
@@ -855,7 +847,7 @@ int main(void) {
               |_____________________________|
             */
             default: {
-                delay = DLY_L_OFF_2;
+                ResetTimerLapse(FSM_TIMER_ID, DLY_OFF_2);
                 p_system->inner_step = OFF_1;
                 p_system->system_state = OFF;
                 break;

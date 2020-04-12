@@ -17,6 +17,8 @@
 #define FW_VERSION "v0.8a"
 #define FW_ALIAS "\"Easter Quarantine\"       "
 
+// System defines
+
 #define CH_SETPOINT_HIGH 241 /* ADC-NTC CH temperature ~ 55°C */
 #define CH_SETPOINT_LOW 379  /* ADC-NTC CH temperature ~ 38°C */
 
@@ -55,7 +57,8 @@
 
 #define LED_DEBUG false /* True: ONLY FOR DEBUG!!! Toggles SPARK_IGNITER_F on each heat-cycle start and keeps it on to show cycle's valve-time errors */
 
-//Types
+// System types
+
 typedef enum flags_types {
     INPUT_FLAGS = 0,
     OUTPUT_FLAGS = 1
@@ -130,7 +133,7 @@ typedef struct heat_level {
 
 typedef struct gas_modulator {
     HeatValve heat_valve; /* Heat valve ID */
-    InputFlag valve_flag;   /* Valve flag id number */
+    InputFlag valve_flag; /* Valve flag id number */
     uint16_t kcal_h;      /* Kcal per hour */
     float gas_usage;      /* Gas usage per hour */
     bool status;          /* Valve status */

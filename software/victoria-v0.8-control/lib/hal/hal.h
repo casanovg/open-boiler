@@ -20,10 +20,13 @@
 #include "../../include/hw-mapping.h"
 #include "../../include/sys-setup.h"
 
-#define DLY_DEBOUNCE_CH_REQ ((uint16_t)1000) /* Debounce delay for CH request thermostat switch */
+// Defines
+
+#define DLY_DEBOUNCE_CH_REQ ((uint16_t)250) /* Debounce delay for CH request thermostat switch */
 #define DLY_DEBOUNCE_AIRFLOW ((uint16_t)10)  /* Debounce delay for airflow sensor switch */
 
 // Types
+
 typedef enum hw_switch {
     TURN_ON = 1,
     TURN_OFF = 0
@@ -54,6 +57,7 @@ typedef struct adc_buffers {
 } AdcBuffers;
 
 // Prototypes
+
 void SystemRestart(void);
 void InitFlags(SysInfo *, FlagsType);
 void SetFlag(SysInfo *, FlagsType, uint8_t);

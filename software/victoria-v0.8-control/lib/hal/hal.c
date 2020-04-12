@@ -134,6 +134,15 @@ bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, DebounceSw *p_
             }
             return ((p_sys->input_flags >> DHW_REQUEST_F) & true);
         }
+        // case CH_REQUEST_F: { /* DHW request: Active = low, Inactive = high */
+        //     // CH request switch @@@@@@ @@@@@@ @@@@@@ NO DEBOUNCE!!! @@@@@@ @@@@@@ @@@@@@
+        //     if ((CH_RQ_PINP >> CH_RQ_PIN) & true) {
+        //         ClearFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F);
+        //     } else {
+        //         SetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F);
+        //     }
+        //     return ((p_sys->input_flags >> CH_REQUEST_F) & true);
+        // }
         case CH_REQUEST_F: { /* CH request: Active = low, Inactive = high (bimetallic room thermostat) */
             // CH request switch debouncing
             if ((GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F)) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) {

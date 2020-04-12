@@ -127,7 +127,7 @@ void DeleteTimer(uint8_t timer_id) {
     //#asm("sei");
 }
 
-// Function SetTickTimer
+// Function SetTickTimer: Sets the Timer0 hardware up
 void SetTickTimer(void) {
     // Set prescaler factor 64
     TCCR0B |= (1 << CS00);
@@ -136,17 +136,15 @@ void SetTickTimer(void) {
     TIMSK0 |= (1 << TOIE0);
 }
 
-// Function GetMilliseconds
+// Function GetMilliseconds: Returns the milliseconds that passed since the last counter overflow (every 49 days)
 unsigned long GetMilliseconds(void) {
     unsigned long m;
     uint8_t oldSREG = SREG;
-
     // disable interrupts while we read timer0_milliseconds or we might get an
     // inconsistent value (e.g. in the middle of a write to timer0_millis)
     cli();
     m = timer0_milliseconds;
     SREG = oldSREG;
-
     return m;
 }
 
@@ -166,7 +164,7 @@ ISR(TIMER0_OVF_vect) {
 
     timer0_fractions = f;
     timer0_milliseconds = m;
-    timer0_overflow_cnt++;
+    //timer0_overflow_cnt++;
 
     ProcessTimers();
 }

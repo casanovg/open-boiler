@@ -10,7 +10,6 @@
  */
 
 #include "serial-ui.h"
-#include <timers.h>
 
 // Function SerialInit
 void SerialInit(void) {
@@ -86,6 +85,21 @@ void SerialTxStr(const __flash char *ptr_string) {
     for (uint8_t k = 0; k < strlen_P(ptr_string); k++) {
         char my_char = pgm_read_byte_near(ptr_string + k);
         SerialTxChr(my_char);
+    }
+}
+
+// Function DrawDashedLine
+void DrawLine(uint8_t length, char line_char) {
+    for (uint8_t i = 0; i < length; i++) {
+        //SerialTxChr(61);
+        SerialTxChr(line_char);
+    }
+}
+
+// Function ClrScr: Clears the serial terminal screen
+void ClrScr(void) {
+    for (uint8_t i = 0; i < (sizeof(clr_ascii) / sizeof(clr_ascii[0])); i++) {
+        SerialTxChr(clr_ascii[i]);
     }
 }
 
@@ -416,20 +430,5 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
         //SerialTxNum(GetTimeLeft, DIGITS_7);
         SerialTxStr(str_crlf);
 #endif /* SHOW_PUMP_TIMER */
-    }
-}
-
-// Function DrawDashedLine
-void DrawLine(uint8_t length, char line_char) {
-    for (uint8_t i = 0; i < length; i++) {
-        //SerialTxChr(61);
-        SerialTxChr(line_char);
-    }
-}
-
-// Function clear screen
-void ClrScr(void) {
-    for (uint8_t i = 0; i < (sizeof(clr_ascii) / sizeof(clr_ascii[0])); i++) {
-        SerialTxChr(clr_ascii[i]);
     }
 }

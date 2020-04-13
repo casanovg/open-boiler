@@ -500,8 +500,8 @@ uint8_t GetHeatLevel(int16_t pot_adc_value, uint8_t knob_steps) {
     return heat_level;
 }
 
-// Function ModulateGas: Opens a given heat valve and closes all the others
-void ModulateGas(SysInfo *p_sys, HeatValve valve_to_open) {
+// Function OpenHeatValve: Opens a given heat valve exclusively, closing all the others
+void OpenHeatValve(SysInfo *p_sys, HeatValve valve_to_open) {
     uint8_t modulator_valve_count = GAS_MODULATOR_VALVES;
     for (uint8_t valve = 0; valve < modulator_valve_count; valve++) {
         if (valve == valve_to_open - 1) {

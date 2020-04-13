@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <temp-calc.h>
+#include <timers.h>
 
 #include "../../include/sys-setup.h"
 

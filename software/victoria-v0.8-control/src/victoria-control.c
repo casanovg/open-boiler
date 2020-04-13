@@ -449,7 +449,7 @@ int main(void) {
                                 p_system->ignition_retries = 0;
                                 // Hand over control to the requested service (DHW has higher priority)
                                 if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
-                                    ResetTimerLapse(FSM_TIMER_ID, 0);
+                                    ResetTimerLapse(FSM_TIMER_ID, FSM_TIMER_DURATION);
                                     p_system->inner_step = DHW_ON_DUTY_1;
                                     p_system->system_state = DHW_ON_DUTY;
                                 } else if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F)) {
@@ -500,7 +500,7 @@ int main(void) {
                 // If the flame sensor is off, check that gas valves 3 and 2 are closed and retry ignition
                 if (GetFlag(p_system, INPUT_FLAGS, FLAME_F) == false) {
                     // Turn all heat valves off except the valve 1
-                    ModulateGas(p_system, VALVE_1);
+                    OpenHeatValve(p_system, VALVE_1);
                     ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
                     p_system->inner_step = IGNITING_1;
                     p_system->system_state = IGNITING;
@@ -587,7 +587,7 @@ int main(void) {
                             }
                         } else {
                             // Turn all heat valves off except the current valve
-                            ModulateGas(p_system, gas_modulator[current_valve].heat_valve);
+                            OpenHeatValve(p_system, gas_modulator[current_valve].heat_valve);
                         }
                     }
                     //
@@ -611,7 +611,7 @@ int main(void) {
                         // If the flame sensor is off, and CH request is still active, check that gas valves 3 and 2 are closed and retry ignition
                         if (GetFlag(p_system, INPUT_FLAGS, FLAME_F) == false) {
                             // Turn all heat valves off except the valve 1
-                            ModulateGas(p_system, VALVE_1);
+                            OpenHeatValve(p_system, VALVE_1);
                             ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
                             p_system->inner_step = IGNITING_1;
                             p_system->system_state = IGNITING;
@@ -635,8 +635,8 @@ int main(void) {
                         // If there is a DHW request active, modulate and hand over control to DHW service
                         if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
                             p_system->ch_on_duty_step = CH_ON_DUTY_1; /* Preserve current CH service step */
-                            // ModulateGas(p_system, VALVE_1); /* Change to valve 1 before handing over control to DHW state */
-                            ResetTimerLapse(FSM_TIMER_ID, 0);
+                            // OpenHeatValve(p_system, VALVE_1); /* Change to valve 1 before handing over control to DHW state */
+                            ResetTimerLapse(FSM_TIMER_ID, FSM_TIMER_DURATION);
                             p_system->inner_step = DHW_ON_DUTY_1;
                             p_system->system_state = DHW_ON_DUTY;
                         } else {
@@ -658,7 +658,7 @@ int main(void) {
                         // NOTE: The temperature reading last bit is masked out to avoid oscillations
                         if ((p_system->ch_temperature & CH_TEMP_MASK) >= CH_SETPOINT_HIGH) {
                             // Turn all heat valves off except the valve 2
-                            ModulateGas(p_system, VALVE_2);
+                            OpenHeatValve(p_system, VALVE_2);
                         } else {
                             //Close gas
                             GasOff(p_system);

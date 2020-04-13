@@ -25,14 +25,6 @@ int main(void) {
     // Initialize USART for serial communications (57600, N, 8, 1)
     SerialInit();
 
-#if SERIAL_DEBUG
-    ClrScr();
-    SerialTxStr(str_crlf);
-    SerialTxStr(str_header_01);
-    SerialTxStr(str_crlf);
-    SerialTxStr(str_crlf);
-#endif
-
     // System gas modulator
     GasModulator gas_modulator[] = {
         {VALVE_1, VALVE_1_F, 7000, 0.87, false},
@@ -69,11 +61,6 @@ int main(void) {
     uint8_t current_valve = 0;
 
     // ADC buffers initialization
-#if SERIAL_DEBUG
-    SerialTxStr(str_preboot_01);
-    SerialTxStr(str_crlf);
-    SerialTxStr(str_crlf);
-#endif /* SERIAL_DEBUG */
     AdcBuffers buffer_pack;
     AdcBuffers *p_buffer_pack = &buffer_pack;
     InitAdcBuffers(p_buffer_pack, BUFFER_LENGTH);
@@ -83,80 +70,43 @@ int main(void) {
     InitFlags(p_system, OUTPUT_FLAGS);
 
     // Initialize actuator controls
-#if SERIAL_DEBUG
-    SerialTxStr(str_preboot_02);
-    SerialTxStr(str_crlf);
-    SerialTxStr(str_crlf);
-#endif /* SERIAL_DEBUG */
     for (OutputFlag device = EXHAUST_FAN_F; device <= LED_UI_F; device++) {
         InitActuator(p_system, device);
     }
 
     // Turn all actuators off
-#if SERIAL_DEBUG
-    SerialTxStr(str_preboot_03);
-    SerialTxStr(str_crlf);
-    SerialTxStr(str_crlf);
-#endif /* SERIAL_DEBUG */
     for (OutputFlag device = EXHAUST_FAN_F; device <= LED_UI_F; device++) {
         ClearFlag(p_system, OUTPUT_FLAGS, device);
-        _delay_ms(5);
+        _delay_ms(5);  // 5-millisecond blocking delay after turning each device off
     }
 
     // Initialize digital sensor flags
-#if SERIAL_DEBUG
-    SerialTxStr(str_preboot_04);
-    SerialTxStr(str_crlf);
-    SerialTxStr(str_crlf);
-#endif /* SERIAL_DEBUG */
     for (InputFlag digital_sensor = DHW_REQUEST_F; digital_sensor <= OVERHEAT_F; digital_sensor++) {
         InitDigitalSensor(p_system, digital_sensor);
     }
 
     // Initialize analog sensor inputs
-#if SERIAL_DEBUG
-    SerialTxStr(str_preboot_05);
-    SerialTxStr(str_crlf);
-    SerialTxStr(str_crlf);
-#endif /* SERIAL_DEBUG */
     for (AnalogInput analog_sensor = DHW_SETTING; analog_sensor <= CH_TEMPERATURE; analog_sensor++) {
         InitAnalogSensor(p_system, analog_sensor);
     }
 
     // Pre-load analog sensor values
-#if SERIAL_DEBUG
-    SerialTxStr(str_preboot_06);
-    SerialTxStr(str_crlf);
-    SerialTxStr(str_crlf);
-#endif /* SERIAL_DEBUG */
     for (uint8_t i = 0; i < BUFFER_LENGTH; i++) {
         for (AnalogInput analog_sensor = DHW_SETTING; analog_sensor <= CH_TEMPERATURE; analog_sensor++) {
             CheckAnalogSensor(p_system, p_buffer_pack, analog_sensor, false);
         }
     }
 
-#if SERIAL_DEBUG
-    SerialTxStr(str_preboot_07);
-    SerialTxStr(str_crlf);
-    SerialTxStr(str_crlf);
-    SerialTxStr(str_crlf);
-#endif /* SERIAL_DEBUG */
-
-    _delay_ms(500);
-
     // Show system operation status
-#if !(SERIAL_DEBUG)
     Dashboard(p_system, false);
-#endif
 
-    // Add a 2 seconds delay before activating the WDT
-    _delay_ms(2000);
-    // If the system freezes, reset the microcontroller after 8 seconds
-    wdt_enable(WDTO_8S);
+    // WDT resets the system if it becomes unresponsive
+    _delay_ms(2000);      // Safety 2-second blocking delay before activating the WDT
+    wdt_enable(WDTO_8S);  // If the system freezes, reset the microcontroller after 8 seconds
 
     // Set system-wide timers
-    SetTimer(FSM_TIMER_ID, (unsigned long)FSM_TIMER_DURATION, FSM_TIMER_MODE);                      /* Main finite state machine timer*/
-    SetTimer(VALVE_OPEN_TIMER_ID, (unsigned long)VALVE_OPEN_TIMER_DURATION, VALVE_OPEN_TIMER_MODE); /* Gas valve modulation timer*/
+    SetTimer(FSM_TIMER_ID, (unsigned long)FSM_TIMER_DURATION, FSM_TIMER_MODE);    /* Main finite state machine timer */
+    SetTimer(PUMP_TIMER_ID, (unsigned long)PUMP_TIMER_DURATION, PUMP_TIMER_MODE); /* Water pump timer */
 
     // Enable global interrupts
     sei();
@@ -184,7 +134,9 @@ int main(void) {
         // If the pump is working, check delay counter to turn it off
         if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
             if (!(p_system->pump_delay--)) {
+            //if (TimerFinished(PUMP_TIMER_ID)) {
                 ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                //ResetTimerLapse(PUMP_TIMER_ID, 0);
                 p_system->pump_delay = 0;
             }
         }
@@ -219,9 +171,7 @@ int main(void) {
 #endif /* OVERHEAT_OVERRIDE */
 
         // Display updated status
-#if !(SERIAL_DEBUG)
         Dashboard(p_system, false);
-#endif
 
         // System FSM
         switch (p_system->system_state) {
@@ -361,6 +311,7 @@ int main(void) {
                 // If the water pump still has time to run before shutting
                 // down, let it run until the delay counter reaches zero
                 if (p_system->pump_delay > 0) {
+                //if (TimerRunning(PUMP_TIMER_ID)) {
                     SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
                 }
                 // Check if there a DHW or CH request. If both are requested, DHW will have higher priority after ignition
@@ -589,11 +540,6 @@ int main(void) {
                     //
                     if (cycle_in_progress == false) {
                         uint8_t heat_level_time_usage = 0;
-#if SERIAL_DEBUG
-                        //SerialTxStr(str_crlf);
-                        SerialTxStr(str_heat_mod_01);
-                        SerialTxNum(current_heat_level, DIGITS_2);
-#endif
                         // Check heat level integrity
                         for (uint8_t vt_check = 0; vt_check < GAS_MODULATOR_VALVES; vt_check++) {
                             heat_level_time_usage += heat_level[current_heat_level].valve_open_time[vt_check];
@@ -601,11 +547,8 @@ int main(void) {
                         if (heat_level_time_usage != 100) {
 #if LED_DEBUG
                             SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);  // Heat level setting error, the sum of the opening time of all valves must be 100!
-                            _delay_ms(5000);
+                            _delay_ms(5000);                                   // 5-second blocking delay to indicate heat level setting errors
                             ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
-#endif
-#if SERIAL_DEBUG
-                            SerialTxStr(str_heat_mod_03);
 #endif
                             // FAIL-SAFE: One level auto cool down in case of heat cycle error
                             current_heat_level--;
@@ -613,18 +556,15 @@ int main(void) {
                             // return 1; // At his point, it should jump to the error state
                         } else {
                             // Set cycle in progress
-#if SERIAL_DEBUG
-                            SerialTxStr(str_heat_mod_02);
-#endif
                             cycle_in_progress = true;
                             current_valve = 0;
-                            ResetTimerLapse(VALVE_OPEN_TIMER_ID, ((unsigned long)(heat_level[current_heat_level].valve_open_time[current_valve] * HEAT_CYCLE_TIME / 100)));
+                            ResetTimerLapse(FSM_TIMER_ID, ((unsigned long)(heat_level[current_heat_level].valve_open_time[current_valve] * HEAT_CYCLE_TIME / 100)));
                         }
                     } else {
-                        if (TimerFinished(VALVE_OPEN_TIMER_ID)) {
+                        if (TimerFinished(FSM_TIMER_ID)) {
                             // Prepare timing for next valve
                             current_valve++;
-                            ResetTimerLapse(VALVE_OPEN_TIMER_ID, (heat_level[current_heat_level].valve_open_time[current_valve] * HEAT_CYCLE_TIME / 100));
+                            ResetTimerLapse(FSM_TIMER_ID, (heat_level[current_heat_level].valve_open_time[current_valve] * HEAT_CYCLE_TIME / 100));
                             if (current_valve >= GAS_MODULATOR_VALVES) {
                                 // Cycle end: Reset to first valve
 #if LED_DEBUG
@@ -634,9 +574,6 @@ int main(void) {
                                     SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
                                 }
 #endif
-#if SERIAL_DEBUG
-                                SerialTxStr(str_crlf);
-#endif
                                 cycle_in_progress = false;
 #if HEAT_MODULATOR_DEMO
                                 // DEMO MODE: loops through all heat levels, from lower to higher
@@ -645,29 +582,19 @@ int main(void) {
                                 }
 #else
                                 // Read the DHW potentiometer to determine current heat level
-                                current_heat_level = GetHeatLevel(p_system->ch_setting, DHW_SETTING_STEPS);
+                                current_heat_level = GetHeatLevel(p_system->dhw_setting, DHW_SETTING_STEPS);
 #endif
                             }
                         } else {
                             // Turn all heat valves off except the current valve
                             ModulateGas(p_system, gas_modulator[current_valve].heat_valve);
-#if SERIAL_DEBUG
-                            SerialTxStr(str_heat_mod_06);
-                            SerialTxStr(str_heat_mod_04);
-                            SerialTxNum(valve_to_close + 1, DIGITS_1);
-                            SerialTxStr(str_heat_mod_05);
-                            SerialTxStr(str_heat_mod_04);
-                            SerialTxNum(current_valve + 1, DIGITS_1);
-                            SerialTxChr(32);
-                            SerialTxNum((heat_level[current_heat_level].valve_open_time[current_valve] * HEAT_CYCLE_TIME / 100), DIGITS_FREE);
-                            SerialTxStr(str_heat_mod_08);
-#endif
                         }
                     }
                     //
                     // [ # # # ] DHW heat modulation code end [ # # # ]
                     //
                 }
+                break;
             }
 
             /*  _______________________________
@@ -703,6 +630,7 @@ int main(void) {
                         }
                         // Restart continuously the water pump shutdown timeout counter
                         p_system->pump_delay = DLY_WATER_PUMP_OFF;
+                        //ResetTimerLapse(PUMP_TIMER_ID, DLY_WATER_PUMP_OFF);
 
                         // If there is a DHW request active, modulate and hand over control to DHW service
                         if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
@@ -719,6 +647,7 @@ int main(void) {
                                 ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
                                 p_system->inner_step = READY_1;
                                 p_system->system_state = READY;
+                                break;  // ?????????????? ?????????????? ??????????????
                             }
                         }
                         //
@@ -733,8 +662,8 @@ int main(void) {
                         } else {
                             //Close gas
                             GasOff(p_system);
-                            // Restart the water pump shutdown timeout counter
-                            //p_system->pump_delay = DLY_WATER_PUMP_OFF;
+                            // NO NO NO Restart the water pump shutdown timeout counter
+                            // NO NO NO p_system->pump_delay = DLY_WATER_PUMP_OFF;
                             p_system->inner_step = CH_ON_DUTY_2;
                         }
                         //
@@ -817,9 +746,7 @@ int main(void) {
                         CheckDigitalSensor(p_system, digital_sensor, p_debounce, false);
                     }
                     p_system->system_state = ERROR;
-#if !(SERIAL_DEBUG)
                     Dashboard(p_system, true);
-#endif
                     SetFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
                     //ControlActuator(p_system, LED_UI_F, TURN_ON, false); /* true updates display on each pass */
                     SerialTxStr(str_crlf);
@@ -827,10 +754,10 @@ int main(void) {
                     SerialTxNum(p_system->error, DIGITS_3);
                     SerialTxStr(str_error_e);
                     SerialTxStr(str_crlf);
-                    _delay_ms(500);
+                    _delay_ms(500);  // 500-millisecond blocking delay before each error signaling
                     ClearFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
                     //ControlActuator(p_system, LED_UI_F, TURN_OFF, false);
-                    _delay_ms(500);
+                    _delay_ms(500);  // 500-millisecond blocking delay after each error signaling
                 }
                 // End of error loop
                 // Next state -> OFF (reset error and try to resume service)

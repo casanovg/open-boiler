@@ -22,11 +22,11 @@
 #define CH_SETPOINT_HIGH 241 /* ADC-NTC CH temperature ~ 55°C */
 #define CH_SETPOINT_LOW 379  /* ADC-NTC CH temperature ~ 38°C */
 
-#define HEAT_CYCLE_TIME 3000 /* Heat modulator cycle time (milliseconds) */
+#define HEAT_CYCLE_TIME 10000 /* Heat modulator cycle time (milliseconds) */
 
 #define MAX_IGNITION_RETRIES 3 /* Number of ignition retries when no flame is detected */
 
-#define DHW_SETTING_STEPS 28 /* DHW setting potentiometer steps */
+#define DHW_SETTING_STEPS 12 /* DHW setting potentiometer steps */
 #define CH_SETTING_STEPS 12  /* CH setting potentiometer steps */
 
 #define GAS_MODULATOR_VALVES 3 /* Number of gas modulator valves */
@@ -35,9 +35,9 @@
 #define FSM_TIMER_DURATION 0             /* Main finite state machine timer time-lapse */
 #define FSM_TIMER_MODE RUN_ONCE_AND_HOLD /* Main finite state machine timer mode */
 
-#define VALVE_OPEN_TIMER_ID 2                   /* Valve open timer id */
-#define VALVE_OPEN_TIMER_DURATION 0             /* Valve open timer time-lapse */
-#define VALVE_OPEN_TIMER_MODE RUN_ONCE_AND_HOLD /* Valve open timer mode */
+#define PUMP_TIMER_ID 2                   /* Water pump timer id */
+#define PUMP_TIMER_DURATION 0             /* Water pump timer time-lapse */
+#define PUMP_TIMER_MODE RUN_ONCE_AND_HOLD /* Water pump timer mode */
 
 #define OVERHEAT_OVERRIDE false /* True: Overheating thermostat override */
 
@@ -53,7 +53,7 @@
 #define HEAT_MODULATOR_DEMO false /* True: ONLY FOR DEBUG!!! loops through all heat levels, from lower to higher */
                                   /* False: Heat modulator code reads DHW potentiometer to determine current level */
 
-#define SERIAL_DEBUG false /* True: Shows current heat level and valve timing instead of the dashboard */
+#define SERIAL_DEBUG true /* True: Shows current heat level and valve timing instead of the dashboard */
 
 #define LED_DEBUG false /* True: ONLY FOR DEBUG!!! Toggles SPARK_IGNITER_F on each heat-cycle start and keeps it on to show cycle's valve-time errors */
 
@@ -140,19 +140,19 @@ typedef struct gas_modulator {
 } GasModulator;
 
 typedef struct sys_info {
-    State system_state;                               /* System running state */
-    InnerStep inner_step;                             /* State inner step (sub-states) */
-    uint8_t input_flags;                              /* Flags signaling input sensor status */
-    uint8_t output_flags;                             /* Flags signaling hardware activation status */
-    uint16_t dhw_temperature;                         /* DHW NTC thermistor temperature readout */
-    uint16_t ch_temperature;                          /* CH NTC thermistor temperature readout */
-    uint16_t dhw_setting;                             /* DWH setting potentiometer readout */
-    uint16_t ch_setting;                              /* CH setting potentiometer readout */
-    uint16_t system_setting;                          /* System mode potentiometer readout */
-    uint8_t last_displayed_iflags;                    /* Input sensor flags last shown status */
-    uint8_t last_displayed_oflags;                    /* Hardware activation flags last shown status */
-    uint8_t ignition_retries;                         /* Ignition retry counter */
-    uint8_t error;                                    /* System error code */
+    State system_state;            /* System running state */
+    InnerStep inner_step;          /* State inner step (sub-states) */
+    uint8_t input_flags;           /* Flags signaling input sensor status */
+    uint8_t output_flags;          /* Flags signaling hardware activation status */
+    uint16_t dhw_temperature;      /* DHW NTC thermistor temperature readout */
+    uint16_t ch_temperature;       /* CH NTC thermistor temperature readout */
+    uint16_t dhw_setting;          /* DWH setting potentiometer readout */
+    uint16_t ch_setting;           /* CH setting potentiometer readout */
+    uint16_t system_setting;       /* System mode potentiometer readout */
+    uint8_t last_displayed_iflags; /* Input sensor flags last shown status */
+    uint8_t last_displayed_oflags; /* Hardware activation flags last shown status */
+    uint8_t ignition_retries;      /* Ignition retry counter */
+    uint8_t error;                 /* System error code */
     uint32_t pump_delay;                              /* CH water pump auto-shutdown timer */
     InnerStep ch_on_duty_step;                        /* CH inner step before handing over control to DHW */
     uint8_t dhw_heat_level;                           /* DHW current heat level */

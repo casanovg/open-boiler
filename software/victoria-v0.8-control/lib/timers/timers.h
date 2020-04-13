@@ -48,8 +48,8 @@
 #define DLY_CH_ON_DUTY_1 500      /* On_CH_Duty_1 step long delay */
 #define DLY_CH_ON_DUTY_LOOP 3000  /* On_DHW_Duty loop long delay */
 #define DLY_FLAME_MODULATION 9000 /* Modulation cycle: used in 1/3 parts */
-#define DLY_WATER_PUMP_OFF 600000 /* Delay until the water pump shuts down when there are no CH requests */
-                                  /* Time: 600000 / 60 / 1000 = 15 min aprox */
+#define DLY_WATER_PUMP_OFF 60000 /* Delay until the water pump shuts down when there are no CH requests */
+                                  /* Time: 600000 / 60 / 1000 = 10 min aprox */
                                   /* Time: 900000 / 60 / 1000 = 15 min aprox */
                                   /* Time: 1800000 / 60 / 1000 = 30 min aprox     */
 //#define DLY_DEBOUNCE_CH_REQ 1000    /* Debounce delay for CH request thermostat switch */
@@ -77,15 +77,16 @@ typedef struct timers {
 
 // Prototypes
 
-void SetTickTimer(void);
-unsigned long GetMilliseconds(void);
 uint8_t SetTimer(uint8_t, unsigned long, TimerMode);
 bool TimerRunning(uint8_t);
 bool TimerFinished(uint8_t);
-void ProcessTimers();
-void DeleteTimer(uint8_t);
+unsigned long GetTimeLeft(uint8_t);
 uint8_t RestartTimer(uint8_t);
 uint8_t ResetTimerLapse(uint8_t, unsigned long);
+void ProcessTimers();
+void DeleteTimer(uint8_t);
+void SetTickTimer(void);
+unsigned long GetMilliseconds(void);
 //void OnTimer(uint8_t);
 //void OnTimer(SysInfo, uint8_t);
 

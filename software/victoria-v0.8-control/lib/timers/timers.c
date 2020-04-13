@@ -53,6 +53,21 @@ bool TimerFinished(uint8_t timer_id) {
     return false;
 }
 
+// Function GetTimeLeft
+unsigned long GetTimeLeft(uint8_t timer_id) {
+    unsigned long time_left = 0;
+    for (uint8_t i = 0; i < TIMER_BUFFER_SIZE; i++) {
+        if (timer_buffer[i].timer_id == timer_id) {
+            //unsigned long current_ms = GetMilliseconds();
+            //if ((current_ms - timer_buffer[i].timer_start_time) >= timer_buffer[i].timer_time_lapse) {
+                //time_left = timer_buffer[i].timer_start_time + timer_buffer[i].timer_time_lapse - current_ms;
+                time_left = timer_buffer[i].timer_start_time + timer_buffer[i].timer_time_lapse - GetMilliseconds();
+            //}
+        }
+    }
+    return time_left;
+}
+
 // Function RestartTimer
 uint8_t RestartTimer(uint8_t timer_id) {
     for (uint8_t i = 0; i < TIMER_BUFFER_SIZE; i++) {

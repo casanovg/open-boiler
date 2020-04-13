@@ -87,7 +87,7 @@ static const char __flash str_heat_mod_04[] = {"V-"};
 static const char __flash str_heat_mod_05[] = {" | (O)"};
 static const char __flash str_heat_mod_06[] = {" | (X)"};
 static const char __flash str_heat_mod_07[] = {" | (=)"};
-static const char __flash str_heat_mod_08[] = {" ms"};
+static const char __flash str_heat_mod_08[] = {" ms "};
 
 static const char __flash str_iflags[] = {"Inputs: "};
 static const char __flash str_oflags[] = {"Outputs: "};

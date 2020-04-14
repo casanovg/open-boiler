@@ -26,7 +26,7 @@ int main(void) {
     SerialInit();
 
     // System gas modulator
-    GasModulator gas_modulator[] = {
+    HeatModulator heat_mod[] = {
         {VALVE_1, VALVE_1_F, 7000, 0.87, false},
         {VALVE_2, VALVE_2_F, 12000, 1.46, false},
         {VALVE_3, VALVE_3_F, 20000, 2.39, false}};
@@ -44,8 +44,8 @@ int main(void) {
     p_system->ignition_retries = 0;
     p_system->pump_delay = 0;
     p_system->ch_on_duty_step = CH_ON_DUTY_1;
-    for (uint8_t valve = 0; valve < GAS_MODULATOR_VALVES; valve++) {
-        p_system->gas_modulator[valve] = gas_modulator[valve];
+    for (uint8_t valve = 0; valve < HEAT_MODULATOR_VALVES; valve++) {
+        p_system->heat_modulator[valve] = heat_mod[valve];
     }
 
     // Electromechanical switches debouncing initialization
@@ -54,11 +54,10 @@ int main(void) {
     p_debounce->airflow_deb = DLY_DEBOUNCE_CH_REQ;
     p_debounce->ch_request_deb = DLY_DEBOUNCE_AIRFLOW;
 
-    //static const uint16_t cycle_time = 10000;
-    bool cycle_in_progress = 0;
-    //uint8_t system_valves = (sizeof(gas_modulator) / sizeof(gas_modulator[0]));
-    uint8_t current_heat_level = 1; /* This level is determined by the CH temperature potentiometer */
-    uint8_t current_valve = 0;
+    p_system->cycle_in_progress = 0;
+    p_system->current_heat_level = 0;
+    p_system->current_valve = 0;
+    //uint8_t system_valves = (sizeof(heat_modulator) / sizeof(heat_modulator[0]));
 
     // ADC buffers initialization
     AdcBuffers buffer_pack;
@@ -105,8 +104,9 @@ int main(void) {
     wdt_enable(WDTO_8S);  // If the system freezes, reset the microcontroller after 8 seconds
 
     // Set system-wide timers
-    SetTimer(FSM_TIMER_ID, (unsigned long)FSM_TIMER_DURATION, FSM_TIMER_MODE);    /* Main finite state machine timer */
-    SetTimer(PUMP_TIMER_ID, (unsigned long)PUMP_TIMER_DURATION, PUMP_TIMER_MODE); /* Water pump timer */
+    SetTimer(FSM_TIMER_ID, (unsigned long)FSM_TIMER_DURATION, FSM_TIMER_MODE);                               /* Main finite state machine timer */
+    SetTimer(PUMP_TIMER_ID, (unsigned long)PUMP_TIMER_DURATION, PUMP_TIMER_MODE);                            /* Water pump timer */
+    SetTimer(GAS_MODULATOR_TIMER_ID, (unsigned long)GAS_MODULATOR_TIMER_DURATION, GAS_MODULATOR_TIMER_MODE); /* Water pump timer */
 
     // Enable global interrupts
     sei();
@@ -134,7 +134,7 @@ int main(void) {
         // If the pump is working, check delay counter to turn it off
         if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
             if (!(p_system->pump_delay--)) {
-            //if (TimerFinished(PUMP_TIMER_ID)) {
+                //if (TimerFinished(PUMP_TIMER_ID)) {
                 ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
                 //ResetTimerLapse(PUMP_TIMER_ID, 0);
                 p_system->pump_delay = 0;
@@ -311,7 +311,7 @@ int main(void) {
                 // If the water pump still has time to run before shutting
                 // down, let it run until the delay counter reaches zero
                 if (p_system->pump_delay > 0) {
-                //if (TimerRunning(PUMP_TIMER_ID)) {
+                    //if (TimerRunning(PUMP_TIMER_ID)) {
                     SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
                 }
                 // Check if there a DHW or CH request. If both are requested, DHW will have higher priority after ignition
@@ -449,11 +449,11 @@ int main(void) {
                                 p_system->ignition_retries = 0;
                                 // Hand over control to the requested service (DHW has higher priority)
                                 if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
-                                    ResetTimerLapse(FSM_TIMER_ID, FSM_TIMER_DURATION);
+                                    ResetTimerLapse(GAS_MODULATOR_TIMER_ID, GAS_MODULATOR_TIMER_DURATION);
                                     p_system->inner_step = DHW_ON_DUTY_1;
                                     p_system->system_state = DHW_ON_DUTY;
                                 } else if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F)) {
-                                    ResetTimerLapse(FSM_TIMER_ID, DLY_CH_ON_DUTY_LOOP);
+                                    ResetTimerLapse(GAS_MODULATOR_TIMER_ID, GAS_MODULATOR_TIMER_DURATION);
                                     p_system->inner_step = CH_ON_DUTY_1;
                                     p_system->system_state = CH_ON_DUTY;
                                 } else {
@@ -535,64 +535,11 @@ int main(void) {
                         p_system->system_state = READY;
                     }
                 } else {
-                    //
-                    // [ # # # ] DHW heat modulation code  [ # # # ]
-                    //
-                    if (cycle_in_progress == false) {
-                        uint8_t heat_level_time_usage = 0;
-                        // Check heat level integrity
-                        for (uint8_t vt_check = 0; vt_check < GAS_MODULATOR_VALVES; vt_check++) {
-                            heat_level_time_usage += heat_level[current_heat_level].valve_open_time[vt_check];
-                        }
-                        if (heat_level_time_usage != 100) {
-#if LED_DEBUG
-                            SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);  // Heat level setting error, the sum of the opening time of all valves must be 100!
-                            _delay_ms(5000);                                   // 5-second blocking delay to indicate heat level setting errors
-                            ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
-#endif
-                            // FAIL-SAFE: One level auto cool down in case of heat cycle error
-                            current_heat_level--;
-                            cycle_in_progress = false;
-                            // return 1; // At his point, it should jump to the error state
-                        } else {
-                            // Set cycle in progress
-                            cycle_in_progress = true;
-                            current_valve = 0;
-                            ResetTimerLapse(FSM_TIMER_ID, ((unsigned long)(heat_level[current_heat_level].valve_open_time[current_valve] * HEAT_CYCLE_TIME / 100)));
-                        }
-                    } else {
-                        if (TimerFinished(FSM_TIMER_ID)) {
-                            // Prepare timing for next valve
-                            current_valve++;
-                            ResetTimerLapse(FSM_TIMER_ID, (heat_level[current_heat_level].valve_open_time[current_valve] * HEAT_CYCLE_TIME / 100));
-                            if (current_valve >= GAS_MODULATOR_VALVES) {
-                                // Cycle end: Reset to first valve
-#if LED_DEBUG
-                                if (GetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F)) { /* Toggle SPARK_IGNITER_F on each heat-cycle start */
-                                    ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
-                                } else {
-                                    SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
-                                }
-#endif
-                                cycle_in_progress = false;
-#if HEAT_MODULATOR_DEMO
-                                // DEMO MODE: loops through all heat levels, from lower to higher
-                                if (current_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
-                                    current_heat_level = 0;
-                                }
-#else
-                                // Read the DHW potentiometer to determine current heat level
-                                current_heat_level = GetHeatLevel(p_system->dhw_setting, DHW_SETTING_STEPS);
-#endif
-                            }
-                        } else {
-                            // Turn all heat valves off except the current valve
-                            OpenHeatValve(p_system, gas_modulator[current_valve].heat_valve);
-                        }
-                    }
-                    //
-                    // [ # # # ] DHW heat modulation code end [ # # # ]
-                    //
+                    // ****************************************************************
+                    //                                                                  *
+                    ModulateHeat(p_system, p_system->dhw_setting, DHW_SETTING_STEPS);  // *
+                    //                                                                  *
+                    // ****************************************************************
                 }
                 break;
             }
@@ -636,7 +583,7 @@ int main(void) {
                         if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
                             p_system->ch_on_duty_step = CH_ON_DUTY_1; /* Preserve current CH service step */
                             // OpenHeatValve(p_system, VALVE_1); /* Change to valve 1 before handing over control to DHW state */
-                            ResetTimerLapse(FSM_TIMER_ID, FSM_TIMER_DURATION);
+                            ResetTimerLapse(GAS_MODULATOR_TIMER_ID, GAS_MODULATOR_TIMER_DURATION);
                             p_system->inner_step = DHW_ON_DUTY_1;
                             p_system->system_state = DHW_ON_DUTY;
                         } else {
@@ -644,7 +591,7 @@ int main(void) {
                             if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F) == false) {
                                 // CH request canceled, turn gas off and return to "ready" state
                                 GasOff(p_system);
-                                ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
+                                ResetTimerLapse(GAS_MODULATOR_TIMER_ID, GAS_MODULATOR_TIMER_DURATION);
                                 p_system->inner_step = READY_1;
                                 p_system->system_state = READY;
                                 break;  // ?????????????? ?????????????? ??????????????
@@ -657,8 +604,12 @@ int main(void) {
                         // Otherwise, close gas and move on to CH_ON_DUTY_2 step
                         // NOTE: The temperature reading last bit is masked out to avoid oscillations
                         if ((p_system->ch_temperature & CH_TEMP_MASK) >= CH_SETPOINT_HIGH) {
-                            // Turn all heat valves off except the valve 2
-                            OpenHeatValve(p_system, VALVE_2);
+                            // ---> ---> ---> OpenHeatValve(p_system, VALVE_2); // Turn all heat valves off except the valve 2
+                            // **************************************************************
+                            //                                                                *
+                            ModulateHeat(p_system, p_system->ch_setting, CH_SETTING_STEPS);  // *
+                            //                                                                *
+                            // **************************************************************
                         } else {
                             //Close gas
                             GasOff(p_system);

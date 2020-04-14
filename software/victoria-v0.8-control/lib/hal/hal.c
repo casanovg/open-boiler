@@ -11,8 +11,6 @@
 
 #include "hal.h"
 
-#include <serial-ui.h>
-
 // Function SystemRestart: Restarts the system by activating the watchdog timer
 void SystemRestart(void) {
     wdt_enable(WDTO_15MS);
@@ -75,7 +73,7 @@ void ClearFlag(SysInfo *p_sys, FlagsType flags_type, uint8_t flag_position) {
     }
 }
 
-// Function GetFlag: Returns the binary value of a given system flag 
+// Function GetFlag: Returns the binary value of a given system flag
 bool GetFlag(SysInfo *p_sys, FlagsType flags_type, uint8_t flag_position) {
     bool flag = 0;
     switch (flags_type) {
@@ -146,11 +144,11 @@ bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, DebounceSw *p_
         case CH_REQUEST_F: { /* CH request: Active = low, Inactive = high (bimetallic room thermostat) */
             // CH request switch debouncing
             if ((GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F)) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) {
-            //if (((p_sys->input_flags >> CH_REQUEST_F) & true) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) {
+                //if (((p_sys->input_flags >> CH_REQUEST_F) & true) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) {
                 if (!(p_deb->ch_request_deb--)) {
                     p_deb->ch_request_deb = DLY_DEBOUNCE_CH_REQ;
                     if ((GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F)) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) {
-                    //if (((p_sys->input_flags >> CH_REQUEST_F) & true) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) {
+                        //if (((p_sys->input_flags >> CH_REQUEST_F) & true) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) {
                         p_sys->input_flags ^= (1 << CH_REQUEST_F);
                     }
                 }
@@ -160,11 +158,11 @@ bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, DebounceSw *p_
         case AIRFLOW_F: { /* Flue air flow sensor: Active = low, Inactive = high (flue air pressure switch) */
             // Airflow switch debouncing
             if ((GetFlag(p_sys, INPUT_FLAGS, AIRFLOW_F)) == ((AIRFLOW_PINP >> AIRFLOW_PIN) & true)) {
-            //if (((p_sys->input_flags >> AIRFLOW_F) & true) == ((AIRFLOW_PINP >> AIRFLOW_PIN) & true)) {
+                //if (((p_sys->input_flags >> AIRFLOW_F) & true) == ((AIRFLOW_PINP >> AIRFLOW_PIN) & true)) {
                 if (!(p_deb->airflow_deb--)) {
                     p_deb->airflow_deb = DLY_DEBOUNCE_AIRFLOW;
                     if ((GetFlag(p_sys, INPUT_FLAGS, AIRFLOW_F)) == ((AIRFLOW_PINP >> AIRFLOW_PIN) & true)) {
-                    //if (((p_sys->input_flags >> AIRFLOW_F) & true) == ((AIRFLOW_PINP >> AIRFLOW_PIN) & true)) {
+                        //if (((p_sys->input_flags >> AIRFLOW_F) & true) == ((AIRFLOW_PINP >> AIRFLOW_PIN) & true)) {
                         p_sys->input_flags ^= (1 << AIRFLOW_F);
                     }
                 }
@@ -237,7 +235,7 @@ void InitAnalogSensor(SysInfo *p_sys, AnalogInput analog_sensor) {
     }
 }
 
-// Function CheckAnalogSensor: Returns the ADC readout of a given analog sensor 
+// Function CheckAnalogSensor: Returns the ADC readout of a given analog sensor
 uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInput analog_sensor, bool ShowDashboard) {
     ADMUX = (0xF0 & ADMUX) | analog_sensor;
     ADCSRA |= (1 << ADSC);
@@ -502,18 +500,88 @@ uint8_t GetHeatLevel(int16_t pot_adc_value, uint8_t knob_steps) {
 
 // Function OpenHeatValve: Opens a given heat valve exclusively, closing all the others
 void OpenHeatValve(SysInfo *p_sys, HeatValve valve_to_open) {
-    uint8_t modulator_valve_count = GAS_MODULATOR_VALVES;
+    uint8_t modulator_valve_count = HEAT_MODULATOR_VALVES;
     for (uint8_t valve = 0; valve < modulator_valve_count; valve++) {
-        if (valve == valve_to_open - 1) {
-            if (GetFlag(p_sys, OUTPUT_FLAGS, p_sys->gas_modulator[valve].valve_flag) == false) {
-                SetFlag(p_sys, OUTPUT_FLAGS, p_sys->gas_modulator[valve].valve_flag);
+        if (valve == valve_to_open) {
+            if (GetFlag(p_sys, OUTPUT_FLAGS, p_sys->heat_modulator[valve].valve_flag) == false) {
+                SetFlag(p_sys, OUTPUT_FLAGS, p_sys->heat_modulator[valve].valve_flag);
             }
         } else {
-            if (GetFlag(p_sys, OUTPUT_FLAGS, p_sys->gas_modulator[valve].valve_flag)) {
-                ClearFlag(p_sys, OUTPUT_FLAGS, p_sys->gas_modulator[valve].valve_flag);
+            if (GetFlag(p_sys, OUTPUT_FLAGS, p_sys->heat_modulator[valve].valve_flag)) {
+                ClearFlag(p_sys, OUTPUT_FLAGS, p_sys->heat_modulator[valve].valve_flag);
             }
         }
     }
+}
+
+// Function ModulateHeat: Modulates heat by toggling system valves according to a potentiometer ADC value
+void ModulateHeat(SysInfo *p_sys, uint16_t potentiometer_readout, uint8_t potentiometer_steps) {
+    //
+    // [ # # # ] Heat modulation code  [ # # # ]
+    //
+    if (p_sys->cycle_in_progress == false) {
+        uint8_t heat_level_time_usage = 0;
+        // Check heat level integrity
+        for (uint8_t valve_time_check = 0; valve_time_check < HEAT_MODULATOR_VALVES; valve_time_check++) {
+            heat_level_time_usage += heat_level[p_sys->current_heat_level].valve_open_time[valve_time_check];
+        }
+        if (heat_level_time_usage != 100) {
+#if LED_DEBUG
+            SetFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER_F);  // Heat level setting error, the sum of the opening time of all valves must be 100!
+            _delay_ms(5000);                                // 5-second blocking delay to indicate heat level setting errors
+            ClearFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER_F);
+#endif
+            // FAIL-SAFE: Auto cool down in case of heat cycle error
+            p_sys->current_heat_level = 0;
+            p_sys->cycle_in_progress = false;
+            // return 1; // At his point, it should jump to the error state
+        } else {
+            // Set cycle in progress
+            p_sys->cycle_in_progress = true;
+            p_sys->current_valve = 0;
+            ResetTimerLapse(GAS_MODULATOR_TIMER_ID, ((unsigned long)(heat_level[p_sys->current_heat_level].valve_open_time[p_sys->current_valve] * HEAT_CYCLE_TIME / 100)));
+        }
+    } else {
+        if (TimerFinished(GAS_MODULATOR_TIMER_ID)) {
+            // Prepare timing for next valve
+            p_sys->current_valve++;
+            ResetTimerLapse(GAS_MODULATOR_TIMER_ID, (heat_level[p_sys->current_heat_level].valve_open_time[p_sys->current_valve] * HEAT_CYCLE_TIME / 100));
+            if (p_sys->current_valve >= HEAT_MODULATOR_VALVES) {
+                // Cycle end: Reset to first valve
+#if LED_DEBUG
+                if (GetFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER_F)) { /* Toggle SPARK_IGNITER_F on each heat-cycle start */
+                    ClearFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER_F);
+                } else {
+                    SetFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER_F);
+                }
+#endif
+                p_sys->cycle_in_progress = false;
+#if HEAT_MODULATOR_DEMO
+                // DEMO MODE: loops through all heat levels, from lower to higher
+                if (p_sys->current_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
+                    p_sys->current_heat_level = 0;
+                }
+#else
+                // Read the DHW potentiometer to determine current heat level
+                p_sys->current_heat_level = GetHeatLevel(potentiometer_readout, potentiometer_steps);
+#endif
+            }
+        } else {
+            // Turn all heat valves off except the current valve
+#if SERIAL_DEBUG
+            // DEBUG: Show current heat level and open valve -> HL.V
+            SerialTxChr(32);
+            SerialTxChr(32);
+            SerialTxNum(p_sys->current_heat_level, DIGITS_2);
+            SerialTxChr(V_LINE); /* Horizontal separator (|) */
+            SerialTxNum(p_sys->gas_modulator[p_sys->current_valve].heat_valve + 1, DIGITS_1);
+#endif
+            OpenHeatValve(p_sys, p_sys->heat_modulator[p_sys->current_valve].heat_valve);
+        }
+    }
+    //
+    // [ # # # ] Heat modulation code end [ # # # ]
+    //
 }
 
 // Function GasOff: Closes all heat valves and the security valve, turns the spark igniter and exhaust fan off

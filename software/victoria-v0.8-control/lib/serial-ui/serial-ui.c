@@ -287,7 +287,7 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
         SerialTxStr(str_lit_16);
         SerialTxNum(p_sys->ch_setting, DIGITS_4);
         SerialTxChr(32); /* Space (_) */
-        SerialTxNum(GetHeatLevel(p_sys->ch_setting, DHW_SETTING_STEPS), DIGITS_2);
+        SerialTxNum(GetHeatLevel(p_sys->ch_setting, CH_SETTING_STEPS), DIGITS_2);
 
         SerialTxChr(32); /* Space (_) */
         SerialTxChr(32); /* Space (_) */
@@ -430,5 +430,10 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
         //SerialTxNum(GetTimeLeft, DIGITS_7);
         SerialTxStr(str_crlf);
 #endif /* SHOW_PUMP_TIMER */
+        
+        SerialTxStr(str_crlf);
+        // SerialTxChr(V_LINE); /* Horizontal separator (|) */
+        // SerialTxNum(p_sys->current_heat_level, DIGITS_2);    
+
     }
 }

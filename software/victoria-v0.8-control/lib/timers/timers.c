@@ -14,8 +14,8 @@
 // Function SetTimer
 uint8_t SetTimer(uint8_t timer_id, unsigned long time_lapse, TimerMode timer_mode) {
     // Disable timers..
-    //#asm(“cli”);
-    for (uint8_t i = 0; i < TIMER_BUFFER_SIZE; i++) {   // loop through and check for free spot, then place timer in there...
+    //cli();
+    for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {   // loop through and check for free spot, then place timer in there...
         if (timer_buffer[i].timer_id == TIMER_EMPTY) {  // place new timer here...
             timer_buffer[i].timer_id = timer_id;
             timer_buffer[i].timer_start_time = GetMilliseconds();
@@ -25,13 +25,13 @@ uint8_t SetTimer(uint8_t timer_id, unsigned long time_lapse, TimerMode timer_mod
         }
     }
     // Re-enable timers..
-    //#asm("sei");
+    //sei();
     return 0;
 }
 
 // Function TimerRunning
 bool TimerRunning(uint8_t timer_id) {
-    for (uint8_t i = 0; i < TIMER_BUFFER_SIZE; i++) {
+    for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {
         if (timer_buffer[i].timer_id == timer_id) {
             if ((GetMilliseconds() - timer_buffer[i].timer_start_time) >= timer_buffer[i].timer_time_lapse) {
                 return false;
@@ -43,7 +43,7 @@ bool TimerRunning(uint8_t timer_id) {
 
 // Function TimerFinished
 bool TimerFinished(uint8_t timer_id) {
-    for (uint8_t i = 0; i < TIMER_BUFFER_SIZE; i++) {
+    for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {
         if (timer_buffer[i].timer_id == timer_id) {
             if ((GetMilliseconds() - timer_buffer[i].timer_start_time) >= timer_buffer[i].timer_time_lapse) {
                 return true;
@@ -53,10 +53,20 @@ bool TimerFinished(uint8_t timer_id) {
     return false;
 }
 
+// Function CheckTimerExistence
+bool TimerExists(uint8_t timer_id) {
+    for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {
+        if (timer_buffer[i].timer_id == timer_id) {
+            return true;
+        }
+    }
+    return false;
+}
+
 // Function GetTimeLeft
 unsigned long GetTimeLeft(uint8_t timer_id) {
     unsigned long time_left = 0;
-    for (uint8_t i = 0; i < TIMER_BUFFER_SIZE; i++) {
+    for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {
         if (timer_buffer[i].timer_id == timer_id) {
             //unsigned long current_ms = GetMilliseconds();
             //if ((current_ms - timer_buffer[i].timer_start_time) >= timer_buffer[i].timer_time_lapse) {
@@ -70,7 +80,7 @@ unsigned long GetTimeLeft(uint8_t timer_id) {
 
 // Function RestartTimer
 uint8_t RestartTimer(uint8_t timer_id) {
-    for (uint8_t i = 0; i < TIMER_BUFFER_SIZE; i++) {
+    for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {
         if (timer_buffer[i].timer_id == timer_id) {
             if (timer_buffer[i].timer_mode == RUN_ONCE_AND_HOLD) {  //&&
                 //(TimerRunning(i) == false)) {
@@ -86,7 +96,7 @@ uint8_t RestartTimer(uint8_t timer_id) {
 
 // Function ResetTimerLapse
 uint8_t ResetTimerLapse(uint8_t timer_id, unsigned long time_lapse) {
-    for (uint8_t i = 0; i < TIMER_BUFFER_SIZE; i++) {
+    for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {
         if (timer_buffer[i].timer_id == timer_id) {
             if (timer_buffer[i].timer_mode == RUN_ONCE_AND_HOLD) {  //&&
                 //(TimerRunning(i) == false)) {
@@ -103,7 +113,7 @@ uint8_t ResetTimerLapse(uint8_t timer_id, unsigned long time_lapse) {
 
 // Function ProcessTimers
 void ProcessTimers() {
-    for (uint8_t i = 0; i < TIMER_BUFFER_SIZE; i++) {
+    for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {
         if ((GetMilliseconds() - timer_buffer[i].timer_start_time >= timer_buffer[i].timer_time_lapse) &&
             (timer_buffer[i].timer_id != TIMER_EMPTY)) {
             switch (timer_buffer[i].timer_mode) {
@@ -130,7 +140,7 @@ void ProcessTimers() {
 void DeleteTimer(uint8_t timer_id) {
     // Disable timer interrupt
     //#asm("cli");
-    for (uint8_t i = 0; i < TIMER_BUFFER_SIZE; i++) {  // loop through and check for timers of this type, then kill them...
+    for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {  // loop through and check for timers of this type, then kill them...
         if (timer_buffer[i].timer_id == timer_id) {    // kill timers...
             timer_buffer[i].timer_id = TIMER_EMPTY;
             timer_buffer[i].timer_start_time = 0;

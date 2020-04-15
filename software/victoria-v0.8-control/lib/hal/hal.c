@@ -73,6 +73,29 @@ void ClearFlag(SysInfo *p_sys, FlagsType flags_type, uint8_t flag_position) {
     }
 }
 
+// Function InvertFlag: Inverts the current value (0/1) of a given system flag and its associate actuator's pin
+void InvertFlag(SysInfo *p_sys, FlagsType flags_type, uint8_t flag_position) {
+    switch (flags_type) {
+        case INPUT_FLAGS: {
+            p_sys->input_flags ^= (1 << flag_position);
+            break;
+        }
+        case OUTPUT_FLAGS: {
+            // WARNING !!! HARDWARE OPERATING STATUS CHANGE !!!
+            p_sys->output_flags ^= (1 << flag_position);
+            if (GetFlag(p_sys, OUTPUT_FLAGS, flag_position)) {
+                ControlActuator(p_sys, flag_position, TURN_ON, false);
+            } else {
+                ControlActuator(p_sys, flag_position, TURN_OFF, false);
+            }
+            break;
+        }
+        default: {
+            break;
+        }
+    }
+}
+
 // Function GetFlag: Returns the binary value of a given system flag
 bool GetFlag(SysInfo *p_sys, FlagsType flags_type, uint8_t flag_position) {
     bool flag = 0;
@@ -122,9 +145,10 @@ void InitDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor) {
 }
 
 // Function CheckDigitalSensor: Returns the binary value of a given digital sensor and updates its associated flag
-bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, DebounceSw *p_deb, bool ShowDashboard) {
+//bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, DebounceSw *p_deb, bool ShowDashboard) {
+bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, bool ShowDashboard) {
     switch (digital_sensor) {
-        case DHW_REQUEST_F: { /* DHW request: Active = low, Inactive = high */
+        case DHW_REQUEST_F: { /* DHW request pin: Active = low, Inactive = high */
             if ((DHW_RQ_PINP >> DHW_RQ_PIN) & true) {
                 ClearFlag(p_sys, INPUT_FLAGS, DHW_REQUEST_F);
             } else {
@@ -132,44 +156,50 @@ bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, DebounceSw *p_
             }
             return ((p_sys->input_flags >> DHW_REQUEST_F) & true);
         }
-        // case CH_REQUEST_F: { /* DHW request: Active = low, Inactive = high */
-        //     // CH request switch @@@@@@ @@@@@@ @@@@@@ NO DEBOUNCE!!! @@@@@@ @@@@@@ @@@@@@
-        //     if ((CH_RQ_PINP >> CH_RQ_PIN) & true) {
-        //         ClearFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F);
-        //     } else {
-        //         SetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F);
-        //     }
-        //     return ((p_sys->input_flags >> CH_REQUEST_F) & true);
-        // }
-        case CH_REQUEST_F: { /* CH request: Active = low, Inactive = high (bimetallic room thermostat) */
+
+            // case CH_REQUEST_F: { /* DHW request: Active = low, Inactive = high */
+            //     // CH request switch @@@@@@ @@@@@@ @@@@@@ NO DEBOUNCE!!! @@@@@@ @@@@@@ @@@@@@
+            //     if ((CH_RQ_PINP >> CH_RQ_PIN) & true) {
+            //         ClearFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F);
+            //     } else {
+            //         SetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F);
+            //     }
+            //     return ((p_sys->input_flags >> CH_REQUEST_F) & true);
+            // }
+
+        case CH_REQUEST_F: { /* CH request pin: Active = low, Inactive = high (bimetallic room thermostat) */
             // CH request switch debouncing
-            if ((GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F)) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) {
-                //if (((p_sys->input_flags >> CH_REQUEST_F) & true) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) {
-                if (!(p_deb->ch_request_deb--)) {
-                    p_deb->ch_request_deb = DLY_DEBOUNCE_CH_REQ;
-                    if ((GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F)) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) {
-                        //if (((p_sys->input_flags >> CH_REQUEST_F) & true) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) {
-                        p_sys->input_flags ^= (1 << CH_REQUEST_F);
+            if (((GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F)) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) || TimerExists(DEB_CH_SWITCH_TIMER_ID)) {
+                if (TimerExists(DEB_CH_SWITCH_TIMER_ID)) {
+                    if (TimerFinished(DEB_CH_SWITCH_TIMER_ID)) {
+                        if ((GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F)) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) {
+                            InvertFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F);
+                        }
+                        DeleteTimer(DEB_CH_SWITCH_TIMER_ID);
                     }
+                } else {
+                    SetTimer(DEB_CH_SWITCH_TIMER_ID, DEB_CH_SWITCH_TIMER_DURATION, DEB_CH_SWITCH_TIMER_MODE);
                 }
             }
-            return ((p_sys->input_flags >> CH_REQUEST_F) & true);
+            return (GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F));
         }
-        case AIRFLOW_F: { /* Flue air flow sensor: Active = low, Inactive = high (flue air pressure switch) */
-            // Airflow switch debouncing
-            if ((GetFlag(p_sys, INPUT_FLAGS, AIRFLOW_F)) == ((AIRFLOW_PINP >> AIRFLOW_PIN) & true)) {
-                //if (((p_sys->input_flags >> AIRFLOW_F) & true) == ((AIRFLOW_PINP >> AIRFLOW_PIN) & true)) {
-                if (!(p_deb->airflow_deb--)) {
-                    p_deb->airflow_deb = DLY_DEBOUNCE_AIRFLOW;
-                    if ((GetFlag(p_sys, INPUT_FLAGS, AIRFLOW_F)) == ((AIRFLOW_PINP >> AIRFLOW_PIN) & true)) {
-                        //if (((p_sys->input_flags >> AIRFLOW_F) & true) == ((AIRFLOW_PINP >> AIRFLOW_PIN) & true)) {
-                        p_sys->input_flags ^= (1 << AIRFLOW_F);
+        case AIRFLOW_F: { /* Flue air flow sensor pin: Active = low, Inactive = high (flue air pressure switch) */
+            // Airflow sensor switch debouncing
+            if (((GetFlag(p_sys, INPUT_FLAGS, AIRFLOW_F)) == ((AIRFLOW_PINP >> AIRFLOW_PIN) & true)) || TimerExists(DEB_AIRFLOW_TIMER_ID)) {
+                if (TimerExists(DEB_AIRFLOW_TIMER_ID)) {
+                    if (TimerFinished(DEB_AIRFLOW_TIMER_ID)) {
+                        if ((GetFlag(p_sys, INPUT_FLAGS, AIRFLOW_F)) == ((AIRFLOW_PINP >> AIRFLOW_PIN) & true)) {
+                            InvertFlag(p_sys, INPUT_FLAGS, AIRFLOW_F);
+                        }
+                        DeleteTimer(DEB_AIRFLOW_TIMER_ID);
                     }
+                } else {
+                    SetTimer(DEB_AIRFLOW_TIMER_ID, DEB_AIRFLOW_TIMER_DURATION, DEB_AIRFLOW_TIMER_MODE);
                 }
             }
-            return ((p_sys->input_flags >> AIRFLOW_F) & true);
+            return (GetFlag(p_sys, INPUT_FLAGS, AIRFLOW_F));
         }
-        case FLAME_F: { /* Flame sensor: Active = high, Inactive = low. IT NEEDS EXTERNAL PULL-DOWN RESISTOR !!! */
+        case FLAME_F: { /* Flame sensor pin: Active = high, Inactive = low. IT NEEDS EXTERNAL PULL-DOWN RESISTOR !!! */
             if ((FLAME_PINP >> FLAME_PIN) & true) {
                 SetFlag(p_sys, INPUT_FLAGS, FLAME_F);
 #if LED_UI_FOR_FLAME
@@ -183,7 +213,7 @@ bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, DebounceSw *p_
             }
             return ((p_sys->input_flags >> FLAME_F) & true);
         }
-        case OVERHEAT_F: { /* Overheat thermostat: Active = high, Inactive = low. ACTIVE INDICATES OVERTEMPERATURE !!! */
+        case OVERHEAT_F: { /* Overheat thermostat pin: Active = high, Inactive = low. ACTIVE INDICATES OVERTEMPERATURE !!! */
             if ((OVERHEAT_PINP >> OVERHEAT_PIN) & true) {
                 ClearFlag(p_sys, INPUT_FLAGS, OVERHEAT_F);
             } else {

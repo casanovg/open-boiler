@@ -19,7 +19,7 @@
 #include <temp-calc.h>
 #include <timers.h>
 
-#include "../../include/sys-setup.h"
+#include "../../include/sys-settings.h"
 
 // Serial comm settings
 

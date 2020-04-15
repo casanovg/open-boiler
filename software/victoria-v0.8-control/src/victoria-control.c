@@ -26,7 +26,7 @@ int main(void) {
     SerialInit();
 
     // System gas modulator
-    HeatModulator heat_mod[] = {
+    HeatModulator gas_modulator[] = {
         {VALVE_1, VALVE_1_F, 7000, 0.87, false},
         {VALVE_2, VALVE_2_F, 12000, 1.46, false},
         {VALVE_3, VALVE_3_F, 20000, 2.39, false}};
@@ -44,22 +44,14 @@ int main(void) {
     p_system->ignition_retries = 0;
     p_system->pump_delay = 0;
     p_system->ch_on_duty_step = CH_ON_DUTY_1;
-    for (uint8_t valve = 0; valve < HEAT_MODULATOR_VALVES; valve++) {
-        p_system->heat_modulator[valve] = heat_mod[valve];
-    }
-
-    // Electromechanical switches debouncing initialization
-    DebounceSw debounce_sw;
-    DebounceSw *p_debounce = &debounce_sw;
-    p_debounce->airflow_deb = DLY_DEBOUNCE_CH_REQ;
-    p_debounce->ch_request_deb = DLY_DEBOUNCE_AIRFLOW;
-
     p_system->cycle_in_progress = 0;
     p_system->current_heat_level = 0;
     p_system->current_valve = 0;
-    //uint8_t system_valves = (sizeof(heat_modulator) / sizeof(heat_modulator[0]));
+    for (uint8_t valve = 0; valve < HEAT_MODULATOR_VALVES; valve++) {
+        p_system->heat_modulator[valve] = gas_modulator[valve];
+    }
 
-    // ADC buffers initialization
+    // Initialize ADC buffers
     AdcBuffers buffer_pack;
     AdcBuffers *p_buffer_pack = &buffer_pack;
     InitAdcBuffers(p_buffer_pack, BUFFER_LENGTH);
@@ -123,7 +115,8 @@ int main(void) {
 
         // Update digital input sensors status
         for (InputFlag digital_sensor = DHW_REQUEST_F; digital_sensor <= OVERHEAT_F; digital_sensor++) {
-            CheckDigitalSensor(p_system, digital_sensor, p_debounce, false);
+            //CheckDigitalSensor(p_system, digital_sensor, p_debounce, false);
+            CheckDigitalSensor(p_system, digital_sensor, false);
         }
 
         // Update analog input sensors status
@@ -594,17 +587,13 @@ int main(void) {
                                 ResetTimerLapse(GAS_MODULATOR_TIMER_ID, GAS_MODULATOR_TIMER_DURATION);
                                 p_system->inner_step = READY_1;
                                 p_system->system_state = READY;
-                                break;  // ?????????????? ?????????????? ??????????????
+                                break;
                             }
                         }
-                        //
-                        // [ # # # ] CH heat modulation code [ # # # ]
-                        //
                         // While the CH water temperature is cooler than setpoint high, continue heating
                         // Otherwise, close gas and move on to CH_ON_DUTY_2 step
                         // NOTE: The temperature reading last bit is masked out to avoid oscillations
                         if ((p_system->ch_temperature & CH_TEMP_MASK) >= CH_SETPOINT_HIGH) {
-                            // ---> ---> ---> OpenHeatValve(p_system, VALVE_2); // Turn all heat valves off except the valve 2
                             // **************************************************************
                             //                                                                *
                             ModulateHeat(p_system, p_system->ch_setting, CH_SETTING_STEPS);  // *
@@ -617,9 +606,6 @@ int main(void) {
                             // NO NO NO p_system->pump_delay = DLY_WATER_PUMP_OFF;
                             p_system->inner_step = CH_ON_DUTY_2;
                         }
-                        //
-                        // [ # # # ] CH heat modulation code end [ # # # ]
-                        //
                         break;
                     }
                     // .........................................................
@@ -694,7 +680,8 @@ int main(void) {
                 while (error_loops--) {
                     // Update digital input sensors status
                     for (InputFlag digital_sensor = DHW_REQUEST_F; digital_sensor <= OVERHEAT_F; digital_sensor++) {
-                        CheckDigitalSensor(p_system, digital_sensor, p_debounce, false);
+                        //CheckDigitalSensor(p_system, digital_sensor, p_debounce, false);
+                        CheckDigitalSensor(p_system, digital_sensor, false);
                     }
                     p_system->system_state = ERROR;
                     Dashboard(p_system, true);

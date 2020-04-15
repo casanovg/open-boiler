@@ -430,10 +430,5 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
         //SerialTxNum(GetTimeLeft, DIGITS_7);
         SerialTxStr(str_crlf);
 #endif /* SHOW_PUMP_TIMER */
-        
-        SerialTxStr(str_crlf);
-        // SerialTxChr(V_LINE); /* Horizontal separator (|) */
-        // SerialTxNum(p_sys->current_heat_level, DIGITS_2);    
-
     }
 }

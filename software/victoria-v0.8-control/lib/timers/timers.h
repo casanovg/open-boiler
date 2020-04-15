@@ -17,6 +17,8 @@
 #include <avr/pgmspace.h>
 #include <stdbool.h>
 
+#include "../../include/sys-settings.h"
+
 //Timer function defines
 
 #define clockCyclesPerMicrosecond() (F_CPU / 1000000L)
@@ -48,7 +50,7 @@
 #define DLY_CH_ON_DUTY_1 500      /* On_CH_Duty_1 step long delay */
 #define DLY_CH_ON_DUTY_LOOP 3000  /* On_DHW_Duty loop long delay */
 #define DLY_FLAME_MODULATION 9000 /* Modulation cycle: used in 1/3 parts */
-#define DLY_WATER_PUMP_OFF 60000 /* Delay until the water pump shuts down when there are no CH requests */
+#define DLY_WATER_PUMP_OFF 60000  /* Delay until the water pump shuts down when there are no CH requests */
                                   /* Time: 600000 / 60 / 1000 = 10 min aprox */
                                   /* Time: 900000 / 60 / 1000 = 15 min aprox */
                                   /* Time: 1800000 / 60 / 1000 = 30 min aprox     */
@@ -57,8 +59,7 @@
 #define DLY_FLAME_OFF 100    /* Delay before checking if the flame is off after closing gas */
 #define DLY_AIRFLOW_OFF 2000 /* Delay before checking if the airflow sensor switches off when the fan gets turned off */
 
-#define TIMER_BUFFER_SIZE 3 /* Number of system timers */
-#define TIMER_EMPTY 0       /* Timer empty value */
+#define TIMER_EMPTY 0 /* Timer empty value */
 
 // Types
 
@@ -68,22 +69,24 @@ typedef enum timer_mode {
     RUN_CONTINUOUSLY = 2  // Use this mode for call-back functions only!
 } TimerMode;
 
-typedef struct timers {
+typedef struct timer {
     uint8_t timer_id;
     unsigned long timer_start_time;
     unsigned long timer_time_lapse;
     TimerMode timer_mode;
-} SystemTimers;
+} SystemTimer;
 
 // Prototypes
 
 uint8_t SetTimer(uint8_t, unsigned long, TimerMode);
 bool TimerRunning(uint8_t);
 bool TimerFinished(uint8_t);
+bool TimerExists(uint8_t);
 unsigned long GetTimeLeft(uint8_t);
 uint8_t RestartTimer(uint8_t);
 uint8_t ResetTimerLapse(uint8_t, unsigned long);
 void ProcessTimers();
+bool CheckTimerExistence(uint8_t);
 void DeleteTimer(uint8_t);
 void SetTickTimer(void);
 unsigned long GetMilliseconds(void);
@@ -93,11 +96,11 @@ unsigned long GetMilliseconds(void);
 // Globals
 
 // Timer function variables
-//volatile static unsigned long timer0_overflow_cnt = 0; /* Range 0 - 4294967295 */
 volatile static unsigned long timer0_milliseconds = 0; /* Range: 0 - 4294967295 milliseconds (49 days)*/
 volatile static unsigned char timer0_fractions = 0;    /* Range 0 - 4294967295 */
+//volatile static unsigned long timer0_overflow_cnt = 0; /* Range 0 - 4294967295 */
 
 // System Timers globals
-SystemTimers timer_buffer[TIMER_BUFFER_SIZE];
+SystemTimer timer_buffer[SYSTEM_TIMERS];
 
 #endif /* _SYS_TIMERS_H_ */

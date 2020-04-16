@@ -102,7 +102,7 @@ typedef enum analog_inputs {
     CH_TEMPERATURE = 7,
     DHW_SETTING = 0,
     CH_SETTING = 1,
-    SYSTEM_SETTING = 2
+    SYSTEM_MODE = 2
 } AnalogInput;
 
 typedef enum states {

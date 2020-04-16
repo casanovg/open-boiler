@@ -51,7 +51,7 @@ typedef struct adc_buffers {
     RingBuffer ch_temp_adc_buffer;
     RingBuffer dhw_set_adc_buffer;
     RingBuffer ch_set_adc_buffer;
-    RingBuffer sys_set_adc_buffer;
+    RingBuffer sys_mod_adc_buffer;
 } AdcBuffers;
 
 // Prototypes

@@ -245,7 +245,7 @@ void InitAnalogSensor(SysInfo *p_sys, AnalogInput analog_sensor) {
             p_sys->ch_setting = 0;
             break;
         }
-        case SYSTEM_SETTING: {
+        case SYSTEM_MODE: {
             p_sys->system_mode = 0;
             break;
         }
@@ -292,12 +292,12 @@ uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInpu
             p_sys->ch_setting = AverageAdc(p_buffer_pack->ch_set_adc_buffer.data, BUFFER_LENGTH, 0, MEAN);
             break;
         }
-        case SYSTEM_SETTING: {
-            p_buffer_pack->sys_set_adc_buffer.data[p_buffer_pack->sys_set_adc_buffer.ix++] = (ADC & 0x3FF);
-            if (p_buffer_pack->sys_set_adc_buffer.ix >= BUFFER_LENGTH) {
-                p_buffer_pack->sys_set_adc_buffer.ix = 0;
+        case SYSTEM_MODE: {
+            p_buffer_pack->sys_mod_adc_buffer.data[p_buffer_pack->sys_mod_adc_buffer.ix++] = (ADC & 0x3FF);
+            if (p_buffer_pack->sys_mod_adc_buffer.ix >= BUFFER_LENGTH) {
+                p_buffer_pack->sys_mod_adc_buffer.ix = 0;
             }
-            p_sys->system_mode = AverageAdc(p_buffer_pack->sys_set_adc_buffer.data, BUFFER_LENGTH, 0, MEAN);
+            p_sys->system_mode = AverageAdc(p_buffer_pack->sys_mod_adc_buffer.data, BUFFER_LENGTH, 0, MEAN);
             break;
         }
         default: {
@@ -452,13 +452,13 @@ void InitAdcBuffers(AdcBuffers *p_buffer_pack, uint8_t buffer_length) {
     p_buffer_pack->ch_temp_adc_buffer.ix = 0;
     p_buffer_pack->dhw_set_adc_buffer.ix = 0;
     p_buffer_pack->ch_set_adc_buffer.ix = 0;
-    p_buffer_pack->sys_set_adc_buffer.ix = 0;
+    p_buffer_pack->sys_mod_adc_buffer.ix = 0;
     for (uint8_t i = 0; i < buffer_length; i++) {
         p_buffer_pack->dhw_temp_adc_buffer.data[i] = 0;
         p_buffer_pack->ch_temp_adc_buffer.data[i] = 0;
         p_buffer_pack->dhw_set_adc_buffer.data[i] = 0;
         p_buffer_pack->ch_set_adc_buffer.data[i] = 0;
-        p_buffer_pack->sys_set_adc_buffer.data[i] = 0;
+        p_buffer_pack->sys_mod_adc_buffer.data[i] = 0;
     }
 }
 

@@ -293,7 +293,7 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
         SerialTxChr(32); /* Space (_) */
 
         SerialTxStr(str_lit_17);
-        SerialTxNum(p_sys->system_setting, DIGITS_4);
+        SerialTxNum(p_sys->system_mode, DIGITS_4);
 
         SerialTxChr(32);     /* Space (_) */
         SerialTxChr(32);     /* Space (_) */

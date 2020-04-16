@@ -28,6 +28,7 @@
 
 #define DHW_SETTING_STEPS 12 /* DHW setting potentiometer steps */
 #define CH_SETTING_STEPS 12  /* CH setting potentiometer steps */
+#define SYSTEM_MODE_STEPS 4  /* System mode potentiometer steps */
 
 #define HEAT_MODULATOR_VALVES 3 /* Number of heat modulator valves */
 #define SYSTEM_TIMERS 5         /* Number of system timers */
@@ -161,7 +162,7 @@ typedef struct sys_info {
     uint16_t ch_temperature;                             /* CH NTC thermistor temperature ADC readout */
     uint16_t dhw_setting;                                /* DWH setting potentiometer ADC readout */
     uint16_t ch_setting;                                 /* CH setting potentiometer ADC readout */
-    uint16_t system_setting;                             /* System mode potentiometer ADC readout */
+    uint16_t system_mode;                                /* System mode potentiometer ADC readout */
     uint8_t last_displayed_iflags;                       /* Input sensor flags last shown status */
     uint8_t last_displayed_oflags;                       /* Hardware activation flags last shown status */
     uint8_t ignition_retries;                            /* Burner ignition retry counter */

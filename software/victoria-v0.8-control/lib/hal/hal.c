@@ -246,7 +246,7 @@ void InitAnalogSensor(SysInfo *p_sys, AnalogInput analog_sensor) {
             break;
         }
         case SYSTEM_SETTING: {
-            p_sys->system_setting = 0;
+            p_sys->system_mode = 0;
             break;
         }
         default:
@@ -297,7 +297,7 @@ uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInpu
             if (p_buffer_pack->sys_set_adc_buffer.ix >= BUFFER_LENGTH) {
                 p_buffer_pack->sys_set_adc_buffer.ix = 0;
             }
-            p_sys->system_setting = AverageAdc(p_buffer_pack->sys_set_adc_buffer.data, BUFFER_LENGTH, 0, MEAN);
+            p_sys->system_mode = AverageAdc(p_buffer_pack->sys_set_adc_buffer.data, BUFFER_LENGTH, 0, MEAN);
             break;
         }
         default: {

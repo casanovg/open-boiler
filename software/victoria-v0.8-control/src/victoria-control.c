@@ -4,7 +4,7 @@
  *  ........................................................
  *  File: victoria-control.c (main code) for ATmega328
  *  ........................................................
- *  Version: 0.8 "Juan" / 2019-04-09 ("Easter quarantine")
+ *  Version: 0.8 "Juan" / 2019-04-09 ("Easter Quarantine")
  *  gustavo.casanova@nicebots.com
  *  ........................................................
  */
@@ -621,7 +621,7 @@ int main(void) {
                             if (GetFlag(p_system, INPUT_FLAGS, FLAME_F)) {
                                 GasOff(p_system);
                             }
-                            // If the water pump still has time to run, turn it on
+                            // If the water pump is off, but it still has time to run, turn it on
                             if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F) == false) {
                                 if (p_system->pump_delay > 0) {
                                     SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);

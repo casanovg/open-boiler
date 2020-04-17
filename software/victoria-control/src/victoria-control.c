@@ -1407,7 +1407,8 @@ void SerialTxNum(uint32_t data, DigitLength digits) {
             break;
         }
         case DIGITS_7: {
-            sprintf(str, "%07lu", data);
+            //sprintf(str, "%07lu", data);
+            sprintf(str, "%0lu", (unsigned long int)data);
             break;
         }
         case DIGITS_FREE:

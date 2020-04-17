@@ -106,9 +106,9 @@ int main(void) {
     SetTickTimer();
 
     /*  ___________________
-       |                   | 
-       |     Main Loop     |
-       |___________________|
+      |                   | 
+      |     Main Loop     |
+      |___________________|
     */
     for (;;) {
         // Reset the WDT
@@ -170,11 +170,12 @@ int main(void) {
         if (GetKnobPosition(p_system->system_mode, SYSTEM_MODE_STEPS) < SYS_OFF) {
             // System FSM
             switch (p_system->system_state) {
+                
                 /*  ________________________
-              |                         |
-              |   System state -> OFF   |
-              |_________________________|
-            */
+                  |                         |
+                  |   System state -> OFF   |
+                  |_________________________|
+                */
                 case OFF: {
                     // Verify that the flame sensor is off at this point, otherwise, there's a failure
                     if (GetFlag(p_system, INPUT_FLAGS, FLAME_F)) {
@@ -283,10 +284,10 @@ int main(void) {
                 }
 
                 /*  __________________________
-              |                           |
-              |   System state -> READY   |
-              |___________________________|
-            */
+                  |                           |
+                  |   System state -> READY   |
+                  |___________________________|
+                */
                 case READY: {
                     // Give the flame sensor time before checking if it is off when the gas is closed
                     // Give the airflow sensor time before checking if it switches off when the fan gets turned off
@@ -326,10 +327,10 @@ int main(void) {
                 }
 
                 /*  _____________________________
-              |                              |
-              |   System state -> IGNITING   |
-              |______________________________|
-            */
+                  |                              |
+                  |   System state -> IGNITING   |
+                  |______________________________|
+                */
                 case IGNITING: {
                     // Check if the DHW and CH request are over
                     if ((GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F) == false) &&
@@ -489,10 +490,10 @@ int main(void) {
                 }
 
                 /*  ________________________________
-              |                                 |
-              |   System state -> DHW_ON_DUTY   |
-              |_________________________________|
-            */
+                  |                                 |
+                  |   System state -> DHW_ON_DUTY   |
+                  |_________________________________|
+                */
                 case DHW_ON_DUTY: {
                     // If the flame sensor is off, check that gas valves 3 and 2 are closed and retry ignition
                     if (GetFlag(p_system, INPUT_FLAGS, FLAME_F) == false) {
@@ -542,10 +543,10 @@ int main(void) {
                 }
 
                 /*  _______________________________
-              |                                |
-              |   System state -> CH_ON_DUTY   |
-              |________________________________|
-            */
+                  |                                |
+                  |   System state -> CH_ON_DUTY   |
+                  |________________________________|
+                */
                 case CH_ON_DUTY: {
                     switch (p_system->inner_step) {
                         // ............................................
@@ -674,10 +675,10 @@ int main(void) {
                 }
 
                 /*  __________________________
-              |                           |
-              |   System state -> ERROR   |
-              |___________________________|
-            */
+                  |                           |
+                  |   System state -> ERROR   |
+                  |___________________________|
+                */
                 case ERROR: {
                     // Turn all actuators off, except the CH water pump
                     GasOff(p_system);
@@ -713,10 +714,10 @@ int main(void) {
                 }
 
                 /*  ____________________________
-              |                             |
-              |   System state -> Default   |
-              |_____________________________|
-            */
+                  |                             |
+                  |   System state -> Default   |
+                  |_____________________________|
+                */
                 default: {
                     ResetTimerLapse(FSM_TIMER_ID, DLY_OFF_2);
                     p_system->inner_step = OFF_1;

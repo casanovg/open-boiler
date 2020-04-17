@@ -620,9 +620,11 @@ int main(void) {
                             if (GetFlag(p_system, INPUT_FLAGS, FLAME_F)) {
                                 GasOff(p_system);
                             }
-                            // Turn CH water pump on
+                            // If the water pump still has time to run, turn it on
                             if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F) == false) {
-                                SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                                if (p_system->pump_delay > 0) {
+                                    SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                                }
                             }
                             // If the CH water temperature is colder than setpoint low, ignite the burner,
                             // then go back to CH_ON_DUTY_1 step
@@ -722,8 +724,7 @@ int main(void) {
                     break;
                 }
 
-            } /* System FSM end */
-
+            }    /* System FSM end */
         } else { /* If the system is in OFF or RESET mode ... */
             //ClrScr();
             if (GetKnobPosition(p_system->system_mode, SYSTEM_MODE_STEPS) == SYS_OFF) {

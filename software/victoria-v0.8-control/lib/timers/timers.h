@@ -50,7 +50,7 @@
 #define DLY_CH_ON_DUTY_1 500      /* On_CH_Duty_1 step long delay */
 #define DLY_CH_ON_DUTY_LOOP 3000  /* On_DHW_Duty loop long delay */
 #define DLY_FLAME_MODULATION 9000 /* Modulation cycle: used in 1/3 parts */
-#define DLY_WATER_PUMP_OFF 300000 /* Delay until the water pump shuts down when there are no CH requests */
+#define DLY_WATER_PUMP_OFF 600000 /* Delay until the water pump shuts down when there are no CH requests */
                                   /* Time: 300000 / 60 / 1000 = 5 min aprox */
                                   /* Time: 600000 / 60 / 1000 = 10 min aprox */
                                   /* Time: 900000 / 60 / 1000 = 15 min aprox */

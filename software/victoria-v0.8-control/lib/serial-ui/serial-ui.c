@@ -115,6 +115,7 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
         ClrScr();
 
         DrawLine(DASH_WIDTH, H_ELINE); /* Dashed line (= 61) */
+
         SerialTxStr(str_crlf);         /* CR + new line */
 
         SerialTxChr(V_LINE); /* Horizontal separator (|) */
@@ -276,32 +277,48 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
         SerialTxChr(32); /* Space (_) */
 
         SerialTxStr(str_lit_15);
-        SerialTxNum(p_sys->dhw_setting, DIGITS_4);
-        SerialTxChr(32); /* Space (_) */
-        SerialTxNum(GetHeatLevel(p_sys->dhw_setting, DHW_SETTING_STEPS), DIGITS_2);
-        //SerialTxNum(p_sys->dhw_heat_level, DIGITS_2);
+        //SerialTxNum(p_sys->dhw_setting, DIGITS_4);
+        //SerialTxChr(32); /* Space (_) */
+        SerialTxNum(GetKnobPosition(p_sys->dhw_setting, DHW_SETTING_STEPS), DIGITS_2);
+        SerialTxChr(32);
+        SerialTxChr(32);
 
         SerialTxChr(32); /* Space (_) */
         SerialTxChr(32); /* Space (_) */
 
         SerialTxStr(str_lit_16);
-        SerialTxNum(p_sys->ch_setting, DIGITS_4);
-        SerialTxChr(32); /* Space (_) */
-        SerialTxNum(GetHeatLevel(p_sys->ch_setting, CH_SETTING_STEPS), DIGITS_2);
+        //SerialTxNum(p_sys->ch_setting, DIGITS_4);
+        //SerialTxChr(32); /* Space (_) */
+        SerialTxNum(GetKnobPosition(p_sys->ch_setting, CH_SETTING_STEPS), DIGITS_2);
+        SerialTxChr(32);
+        SerialTxChr(32);
 
         SerialTxChr(32); /* Space (_) */
         SerialTxChr(32); /* Space (_) */
 
         SerialTxStr(str_lit_17);
-        SerialTxNum(p_sys->system_mode, DIGITS_4);
-
-        SerialTxChr(32);     /* Space (_) */
-        SerialTxChr(32);     /* Space (_) */
-        SerialTxChr(32);     /* Space (_) */
-        SerialTxChr(32);     /* Space (_) */
-        SerialTxChr(32);     /* Space (_) */
-        SerialTxChr(32);     /* Space (_) */
-        SerialTxChr(32);     /* Space (_) */
+        //SerialTxNum(p_sys->system_mode, DIGITS_4);
+        //SerialTxChr(32); /* Space (_) */
+        
+        switch (GetKnobPosition(p_sys->system_mode, SYSTEM_MODE_STEPS)) {
+            case SYS_COMBI: {
+                SerialTxStr(sys_mode_00);
+                break;
+            }
+            case SYS_DHW: {
+                SerialTxStr(sys_mode_01);
+                break;
+            }
+            case SYS_OFF: {
+                SerialTxStr(sys_mode_02);
+                break;
+            }
+            case SYS_RESET: {
+                SerialTxStr(sys_mode_03);
+                break;
+            }
+        }
+        
         SerialTxChr(V_LINE); /* Horizontal separator (|) */
 
         SerialTxStr(str_crlf); /* CR + new line */
@@ -431,4 +448,5 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
         SerialTxStr(str_crlf);
 #endif /* SHOW_PUMP_TIMER */
     }
+
 }

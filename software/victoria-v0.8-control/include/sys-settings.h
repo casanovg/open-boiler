@@ -73,6 +73,13 @@
 
 // System types
 
+typedef enum system_modes {
+    SYS_COMBI = 0,
+    SYS_DHW = 1,
+    SYS_OFF = 2,
+    SYS_RESET = 3
+} SystemMode;
+
 typedef enum flags_types {
     INPUT_FLAGS = 0,
     OUTPUT_FLAGS = 1

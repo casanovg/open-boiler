@@ -34,6 +34,7 @@ int main(void) {
     //System state initialization
     SysInfo sys_info;
     SysInfo *p_system = &sys_info;
+    p_system->system_mode = SYS_OFF;
     p_system->system_state = OFF;
     p_system->inner_step = OFF_1;
     p_system->input_flags = 0;
@@ -166,559 +167,598 @@ int main(void) {
         // Display updated status
         Dashboard(p_system, false);
 
-        // System FSM
-        switch (p_system->system_state) {
-            /*  ________________________
+        if (GetKnobPosition(p_system->system_mode, SYSTEM_MODE_STEPS) < SYS_OFF) {
+            // System FSM
+            switch (p_system->system_state) {
+                /*  ________________________
               |                         |
               |   System state -> OFF   |
               |_________________________|
             */
-            case OFF: {
-                // Verify that the flame sensor is off at this point, otherwise, there's a failure
-                if (GetFlag(p_system, INPUT_FLAGS, FLAME_F)) {
-                    GasOff(p_system);
-                    p_system->error = ERROR_002;
-                    p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
-                    break;
-                }
-#if !(AIRFLOW_OVERRIDE)
-                // If there isn't a fan test in progress, verify that the airflow sensor is off, otherwise, there's a failure
-                if ((p_system->inner_step < OFF_3) && (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F))) {
-                    ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN_F);
-                    p_system->error = ERROR_003;
-                    p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
-                    break;
-                }
-#endif /* AIRFLOW_OVERRIDE */
-                switch (p_system->inner_step) {
-                    // .....................................
-                    // . Step OFF_1 : Turn all devices off  .
-                    // .....................................
-                    case OFF_1: {
-                        // Turn all actuators off, except the CH water pump
+                case OFF: {
+                    // Verify that the flame sensor is off at this point, otherwise, there's a failure
+                    if (GetFlag(p_system, INPUT_FLAGS, FLAME_F)) {
                         GasOff(p_system);
-                        ResetTimerLapse(FSM_TIMER_ID, DLY_OFF_2);
-                        p_system->inner_step = OFF_2;
+                        p_system->error = ERROR_002;
+                        p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
                         break;
                     }
-                    // ..................................................
-                    // . Step OFF_2 : Fan test in progress: turn fan on  .
-                    // ..................................................
-                    case OFF_2: {
-#if (!(AIRFLOW_OVERRIDE) && !(FAN_TEST_OVERRIDE))
-                        if (TimerFinished(FSM_TIMER_ID)) {                  /* DLY_OFF_2 */
-                            SetFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN_F); /* Turn exhaust fan on */
-                            ResetTimerLapse(FSM_TIMER_ID, DLY_OFF_3);
-                            p_system->inner_step = OFF_3;
-                        }
-#else
-                        p_system->inner_step = OFF_3;
-#endif /* AIRFLOW_OVERRIDE && FAN_TEST_OVERRIDE */
+#if !(AIRFLOW_OVERRIDE)
+                    // If there isn't a fan test in progress, verify that the airflow sensor is off, otherwise, there's a failure
+                    if ((p_system->inner_step < OFF_3) && (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F))) {
+                        ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN_F);
+                        p_system->error = ERROR_003;
+                        p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
                         break;
                     }
-                    // .....................................................................
-                    // . Step OFF_3 : Fan test in progress: check airflow sensor activation .
-                    // .....................................................................
-                    case OFF_3: {
-#if (!(AIRFLOW_OVERRIDE) && !(FAN_TEST_OVERRIDE))
-                        // Airflow sensor activated -> fan test successful
-                        if (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F)) {
-                            ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN_F);
-                            ResetTimerLapse(FSM_TIMER_ID, DLY_OFF_4);
-                            p_system->inner_step = OFF_4;
+#endif /* AIRFLOW_OVERRIDE */
+                    switch (p_system->inner_step) {
+                        // .....................................
+                        // . Step OFF_1 : Turn all devices off  .
+                        // .....................................
+                        case OFF_1: {
+                            // Turn all actuators off, except the CH water pump
+                            GasOff(p_system);
+                            ResetTimerLapse(FSM_TIMER_ID, DLY_OFF_2);
+                            //if (GetKnobPosition(p_system->system_mode, SYSTEM_MODE_STEPS) < SYS_OFF) {
+                            p_system->inner_step = OFF_2;
+                            //}
+                            break;
                         }
-                        // Timeout: Airflow sensor didn't activate on time -> fan test failed
-                        if (TimerFinished(FSM_TIMER_ID)) { /* DLY_OFF_3 */
-                            ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN_F);
-                            p_system->error = ERROR_004;
-                            p_system->system_state = ERROR;
-                        }
-#else
-                        // Airflow sensor check skipped
-                        p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
-                        ResetTimerLapse(FSM_TIMER_ID, DLY_OFF_4);
-                        p_system->inner_step = OFF_4;
-#endif /* AIRFLOW_OVERRIDE && FAN_TEST_OVERRIDE */
-                        break;
-                    }
-                    // .......................................................................
-                    // . Step OFF_4 : Fan test in progress: check airflow sensor deactivation .
-                    // .......................................................................
-                    case OFF_4: {
-                        if (TimerFinished(FSM_TIMER_ID)) { /* DLY_OFF_4 --- Let the fan to rev down --- */
+                        // ..................................................
+                        // . Step OFF_2 : Fan test in progress: turn fan on  .
+                        // ..................................................
+                        case OFF_2: {
 #if (!(AIRFLOW_OVERRIDE) && !(FAN_TEST_OVERRIDE))
-                            if (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F)) {
-                                p_system->error = ERROR_006;
-                                p_system->system_state = ERROR;
-                            } else {
-                                p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
-                                ResetTimerLapse(FSM_TIMER_ID, (DLY_READY_1));
-                                p_system->inner_step = READY_1;
-                                p_system->system_state = READY;
+                            if (TimerFinished(FSM_TIMER_ID)) {                  /* DLY_OFF_2 */
+                                SetFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN_F); /* Turn exhaust fan on */
+                                ResetTimerLapse(FSM_TIMER_ID, DLY_OFF_3);
+                                p_system->inner_step = OFF_3;
                             }
 #else
-                            p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
-                            ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
-                            p_system->inner_step = READY_1;
-                            p_system->system_state = READY;
+                            p_system->inner_step = OFF_3;
 #endif /* AIRFLOW_OVERRIDE && FAN_TEST_OVERRIDE */
+                            break;
                         }
-                        break;
-                    }
-                    // ................
-                    // . OFF : Default .
-                    // ................
-                    default: {
-                        if (p_system->system_state == OFF) {
-                            p_system->inner_step = OFF_1;
+                        // .....................................................................
+                        // . Step OFF_3 : Fan test in progress: check airflow sensor activation .
+                        // .....................................................................
+                        case OFF_3: {
+#if (!(AIRFLOW_OVERRIDE) && !(FAN_TEST_OVERRIDE))
+                            // Airflow sensor activated -> fan test successful
+                            if (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F)) {
+                                ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN_F);
+                                ResetTimerLapse(FSM_TIMER_ID, DLY_OFF_4);
+                                p_system->inner_step = OFF_4;
+                            }
+                            // Timeout: Airflow sensor didn't activate on time -> fan test failed
+                            if (TimerFinished(FSM_TIMER_ID)) { /* DLY_OFF_3 */
+                                ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN_F);
+                                p_system->error = ERROR_004;
+                                p_system->system_state = ERROR;
+                            }
+#else
+                            // Airflow sensor check skipped
+                            p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
+                            ResetTimerLapse(FSM_TIMER_ID, DLY_OFF_4);
+                            p_system->inner_step = OFF_4;
+#endif /* AIRFLOW_OVERRIDE && FAN_TEST_OVERRIDE */
+                            break;
                         }
-                        break;
+                        // .......................................................................
+                        // . Step OFF_4 : Fan test in progress: check airflow sensor deactivation .
+                        // .......................................................................
+                        case OFF_4: {
+                            if (TimerFinished(FSM_TIMER_ID)) { /* DLY_OFF_4 --- Let the fan to rev down --- */
+#if (!(AIRFLOW_OVERRIDE) && !(FAN_TEST_OVERRIDE))
+                                if (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F)) {
+                                    p_system->error = ERROR_006;
+                                    p_system->system_state = ERROR;
+                                } else {
+                                    p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
+                                    ResetTimerLapse(FSM_TIMER_ID, (DLY_READY_1));
+                                    p_system->inner_step = READY_1;
+                                    p_system->system_state = READY;
+                                }
+#else
+                                p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
+                                ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
+                                p_system->inner_step = READY_1;
+                                p_system->system_state = READY;
+#endif /* AIRFLOW_OVERRIDE && FAN_TEST_OVERRIDE */
+                            }
+                            break;
+                        }
+                        // ................
+                        // . OFF : Default .
+                        // ................
+                        default: {
+                            if (p_system->system_state == OFF) {
+                                p_system->inner_step = OFF_1;
+                            }
+                            break;
+                        }
                     }
+                    break;
                 }
-                break;
-            }
 
-            /*  __________________________
+                /*  __________________________
               |                           |
               |   System state -> READY   |
               |___________________________|
             */
-            case READY: {
-                // Give the flame sensor time before checking if it is off when the gas is closed
-                // Give the airflow sensor time before checking if it switches off when the fan gets turned off
-                //if (delay < (DLY_READY_1 - DLY_FLAME_OFF)) {
-                if (TimerFinished(FSM_TIMER_ID)) { /* DLY_READY_1 */
-                    // Verify that the flame sensor is off at this point, otherwise, there's a failure
-                    if (GetFlag(p_system, INPUT_FLAGS, FLAME_F)) {
-                        p_system->error = ERROR_002;
-                        p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
-                    }
+                case READY: {
+                    // Give the flame sensor time before checking if it is off when the gas is closed
+                    // Give the airflow sensor time before checking if it switches off when the fan gets turned off
+                    //if (delay < (DLY_READY_1 - DLY_FLAME_OFF)) {
+                    if (TimerFinished(FSM_TIMER_ID)) { /* DLY_READY_1 */
+                        // Verify that the flame sensor is off at this point, otherwise, there's a failure
+                        if (GetFlag(p_system, INPUT_FLAGS, FLAME_F)) {
+                            p_system->error = ERROR_002;
+                            p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
+                        }
 #if !(AIRFLOW_OVERRIDE)
-                    // Verify that the airflow sensor is off at this point, otherwise, there's a failure
-                    if (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F)) {
-                        p_system->error = ERROR_003;
-                        p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
-                    }
+                        // Verify that the airflow sensor is off at this point, otherwise, there's a failure
+                        if (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F)) {
+                            p_system->error = ERROR_003;
+                            p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
+                        }
 #endif /* AIRFLOW_OVERRIDE */
+                    }
+                    // If the water pump still has time to run before shutting
+                    // down, let it run until the delay counter reaches zero
+                    if (p_system->pump_delay > 0) {
+                        //if (TimerRunning(PUMP_TIMER_ID)) {
+                        SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                    }
+                    // Check if there a DHW or CH request. If both are requested, DHW will have higher priority after ignition
+                    if ((GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) || (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F))) {
+                        p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
+                        ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
+                        p_system->inner_step = IGNITING_1;
+                        p_system->system_state = IGNITING;
+                    }
+                    if (TimerFinished(FSM_TIMER_ID)) { /* DLY_READY_1 */
+                        ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
+                        p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
+                    }
+                    break;
                 }
-                // If the water pump still has time to run before shutting
-                // down, let it run until the delay counter reaches zero
-                if (p_system->pump_delay > 0) {
-                    //if (TimerRunning(PUMP_TIMER_ID)) {
-                    SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
-                }
-                // Check if there a DHW or CH request. If both are requested, DHW will have higher priority after ignition
-                if ((GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) || (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F))) {
-                    p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
-                    ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
-                    p_system->inner_step = IGNITING_1;
-                    p_system->system_state = IGNITING;
-                }
-                if (TimerFinished(FSM_TIMER_ID)) { /* DLY_READY_1 */
-                    ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
-                    p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
-                }
-                break;
-            }
 
-            /*  _____________________________
+                /*  _____________________________
               |                              |
               |   System state -> IGNITING   |
               |______________________________|
             */
-            case IGNITING: {
-                // Check if the DHW and CH request are over
-                if ((GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F) == false) &&
-                    (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F) == false)) {
-                    // Request canceled, turn actuators off and return to "ready" state
-                    GasOff(p_system);
-                    p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
-                    ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
-                    p_system->inner_step = READY_1;
-                    p_system->system_state = READY;
-                    break;  // *** *** *** *** *** *** *** *** *** *** *** *** //
-                }
-                switch (p_system->inner_step) {
-                    // .................................
-                    // . Step IGNITING_1 : Turn fan on  .
-                    // .................................
-                    case IGNITING_1: {
-                        if (TimerFinished(FSM_TIMER_ID)) {                  /* DLY_IGNITING_1 */
-                            SetFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN_F); /* Turn exhaust fan on */
-                            ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_2);
-                            p_system->inner_step = IGNITING_2;
-                        }
-                        break;
+                case IGNITING: {
+                    // Check if the DHW and CH request are over
+                    if ((GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F) == false) &&
+                        (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F) == false)) {
+                        // Request canceled, turn actuators off and return to "ready" state
+                        GasOff(p_system);
+                        p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
+                        ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
+                        p_system->inner_step = READY_1;
+                        p_system->system_state = READY;
+                        break;  // *** *** *** *** *** *** *** *** *** *** *** *** //
                     }
-                    // ..........................................
-                    // . Step IGNITING_2 : Check airflow sensor  .
-                    // ..........................................
-                    case IGNITING_2: {
+                    switch (p_system->inner_step) {
+                        // .................................
+                        // . Step IGNITING_1 : Turn fan on  .
+                        // .................................
+                        case IGNITING_1: {
+                            if (TimerFinished(FSM_TIMER_ID)) {                  /* DLY_IGNITING_1 */
+                                SetFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN_F); /* Turn exhaust fan on */
+                                ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_2);
+                                p_system->inner_step = IGNITING_2;
+                            }
+                            break;
+                        }
+                        // ..........................................
+                        // . Step IGNITING_2 : Check airflow sensor  .
+                        // ..........................................
+                        case IGNITING_2: {
 #if !(AIRFLOW_OVERRIDE)
-                        // Airflow sensor activated -> continue ignition sequence
-                        if (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F)) {
+                            // Airflow sensor activated -> continue ignition sequence
+                            if (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F)) {
+                                ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_3);
+                                p_system->inner_step = IGNITING_3;
+                            }
+                            // Airflow sensor activation timeout -> ignition sequence canceled
+                            if (TimerFinished(FSM_TIMER_ID)) { /* DLY_IGNITING_2 */
+                                ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN_F);
+                                p_system->error = ERROR_004;
+                                p_system->system_state = ERROR;
+                            }
+#else
+                            // Airflow sensor check skipped
+                            p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
                             ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_3);
                             p_system->inner_step = IGNITING_3;
-                        }
-                        // Airflow sensor activation timeout -> ignition sequence canceled
-                        if (TimerFinished(FSM_TIMER_ID)) { /* DLY_IGNITING_2 */
-                            ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN_F);
-                            p_system->error = ERROR_004;
-                            p_system->system_state = ERROR;
-                        }
-#else
-                        // Airflow sensor check skipped
-                        p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
-                        ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_3);
-                        p_system->inner_step = IGNITING_3;
 #endif /* AIRFLOW_OVERRIDE */
-                        break;
-                    }
-                    // .............................................
-                    // . Step IGNITING_3 : Open gas security valve  .
-                    // .............................................
-                    case IGNITING_3: {
-                        if (TimerFinished(FSM_TIMER_ID)) { /* DLY_IGNITING_3 */
-                            SetFlag(p_system, OUTPUT_FLAGS, VALVE_S_F);
-                            ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_4);
-                            p_system->inner_step = IGNITING_4;
+                            break;
                         }
-                        break;
-                    }
-                    // ......................................................
-                    // . Step IGNITING_4 : Open gas valve 1 or 2 alternately .
-                    // ......................................................
-                    case IGNITING_4: {
-                        if (TimerFinished(FSM_TIMER_ID)) { /* DLY_IGNITING_4 */
-                            if (p_system->ignition_retries == 0) {
-                                ClearFlag(p_system, OUTPUT_FLAGS, VALVE_2_F);
-                                SetFlag(p_system, OUTPUT_FLAGS, VALVE_1_F);
-                            } else {
-                                ClearFlag(p_system, OUTPUT_FLAGS, VALVE_1_F);
-                                SetFlag(p_system, OUTPUT_FLAGS, VALVE_2_F);
+                        // .............................................
+                        // . Step IGNITING_3 : Open gas security valve  .
+                        // .............................................
+                        case IGNITING_3: {
+                            if (TimerFinished(FSM_TIMER_ID)) { /* DLY_IGNITING_3 */
+                                SetFlag(p_system, OUTPUT_FLAGS, VALVE_S_F);
+                                ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_4);
+                                p_system->inner_step = IGNITING_4;
                             }
-                            ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_5);
-                            p_system->inner_step = IGNITING_5;
+                            break;
                         }
-                        break;
-                    }
-                    // ..........................................
-                    // . Step IGNITING_5 : Turn spark igniter on .
-                    // ..........................................
-                    case IGNITING_5: {
-                        if (TimerFinished(FSM_TIMER_ID)) { /* DLY_IGNITING_5 */
-                            SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
-                            // Stretch flame detection timeout on each ignition retry
-                            ResetTimerLapse(FSM_TIMER_ID, (DLY_IGNITING_6 * ((p_system->ignition_retries + 1) ^ 2)));
-                            p_system->inner_step = IGNITING_6;
+                        // ......................................................
+                        // . Step IGNITING_4 : Open gas valve 1 or 2 alternately .
+                        // ......................................................
+                        case IGNITING_4: {
+                            if (TimerFinished(FSM_TIMER_ID)) { /* DLY_IGNITING_4 */
+                                if (p_system->ignition_retries == 0) {
+                                    ClearFlag(p_system, OUTPUT_FLAGS, VALVE_2_F);
+                                    SetFlag(p_system, OUTPUT_FLAGS, VALVE_1_F);
+                                } else {
+                                    ClearFlag(p_system, OUTPUT_FLAGS, VALVE_1_F);
+                                    SetFlag(p_system, OUTPUT_FLAGS, VALVE_2_F);
+                                }
+                                ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_5);
+                                p_system->inner_step = IGNITING_5;
+                            }
+                            break;
                         }
-                        break;
-                    }
-                    // ...............................................................................
-                    // . Step IGNITING_6 : Check flame and hand over control to the requested service .
-                    // ...............................................................................
-                    // If the request ceased, close gas and return to "ready" state.
-                    // If there is no flame on time, close gas and go to "error" state.
-                    case IGNITING_6: {
+                        // ..........................................
+                        // . Step IGNITING_5 : Turn spark igniter on .
+                        // ..........................................
+                        case IGNITING_5: {
+                            if (TimerFinished(FSM_TIMER_ID)) { /* DLY_IGNITING_5 */
+                                SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
+                                // Stretch flame detection timeout on each ignition retry
+                                ResetTimerLapse(FSM_TIMER_ID, (DLY_IGNITING_6 * ((p_system->ignition_retries + 1) ^ 2)));
+                                p_system->inner_step = IGNITING_6;
+                            }
+                            break;
+                        }
+                        // ...............................................................................
+                        // . Step IGNITING_6 : Check flame and hand over control to the requested service .
+                        // ...............................................................................
+                        // If the request ceased, close gas and return to "ready" state.
+                        // If there is no flame on time, close gas and go to "error" state.
+                        case IGNITING_6: {
 #if FAST_FLAME_DETECTION
-                        // Spark igniter is turned off ass soon as the flame is detected instead
-                        // instead of checking the flame sensor after a delay.
-                        // NOTE: False positives due to sparks could cause ignition retries
-                        if (GetFlag(p_system, INPUT_FLAGS, FLAME_F)) {
-                            // Turn spark igniter off
-                            ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
-                        }
-#endif                                                     /* FAST_FLAME_DETECTION */
-                        if (TimerFinished(FSM_TIMER_ID)) { /* DLY_IGNITING_6 */
-                            // Increment ignition retry counter
-                            p_system->ignition_retries++;
-                            // Turn spark igniter off
-                            ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
-                            // If the burner is lit on time
+                            // Spark igniter is turned off ass soon as the flame is detected instead
+                            // instead of checking the flame sensor after a delay.
+                            // NOTE: False positives due to sparks could cause ignition retries
                             if (GetFlag(p_system, INPUT_FLAGS, FLAME_F)) {
                                 // Turn spark igniter off
                                 ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
-                                // Reset ignition retry counter
-                                p_system->ignition_retries = 0;
-                                // Hand over control to the requested service (DHW has higher priority)
-                                if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
-                                    ResetTimerLapse(GAS_MODULATOR_TIMER_ID, GAS_MODULATOR_TIMER_DURATION);
-                                    p_system->inner_step = DHW_ON_DUTY_1;
-                                    p_system->system_state = DHW_ON_DUTY;
-                                } else if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F)) {
-                                    ResetTimerLapse(GAS_MODULATOR_TIMER_ID, GAS_MODULATOR_TIMER_DURATION);
-                                    p_system->inner_step = CH_ON_DUTY_1;
-                                    p_system->system_state = CH_ON_DUTY;
+                            }
+#endif                                                         /* FAST_FLAME_DETECTION */
+                            if (TimerFinished(FSM_TIMER_ID)) { /* DLY_IGNITING_6 */
+                                // Increment ignition retry counter
+                                p_system->ignition_retries++;
+                                // Turn spark igniter off
+                                ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
+                                // If the burner is lit on time
+                                if (GetFlag(p_system, INPUT_FLAGS, FLAME_F)) {
+                                    // Turn spark igniter off
+                                    ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
+                                    // Reset ignition retry counter
+                                    p_system->ignition_retries = 0;
+                                    // Hand over control to the requested service (DHW has higher priority)
+                                    if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
+                                        ResetTimerLapse(GAS_MODULATOR_TIMER_ID, GAS_MODULATOR_TIMER_DURATION);
+                                        p_system->inner_step = DHW_ON_DUTY_1;
+                                        p_system->system_state = DHW_ON_DUTY;
+                                    } else if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F)) {
+                                        ResetTimerLapse(GAS_MODULATOR_TIMER_ID, GAS_MODULATOR_TIMER_DURATION);
+                                        p_system->inner_step = CH_ON_DUTY_1;
+                                        p_system->system_state = CH_ON_DUTY;
+                                    } else {
+                                        // Request canceled, turn actuators off and return to "ready" state
+                                        GasOff(p_system);
+                                        ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
+                                        p_system->inner_step = READY_1;
+                                        p_system->system_state = READY;
+                                    }
                                 } else {
-                                    // Request canceled, turn actuators off and return to "ready" state
+                                    if (p_system->ignition_retries >= MAX_IGNITION_RETRIES) {
+                                        GasOff(p_system);
+                                        p_system->ignition_retries = 0;
+                                        p_system->error = ERROR_005;
+                                        p_system->system_state = ERROR;
+                                    } else {
+                                        ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_4);
+                                        p_system->inner_step = IGNITING_4;
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                        // .....................
+                        // . IGNITING : Default .
+                        // .....................
+                        default: {
+                            if (p_system->system_state == IGNITING) {
+                                ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
+                                p_system->inner_step = IGNITING_1;
+                            }
+                            break;
+                        }
+                    }
+                    break;
+                }
+
+                /*  ________________________________
+              |                                 |
+              |   System state -> DHW_ON_DUTY   |
+              |_________________________________|
+            */
+                case DHW_ON_DUTY: {
+                    // If the flame sensor is off, check that gas valves 3 and 2 are closed and retry ignition
+                    if (GetFlag(p_system, INPUT_FLAGS, FLAME_F) == false) {
+                        // Turn all heat valves off except the valve 1
+                        OpenHeatValve(p_system, VALVE_1);
+                        ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
+                        p_system->inner_step = IGNITING_1;
+                        p_system->system_state = IGNITING;
+                        break;
+                    }
+#if !(AIRFLOW_OVERRIDE)
+                    // Verify that the airflow sensor is on, otherwise, close gas and go to error
+                    if (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F) == false) {
+                        GasOff(p_system); /* Close gas, turn igniter and fan off */
+                        p_system->error = ERROR_007;
+                        p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
+                    }
+#endif /* AIRFLOW_OVERRIDE */
+                    // If the pump is on, halt it ...
+                    if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
+                        ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                    }
+                    // Check if the DHW request is over
+                    if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F) == false) {
+                        // If there is a CH request active, modulate to valve 1 and
+                        // hand over control to CH service state
+                        if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F)) {
+                            p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
+                            ResetTimerLapse(FSM_TIMER_ID, DLY_CH_ON_DUTY_LOOP);
+                            p_system->inner_step = p_system->ch_on_duty_step;
+                            p_system->system_state = CH_ON_DUTY;
+                        } else {
+                            // DHW request canceled, turn gas off and return to "ready" state
+                            GasOff(p_system);
+                            ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
+                            p_system->inner_step = READY_1;
+                            p_system->system_state = READY;
+                        }
+                    } else {
+                        // ****************************************************************
+                        //                                                                  *
+                        ModulateHeat(p_system, p_system->dhw_setting, DHW_SETTING_STEPS);  // *
+                        //                                                                  *
+                        // ****************************************************************
+                    }
+                    break;
+                }
+
+                /*  _______________________________
+              |                                |
+              |   System state -> CH_ON_DUTY   |
+              |________________________________|
+            */
+                case CH_ON_DUTY: {
+                    switch (p_system->inner_step) {
+                        // ............................................
+                        // . Step CH_ON_DUTY_1 : CH heating, burner on .
+                        // ............................................
+                        case CH_ON_DUTY_1: {
+                            // If the flame sensor is off, and CH request is still active, check that gas valves 3 and 2 are closed and retry ignition
+                            if (GetFlag(p_system, INPUT_FLAGS, FLAME_F) == false) {
+                                // Turn all heat valves off except the valve 1
+                                OpenHeatValve(p_system, VALVE_1);
+                                ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
+                                p_system->inner_step = IGNITING_1;
+                                p_system->system_state = IGNITING;
+                            }
+#if !(AIRFLOW_OVERRIDE)
+                            // Verify that the airflow sensor is on, otherwise, close gas and go to error
+                            if (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F) == false) {
+                                GasOff(p_system); /* Close gas, turn igniter and fan off */
+                                p_system->error = ERROR_007;
+                                p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
+                            }
+#endif /* AIRFLOW_OVERRIDE */
+                            // Turn CH water pump on
+                            if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F) == false) {
+                                SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                            }
+                            // Restart continuously the water pump shutdown timeout counter
+                            p_system->pump_delay = DLY_WATER_PUMP_OFF;
+                            //ResetTimerLapse(PUMP_TIMER_ID, DLY_WATER_PUMP_OFF);
+
+                            // If there is a DHW request active, modulate and hand over control to DHW service
+                            if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
+                                p_system->ch_on_duty_step = CH_ON_DUTY_1; /* Preserve current CH service step */
+                                // OpenHeatValve(p_system, VALVE_1); /* Change to valve 1 before handing over control to DHW state */
+                                ResetTimerLapse(GAS_MODULATOR_TIMER_ID, GAS_MODULATOR_TIMER_DURATION);
+                                p_system->inner_step = DHW_ON_DUTY_1;
+                                p_system->system_state = DHW_ON_DUTY;
+                            } else {
+                                // Check if the CH request is over
+                                if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F) == false) {
+                                    // CH request canceled, turn gas off and return to "ready" state
+                                    GasOff(p_system);
+                                    ResetTimerLapse(GAS_MODULATOR_TIMER_ID, GAS_MODULATOR_TIMER_DURATION);
+                                    p_system->inner_step = READY_1;
+                                    p_system->system_state = READY;
+                                    break;
+                                }
+                            }
+                            // While the CH water temperature is cooler than setpoint high, continue heating
+                            // Otherwise, close gas and move on to CH_ON_DUTY_2 step
+                            // NOTE: The temperature reading last bit is masked out to avoid oscillations
+                            if ((p_system->ch_temperature & CH_TEMP_MASK) >= CH_SETPOINT_HIGH) {
+                                // **************************************************************
+                                //                                                                *
+                                ModulateHeat(p_system, p_system->ch_setting, CH_SETTING_STEPS);  // *
+                                //                                                                *
+                                // **************************************************************
+                            } else {
+                                //Close gas
+                                GasOff(p_system);
+                                // NO NO NO Restart the water pump shutdown timeout counter
+                                // NO NO NO p_system->pump_delay = DLY_WATER_PUMP_OFF;
+                                p_system->inner_step = CH_ON_DUTY_2;
+                            }
+                            break;
+                        }
+                        // .........................................................
+                        // . Step CH_ON_DUTY_2 : CH recirculating water, burner off .
+                        // .........................................................
+                        case CH_ON_DUTY_2: {
+                            // Close gas
+                            if (GetFlag(p_system, INPUT_FLAGS, FLAME_F)) {
+                                GasOff(p_system);
+                            }
+                            // Turn CH water pump on
+                            if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F) == false) {
+                                SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                            }
+                            // If the CH water temperature is colder than setpoint low, ignite the burner,
+                            // then go back to CH_ON_DUTY_1 step
+                            // NOTE: The temperature reading last bit is masked out to avoid oscillations
+                            if ((p_system->ch_temperature & CH_TEMP_MASK) >= CH_SETPOINT_LOW) {
+                                p_system->inner_step = CH_ON_DUTY_1;
+                                ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
+                                p_system->inner_step = IGNITING_1;
+                                p_system->system_state = IGNITING;
+                                break;
+                            }
+                            // If there is a DHW request active, ignite and hand over control to DHW service
+                            if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
+                                p_system->ch_on_duty_step = CH_ON_DUTY_2; /* Preserve current CH service step */
+                                p_system->last_displayed_iflags = 0xFF;   /* Force a display dashboard refresh */
+                                ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
+                                p_system->inner_step = IGNITING_1;
+                                p_system->system_state = IGNITING;
+                            } else {
+                                // Check if the CH request is over
+                                if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F) == false) {
+                                    // CH request canceled, turn gas off and return to "ready" state
                                     GasOff(p_system);
                                     ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
                                     p_system->inner_step = READY_1;
                                     p_system->system_state = READY;
                                 }
-                            } else {
-                                if (p_system->ignition_retries >= MAX_IGNITION_RETRIES) {
-                                    GasOff(p_system);
-                                    p_system->ignition_retries = 0;
-                                    p_system->error = ERROR_005;
-                                    p_system->system_state = ERROR;
-                                } else {
-                                    ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_4);
-                                    p_system->inner_step = IGNITING_4;
-                                }
                             }
-                        }
-                        break;
-                    }
-                    // .....................
-                    // . IGNITING : Default .
-                    // .....................
-                    default: {
-                        if (p_system->system_state == IGNITING) {
-                            ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
-                            p_system->inner_step = IGNITING_1;
-                        }
-                        break;
-                    }
-                }
-                break;
-            }
-
-            /*  ________________________________
-              |                                 |
-              |   System state -> DHW_ON_DUTY   |
-              |_________________________________|
-            */
-            case DHW_ON_DUTY: {
-                // If the flame sensor is off, check that gas valves 3 and 2 are closed and retry ignition
-                if (GetFlag(p_system, INPUT_FLAGS, FLAME_F) == false) {
-                    // Turn all heat valves off except the valve 1
-                    OpenHeatValve(p_system, VALVE_1);
-                    ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
-                    p_system->inner_step = IGNITING_1;
-                    p_system->system_state = IGNITING;
-                    break;
-                }
-#if !(AIRFLOW_OVERRIDE)
-                // Verify that the airflow sensor is on, otherwise, close gas and go to error
-                if (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F) == false) {
-                    GasOff(p_system); /* Close gas, turn igniter and fan off */
-                    p_system->error = ERROR_007;
-                    p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
-                }
-#endif /* AIRFLOW_OVERRIDE */
-                // If the pump is on, halt it ...
-                if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
-                    ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
-                }
-                // Check if the DHW request is over
-                if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F) == false) {
-                    // If there is a CH request active, modulate to valve 1 and
-                    // hand over control to CH service state
-                    if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F)) {
-                        p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
-                        ResetTimerLapse(FSM_TIMER_ID, DLY_CH_ON_DUTY_LOOP);
-                        p_system->inner_step = p_system->ch_on_duty_step;
-                        p_system->system_state = CH_ON_DUTY;
-                    } else {
-                        // DHW request canceled, turn gas off and return to "ready" state
-                        GasOff(p_system);
-                        ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
-                        p_system->inner_step = READY_1;
-                        p_system->system_state = READY;
-                    }
-                } else {
-                    // ****************************************************************
-                    //                                                                  *
-                    ModulateHeat(p_system, p_system->dhw_setting, DHW_SETTING_STEPS);  // *
-                    //                                                                  *
-                    // ****************************************************************
-                }
-                break;
-            }
-
-            /*  _______________________________
-              |                                |
-              |   System state -> CH_ON_DUTY   |
-              |________________________________|
-            */
-            case CH_ON_DUTY: {
-                switch (p_system->inner_step) {
-                    // ............................................
-                    // . Step CH_ON_DUTY_1 : CH heating, burner on .
-                    // ............................................
-                    case CH_ON_DUTY_1: {
-                        // If the flame sensor is off, and CH request is still active, check that gas valves 3 and 2 are closed and retry ignition
-                        if (GetFlag(p_system, INPUT_FLAGS, FLAME_F) == false) {
-                            // Turn all heat valves off except the valve 1
-                            OpenHeatValve(p_system, VALVE_1);
-                            ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
-                            p_system->inner_step = IGNITING_1;
-                            p_system->system_state = IGNITING;
-                        }
-#if !(AIRFLOW_OVERRIDE)
-                        // Verify that the airflow sensor is on, otherwise, close gas and go to error
-                        if (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F) == false) {
-                            GasOff(p_system); /* Close gas, turn igniter and fan off */
-                            p_system->error = ERROR_007;
-                            p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
-                        }
-#endif /* AIRFLOW_OVERRIDE */
-                        // Turn CH water pump on
-                        if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F) == false) {
-                            SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
-                        }
-                        // Restart continuously the water pump shutdown timeout counter
-                        p_system->pump_delay = DLY_WATER_PUMP_OFF;
-                        //ResetTimerLapse(PUMP_TIMER_ID, DLY_WATER_PUMP_OFF);
-
-                        // If there is a DHW request active, modulate and hand over control to DHW service
-                        if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
-                            p_system->ch_on_duty_step = CH_ON_DUTY_1; /* Preserve current CH service step */
-                            // OpenHeatValve(p_system, VALVE_1); /* Change to valve 1 before handing over control to DHW state */
-                            ResetTimerLapse(GAS_MODULATOR_TIMER_ID, GAS_MODULATOR_TIMER_DURATION);
-                            p_system->inner_step = DHW_ON_DUTY_1;
-                            p_system->system_state = DHW_ON_DUTY;
-                        } else {
-                            // Check if the CH request is over
-                            if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F) == false) {
-                                // CH request canceled, turn gas off and return to "ready" state
-                                GasOff(p_system);
-                                ResetTimerLapse(GAS_MODULATOR_TIMER_ID, GAS_MODULATOR_TIMER_DURATION);
-                                p_system->inner_step = READY_1;
-                                p_system->system_state = READY;
-                                break;
-                            }
-                        }
-                        // While the CH water temperature is cooler than setpoint high, continue heating
-                        // Otherwise, close gas and move on to CH_ON_DUTY_2 step
-                        // NOTE: The temperature reading last bit is masked out to avoid oscillations
-                        if ((p_system->ch_temperature & CH_TEMP_MASK) >= CH_SETPOINT_HIGH) {
-                            // **************************************************************
-                            //                                                                *
-                            ModulateHeat(p_system, p_system->ch_setting, CH_SETTING_STEPS);  // *
-                            //                                                                *
-                            // **************************************************************
-                        } else {
-                            //Close gas
-                            GasOff(p_system);
-                            // NO NO NO Restart the water pump shutdown timeout counter
-                            // NO NO NO p_system->pump_delay = DLY_WATER_PUMP_OFF;
-                            p_system->inner_step = CH_ON_DUTY_2;
-                        }
-                        break;
-                    }
-                    // .........................................................
-                    // . Step CH_ON_DUTY_2 : CH recirculating water, burner off .
-                    // .........................................................
-                    case CH_ON_DUTY_2: {
-                        // Close gas
-                        if (GetFlag(p_system, INPUT_FLAGS, FLAME_F)) {
-                            GasOff(p_system);
-                        }
-                        // Turn CH water pump on
-                        if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F) == false) {
-                            SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
-                        }
-                        // If the CH water temperature is colder than setpoint low, ignite the burner,
-                        // then go back to CH_ON_DUTY_1 step
-                        // NOTE: The temperature reading last bit is masked out to avoid oscillations
-                        if ((p_system->ch_temperature & CH_TEMP_MASK) >= CH_SETPOINT_LOW) {
-                            p_system->inner_step = CH_ON_DUTY_1;
-                            ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
-                            p_system->inner_step = IGNITING_1;
-                            p_system->system_state = IGNITING;
                             break;
                         }
-                        // If there is a DHW request active, ignite and hand over control to DHW service
-                        if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
-                            p_system->ch_on_duty_step = CH_ON_DUTY_2; /* Preserve current CH service step */
-                            p_system->last_displayed_iflags = 0xFF;   /* Force a display dashboard refresh */
-                            ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
-                            p_system->inner_step = IGNITING_1;
-                            p_system->system_state = IGNITING;
-                        } else {
-                            // Check if the CH request is over
-                            if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F) == false) {
-                                // CH request canceled, turn gas off and return to "ready" state
-                                GasOff(p_system);
-                                ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
-                                p_system->inner_step = READY_1;
-                                p_system->system_state = READY;
+                        // .......................
+                        // . CH_ON_DUTY : Default .
+                        // .......................
+                        default: {
+                            if (p_system->system_state == CH_ON_DUTY) {
+                                ResetTimerLapse(FSM_TIMER_ID, DLY_CH_ON_DUTY_LOOP);
+                                p_system->inner_step = p_system->ch_on_duty_step;
                             }
+                            break;
                         }
-                        break;
                     }
-                    // .......................
-                    // . CH_ON_DUTY : Default .
-                    // .......................
-                    default: {
-                        if (p_system->system_state == CH_ON_DUTY) {
-                            ResetTimerLapse(FSM_TIMER_ID, DLY_CH_ON_DUTY_LOOP);
-                            p_system->inner_step = p_system->ch_on_duty_step;
-                        }
-                        break;
+                    if (TimerFinished(FSM_TIMER_ID)) { /* DLY_CH_ON_DUTY_1 */
+                        ResetTimerLapse(FSM_TIMER_ID, DLY_CH_ON_DUTY_LOOP);
+                        p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
                     }
+                    break;
                 }
-                if (TimerFinished(FSM_TIMER_ID)) { /* DLY_CH_ON_DUTY_1 */
-                    ResetTimerLapse(FSM_TIMER_ID, DLY_CH_ON_DUTY_LOOP);
-                    p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
-                }
-                break;
-            }
 
-            /*  __________________________
+                /*  __________________________
               |                           |
               |   System state -> ERROR   |
               |___________________________|
             */
-            case ERROR: {
-                // Turn all actuators off, except the CH water pump
-                GasOff(p_system);
-                uint8_t error_loops = 5; /* Number of times the error will be displayed */
-                // Error loop -> displays the error code "error_loops" times
-                while (error_loops--) {
-                    // Update digital input sensors status
-                    for (InputFlag digital_sensor = DHW_REQUEST_F; digital_sensor <= OVERHEAT_F; digital_sensor++) {
-                        //CheckDigitalSensor(p_system, digital_sensor, p_debounce, false);
-                        CheckDigitalSensor(p_system, digital_sensor, false);
+                case ERROR: {
+                    // Turn all actuators off, except the CH water pump
+                    GasOff(p_system);
+                    uint8_t error_loops = 5; /* Number of times the error will be displayed */
+                    // Error loop -> displays the error code "error_loops" times
+                    while (error_loops--) {
+                        // Update digital input sensors status
+                        for (InputFlag digital_sensor = DHW_REQUEST_F; digital_sensor <= OVERHEAT_F; digital_sensor++) {
+                            //CheckDigitalSensor(p_system, digital_sensor, p_debounce, false);
+                            CheckDigitalSensor(p_system, digital_sensor, false);
+                        }
+                        p_system->system_state = ERROR;
+                        Dashboard(p_system, true);
+                        SetFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
+                        //ControlActuator(p_system, LED_UI_F, TURN_ON, false); /* true updates display on each pass */
+                        SerialTxStr(str_crlf);
+                        SerialTxStr(str_error_s);
+                        SerialTxNum(p_system->error, DIGITS_3);
+                        SerialTxStr(str_error_e);
+                        SerialTxStr(str_crlf);
+                        _delay_ms(500);  // 500-millisecond blocking delay before each error signaling
+                        ClearFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
+                        //ControlActuator(p_system, LED_UI_F, TURN_OFF, false);
+                        _delay_ms(500);  // 500-millisecond blocking delay after each error signaling
                     }
-                    p_system->system_state = ERROR;
-                    Dashboard(p_system, true);
-                    SetFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
-                    //ControlActuator(p_system, LED_UI_F, TURN_ON, false); /* true updates display on each pass */
-                    SerialTxStr(str_crlf);
-                    SerialTxStr(str_error_s);
-                    SerialTxNum(p_system->error, DIGITS_3);
-                    SerialTxStr(str_error_e);
-                    SerialTxStr(str_crlf);
-                    _delay_ms(500);  // 500-millisecond blocking delay before each error signaling
-                    ClearFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
-                    //ControlActuator(p_system, LED_UI_F, TURN_OFF, false);
-                    _delay_ms(500);  // 500-millisecond blocking delay after each error signaling
+                    // End of error loop
+                    // Next state -> OFF (reset error and try to resume service)
+                    p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
+                    p_system->error = ERROR_000;
+                    p_system->inner_step = OFF_1;
+                    p_system->system_state = OFF;
+                    break;
                 }
-                // End of error loop
-                // Next state -> OFF (reset error and try to resume service)
-                p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
-                p_system->error = ERROR_000;
-                p_system->inner_step = OFF_1;
-                p_system->system_state = OFF;
-                break;
-            }
 
-            /*  ____________________________
+                /*  ____________________________
               |                             |
               |   System state -> Default   |
               |_____________________________|
             */
-            default: {
-                ResetTimerLapse(FSM_TIMER_ID, DLY_OFF_2);
-                p_system->inner_step = OFF_1;
-                p_system->system_state = OFF;
-                break;
-            }
+                default: {
+                    ResetTimerLapse(FSM_TIMER_ID, DLY_OFF_2);
+                    p_system->inner_step = OFF_1;
+                    p_system->system_state = OFF;
+                    break;
+                }
 
-        } /* System FSM end */
+            } /* System FSM end */
+
+        } else { /* If the system is in OFF or RESET mode ... */
+            //ClrScr();
+            if (GetKnobPosition(p_system->system_mode, SYSTEM_MODE_STEPS) == SYS_OFF) {
+                // System OFF mode indication
+                GasOff(p_system);
+                p_system->system_state = OFF;
+                p_system->inner_step = OFF_1;
+                for (int i = 0; i < 6; i++) {
+                    InvertFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
+                    _delay_ms(100);
+                    SerialTxChr((char)46);
+                    //ClearFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
+                    //_delay_ms(100);
+                }
+                SerialTxChr((char)32);
+            } else {
+                // System RESET mode indication
+                GasOff(p_system);
+                p_system->system_state = OFF;
+                p_system->inner_step = OFF_1;
+                for (int i = 0; i < 14; i++) {
+                    InvertFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
+                    _delay_ms(50);
+                    SerialTxChr((char)42);
+                    //ClearFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
+                    //_delay_ms(50);
+                }
+                SerialTxChr((char)32);
+            }
+            //InvertFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
+            _delay_ms(125);
+
+        } /* Big if end */
+
+        //Dashboard(p_system, true);
 
     } /* Main loop end */
 

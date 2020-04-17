@@ -71,7 +71,7 @@ void InitActuator(SysInfo *, OutputFlag);
 void ControlActuator(SysInfo *, OutputFlag, HwSwitch, bool);
 void InitAdcBuffers(AdcBuffers *, uint8_t);
 uint16_t AverageAdc(uint16_t[], uint8_t, uint8_t, AverageType);
-uint8_t GetHeatLevel(int16_t, uint8_t);
+uint8_t GetKnobPosition(int16_t, uint8_t);
 void OpenHeatValve(SysInfo *, HeatValve);
 void ModulateHeat(SysInfo *, uint16_t, uint8_t);
 void GasOff(SysInfo *);

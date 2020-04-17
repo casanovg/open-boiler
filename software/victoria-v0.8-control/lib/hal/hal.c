@@ -157,20 +157,24 @@ bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, bool ShowDashb
             return ((p_sys->input_flags >> DHW_REQUEST_F) & true);
         }
         case CH_REQUEST_F: { /* CH request pin: Active = low, Inactive = high (bimetallic room thermostat) */
-            // CH request switch debouncing
-            if (((GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F)) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) || TimerExists(DEB_CH_SWITCH_TIMER_ID)) {
-                if (TimerExists(DEB_CH_SWITCH_TIMER_ID)) {
-                    if (TimerFinished(DEB_CH_SWITCH_TIMER_ID)) {
-                        if ((GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F)) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) {
-                            InvertFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F);
+            if (GetKnobPosition(p_sys->system_mode, SYSTEM_MODE_STEPS) == SYS_COMBI) {
+                // CH request switch debouncing
+                if (((GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F)) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) || TimerExists(DEB_CH_SWITCH_TIMER_ID)) {
+                    if (TimerExists(DEB_CH_SWITCH_TIMER_ID)) {
+                        if (TimerFinished(DEB_CH_SWITCH_TIMER_ID)) {
+                            if ((GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F)) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) {
+                                InvertFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F);
+                            }
+                            DeleteTimer(DEB_CH_SWITCH_TIMER_ID);
                         }
-                        DeleteTimer(DEB_CH_SWITCH_TIMER_ID);
+                    } else {
+                        SetTimer(DEB_CH_SWITCH_TIMER_ID, DEB_CH_SWITCH_TIMER_DURATION, DEB_CH_SWITCH_TIMER_MODE);
                     }
-                } else {
-                    SetTimer(DEB_CH_SWITCH_TIMER_ID, DEB_CH_SWITCH_TIMER_DURATION, DEB_CH_SWITCH_TIMER_MODE);
                 }
+                return (GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F));
+            } else {
+                ClearFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F);
             }
-            return (GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F));
         }
         case AIRFLOW_F: { /* Flue air flow sensor pin: Active = low, Inactive = high (flue air pressure switch) */
             // Airflow sensor switch debouncing
@@ -506,8 +510,8 @@ uint16_t AverageAdc(uint16_t adc_buffer[], uint8_t buffer_len, uint8_t start, Av
     return avg_value;
 }
 
-// Function GetHeatLevel: Returns a heat level index from a given potentiometer readout and range-intervals number
-uint8_t GetHeatLevel(int16_t pot_adc_value, uint8_t knob_steps) {
+// Function GetKnobPosition: Returns a knob position from a given potentiometer readout and range-intervals number
+uint8_t GetKnobPosition(int16_t pot_adc_value, uint8_t knob_steps) {
     uint8_t heat_level = 0;
     for (heat_level = 0; (pot_adc_value < (ADC_MAX - ((ADC_MAX / knob_steps) * (heat_level + 1)))); heat_level++)
         ;
@@ -582,7 +586,7 @@ void ModulateHeat(SysInfo *p_sys, uint16_t potentiometer_readout, uint8_t potent
                 }
 #else
                 // Read the DHW potentiometer to determine current heat level
-                p_sys->current_heat_level = GetHeatLevel(potentiometer_readout, potentiometer_steps);
+                p_sys->current_heat_level = GetKnobPosition(potentiometer_readout, potentiometer_steps);
 #endif
             }
         } else {

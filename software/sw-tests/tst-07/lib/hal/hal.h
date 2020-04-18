@@ -4,7 +4,7 @@
  *  ........................................................
  *  File: hal.h (boiler hardware abstraction layer headers)
  *  ........................................................
- *  Version: 0.8 "Juan" / 2020-04-10 (Easter quarantine)
+ *  Version: 0.8 "Juan" / 2020-04-10 (Easter Quarantine)
  *  gustavo.casanova@nicebots.com
  *  ........................................................
  */
@@ -60,7 +60,7 @@ void SystemRestart(void);
 void InitFlags(SysInfo *, FlagsType);
 void SetFlag(SysInfo *, FlagsType, uint8_t);
 void ClearFlag(SysInfo *, FlagsType, uint8_t);
-void InvertFlag(SysInfo *, FlagsType, uint8_t);
+void ToggleFlag(SysInfo *, FlagsType, uint8_t);
 bool GetFlag(SysInfo *, FlagsType, uint8_t);
 void InitDigitalSensor(SysInfo *, InputFlag);
 //bool CheckDigitalSensor(SysInfo *, InputFlag, DebounceSw *, bool);

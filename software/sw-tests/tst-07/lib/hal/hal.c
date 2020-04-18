@@ -4,7 +4,7 @@
  *  ........................................................
  *  File: hal.c (boiler hardware abstraction layer library)
  *  ........................................................
- *  Version: 0.8 "Juan" / 2020-04-10 (Easter quarantine)
+ *  Version: 0.8 "Juan" / 2020-04-10 (Easter Quarantine)
  *  gustavo.casanova@nicebots.com
  *  ........................................................
  */
@@ -73,8 +73,8 @@ void ClearFlag(SysInfo *p_sys, FlagsType flags_type, uint8_t flag_position) {
     }
 }
 
-// Function InvertFlag: Inverts the current value (0/1) of a given system flag and its associate actuator's pin
-void InvertFlag(SysInfo *p_sys, FlagsType flags_type, uint8_t flag_position) {
+// Function ToggleFlag: Inverts the current value (0/1) of a given system flag and its associate actuator's pin
+void ToggleFlag(SysInfo *p_sys, FlagsType flags_type, uint8_t flag_position) {
     switch (flags_type) {
         case INPUT_FLAGS: {
             p_sys->input_flags ^= (1 << flag_position);
@@ -163,7 +163,7 @@ bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, bool ShowDashb
                     if (TimerExists(DEB_CH_SWITCH_TIMER_ID)) {
                         if (TimerFinished(DEB_CH_SWITCH_TIMER_ID)) {
                             if ((GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F)) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) {
-                                InvertFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F);
+                                ToggleFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F);
                             }
                             DeleteTimer(DEB_CH_SWITCH_TIMER_ID);
                         }
@@ -182,7 +182,7 @@ bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, bool ShowDashb
                 if (TimerExists(DEB_AIRFLOW_TIMER_ID)) {
                     if (TimerFinished(DEB_AIRFLOW_TIMER_ID)) {
                         if ((GetFlag(p_sys, INPUT_FLAGS, AIRFLOW_F)) == ((AIRFLOW_PINP >> AIRFLOW_PIN) & true)) {
-                            InvertFlag(p_sys, INPUT_FLAGS, AIRFLOW_F);
+                            ToggleFlag(p_sys, INPUT_FLAGS, AIRFLOW_F);
                         }
                         DeleteTimer(DEB_AIRFLOW_TIMER_ID);
                     }

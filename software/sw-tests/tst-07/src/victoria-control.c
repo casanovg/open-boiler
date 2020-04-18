@@ -96,14 +96,20 @@ int main(void) {
     _delay_ms(2000);  // Safety 2-second blocking delay before activating the WDT
     //wdt_enable(WDTO_8S);  // If the system freezes, reset the microcontroller after 8 seconds
 
-//#define VALVES 3 /* Number of gas modulator valves */
+    //#define VALVES 3 /* Number of gas modulator valves */
 
-#define VALVE_3_TIMER_ID 1                   /* Timer id */
-#define VALVE_3_TIMER_DURATION 500           /* Timer time-lapse */
-#define VALVE_3_TIMER_MODE RUN_ONCE_AND_HOLD /* Timer mode */
+#define VALVE_3_LED_TIMER_ID 1                   /* Timer id */
+#define VALVE_3_LED_TIMER_DURATION 500           /* Timer time-lapse */
+#define VALVE_3_LED_TIMER_MODE RUN_ONCE_AND_HOLD /* Timer mode */
+
+#define PUMP_TIMER_LED_ID 2                   /* Timer id */
+#define PUMP_TIMER_LED_DURATION 10000         /* Timer time-lapse */
+#define PUMP_TIMER_LED_MODE RUN_ONCE_AND_HOLD /* Timer mode */
 
     // Set system-wide timers
-    SetTimer(VALVE_3_TIMER_ID, (unsigned long)VALVE_3_TIMER_DURATION, VALVE_3_TIMER_MODE); /* Water pump timer */
+    SetTimer(VALVE_3_LED_TIMER_ID, VALVE_3_LED_TIMER_DURATION, VALVE_3_LED_TIMER_MODE); /* Water pump timer */
+
+    TimerLapse pump_timer_Memory = 0;
 
     // Enable global interrupts
     sei();
@@ -123,43 +129,65 @@ int main(void) {
     // #############################
     //for(;;) {};
 
-    // Set timer for gas valve modulation
-    SetTimer(VALVE_3_TIMER_ID, (unsigned long)VALVE_3_TIMER_DURATION, RUN_ONCE_AND_HOLD);
+    //SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
 
     for (;;) {
+        // if (TimerFinished(VALVE_3_LED_TIMER_ID)) {
+        //     ToggleFlag(p_system, OUTPUT_FLAGS, VALVE_3_F);
+        //     if (TimerExists(PUMP_TIMER_LED_ID) == false) {
+        //         SetTimer(PUMP_TIMER_LED_ID, PUMP_TIMER_LED_DURATION, PUMP_TIMER_LED_MODE); /* Water pump timer */
+        //     }
+        //     RestartTimer(VALVE_3_LED_TIMER_ID);
+        //     SerialTxChr(32);
+        //     SerialTxNum(GetTimeLeft(PUMP_TIMER_LED_ID), DIGITS_7);
+        // }
 
-        if(TimerFinished(VALVE_3_TIMER_ID)) {
-            
+        if (GetFlag(p_system, INPUT_FLAGS, FLAME_F)) {
+            // pump_timer_Memory = GetTimeLeft(PUMP_TIMER_LED_ID);
+            // ResetTimerLapse(PUMP_TIMER_LED_ID, 0);
+            // ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+            if (GetFlag(p_system, OUTPUT_FLAGS, VALVE_S_F) == false) {
+                SetFlag(p_system, OUTPUT_FLAGS, VALVE_S_F);
+            }
+            SerialTxChr(46);
+        } else {
+            // if (pump_timer_Memory != 0) {
+            //     ResetTimerLapse(PUMP_TIMER_LED_ID, pump_timer_Memory);
+            //     pump_timer_Memory = 0;
+            // }
+            if (GetFlag(p_system, OUTPUT_FLAGS, VALVE_S_F) == false) {
+                ClearFlag(p_system, OUTPUT_FLAGS, VALVE_S_F);
+            }
         }
 
-
-
-
-
-
-
-
-#if SERIAL_DEBUG
-        // // SerialTxStr(str_crlf);
-        // SerialTxStr(str_heat_mod_01);
-        // SerialTxNum(p_system->current_heat_level, DIGITS_2);
-#endif
-
-#if LED_DEBUG
-        // SetFlag(p_system, OUTPUT_FLAGS, VALVE_S_F);  // Heat level setting error, the sum of the opening time of all valves must be 100!
-        // _delay_ms(1000);
-        // ClearFlag(p_system, OUTPUT_FLAGS, VALVE_S_F);
-#endif
-
-#if SERIAL_DEBUG
-        // SerialTxStr(str_heat_mod_03);
-#endif
-
-#if SERIAL_DEBUG
-        // SerialTxStr(str_heat_mod_02);
-#endif
+        // if (TimerFinished(PUMP_TIMER_LED_ID)) {
+        //     ToggleFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+        //     RestartTimer(PUMP_TIMER_LED_ID);
+        //     SerialTxStr(str_crlf);
+        //     SerialTxStr(str_crlf);
+        // }
 
     } /* Main loop end */
 
     return 0;
 }
+
+#if SERIAL_DEBUG
+// // SerialTxStr(str_crlf);
+// SerialTxStr(str_heat_mod_01);
+// SerialTxNum(p_system->current_heat_level, DIGITS_2);
+#endif
+
+#if LED_DEBUG
+// SetFlag(p_system, OUTPUT_FLAGS, VALVE_S_F);  // Heat level setting error, the sum of the opening time of all valves must be 100!
+// _delay_ms(1000);
+// ClearFlag(p_system, OUTPUT_FLAGS, VALVE_S_F);
+#endif
+
+#if SERIAL_DEBUG
+// SerialTxStr(str_heat_mod_03);
+#endif
+
+#if SERIAL_DEBUG
+// SerialTxStr(str_heat_mod_02);
+#endif

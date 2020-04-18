@@ -12,7 +12,7 @@
 #include "timers.h"
 
 // Function SetTimer
-uint8_t SetTimer(uint8_t timer_id, unsigned long time_lapse, TimerMode timer_mode) {
+uint8_t SetTimer(TimerId timer_id, TimerLapse time_lapse, TimerMode timer_mode) {
     // Disable timers..
     //cli();
     for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {   // loop through and check for free spot, then place timer in there...
@@ -30,7 +30,7 @@ uint8_t SetTimer(uint8_t timer_id, unsigned long time_lapse, TimerMode timer_mod
 }
 
 // Function TimerRunning
-bool TimerRunning(uint8_t timer_id) {
+bool TimerRunning(TimerId timer_id) {
     for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {
         if (timer_buffer[i].timer_id == timer_id) {
             if ((GetMilliseconds() - timer_buffer[i].timer_start_time) >= timer_buffer[i].timer_time_lapse) {
@@ -42,7 +42,7 @@ bool TimerRunning(uint8_t timer_id) {
 }
 
 // Function TimerFinished
-bool TimerFinished(uint8_t timer_id) {
+bool TimerFinished(TimerId timer_id) {
     for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {
         if (timer_buffer[i].timer_id == timer_id) {
             if ((GetMilliseconds() - timer_buffer[i].timer_start_time) >= timer_buffer[i].timer_time_lapse) {
@@ -54,7 +54,7 @@ bool TimerFinished(uint8_t timer_id) {
 }
 
 // Function CheckTimerExistence
-bool TimerExists(uint8_t timer_id) {
+bool TimerExists(TimerId timer_id) {
     for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {
         if (timer_buffer[i].timer_id == timer_id) {
             return true;
@@ -64,7 +64,7 @@ bool TimerExists(uint8_t timer_id) {
 }
 
 // Function GetTimeLeft
-unsigned long GetTimeLeft(uint8_t timer_id) {
+unsigned long GetTimeLeft(TimerId timer_id) {
     unsigned long time_left = 0;
     for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {
         if (timer_buffer[i].timer_id == timer_id) {
@@ -79,7 +79,7 @@ unsigned long GetTimeLeft(uint8_t timer_id) {
 }
 
 // Function RestartTimer
-uint8_t RestartTimer(uint8_t timer_id) {
+uint8_t RestartTimer(TimerId timer_id) {
     for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {
         if (timer_buffer[i].timer_id == timer_id) {
             if (timer_buffer[i].timer_mode == RUN_ONCE_AND_HOLD) {  //&&
@@ -95,7 +95,7 @@ uint8_t RestartTimer(uint8_t timer_id) {
 }
 
 // Function ResetTimerLapse
-uint8_t ResetTimerLapse(uint8_t timer_id, unsigned long time_lapse) {
+uint8_t ResetTimerLapse(TimerId timer_id, unsigned long time_lapse) {
     for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {
         if (timer_buffer[i].timer_id == timer_id) {
             if (timer_buffer[i].timer_mode == RUN_ONCE_AND_HOLD) {  //&&
@@ -137,7 +137,7 @@ void ProcessTimers() {
 }
 
 // Function DeleteTimers (Deletes all timers of the same type)
-void DeleteTimer(uint8_t timer_id) {
+void DeleteTimer(TimerId timer_id) {
     // Disable timer interrupt
     //#asm("cli");
     for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {  // loop through and check for timers of this type, then kill them...

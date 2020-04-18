@@ -77,18 +77,21 @@ typedef struct timer {
     TimerMode timer_mode;
 } SystemTimer;
 
+typedef uint8_t TimerId;
+typedef unsigned long TimerLapse;
+
 // Prototypes
 
-uint8_t SetTimer(uint8_t, unsigned long, TimerMode);
-bool TimerRunning(uint8_t);
-bool TimerFinished(uint8_t);
-bool TimerExists(uint8_t);
-unsigned long GetTimeLeft(uint8_t);
-uint8_t RestartTimer(uint8_t);
-uint8_t ResetTimerLapse(uint8_t, unsigned long);
+uint8_t SetTimer(TimerId, TimerLapse, TimerMode);
+bool TimerRunning(TimerId);
+bool TimerFinished(TimerId);
+bool TimerExists(TimerId);
+unsigned long GetTimeLeft(TimerId);
+uint8_t RestartTimer(TimerId);
+uint8_t ResetTimerLapse(TimerId, TimerLapse);
 void ProcessTimers();
-bool CheckTimerExistence(uint8_t);
-void DeleteTimer(uint8_t);
+bool CheckTimerExistence(TimerId);
+void DeleteTimer(TimerId);
 void SetTickTimer(void);
 unsigned long GetMilliseconds(void);
 //void OnTimer(uint8_t);

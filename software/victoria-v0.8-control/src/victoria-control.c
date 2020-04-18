@@ -734,7 +734,7 @@ int main(void) {
                 p_system->system_state = OFF;
                 p_system->inner_step = OFF_1;
                 for (int i = 0; i < 6; i++) {
-                    InvertFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
+                    ToggleFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
                     _delay_ms(100);
                     SerialTxChr((char)46);
                     //ClearFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
@@ -747,7 +747,7 @@ int main(void) {
                 p_system->system_state = OFF;
                 p_system->inner_step = OFF_1;
                 for (int i = 0; i < 14; i++) {
-                    InvertFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
+                    ToggleFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
                     _delay_ms(50);
                     SerialTxChr((char)42);
                     //ClearFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
@@ -755,7 +755,7 @@ int main(void) {
                 }
                 SerialTxChr((char)32);
             }
-            //InvertFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
+            //ToggleFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
             _delay_ms(125);
 
         } /* Big if end */

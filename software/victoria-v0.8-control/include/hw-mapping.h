@@ -83,9 +83,11 @@
 #define AIRFLOW_PIN PIN3
 #define AIRFLOW_PINP PINC
 #define AIRFLOW_PORT PORTC
-// DHW temperature sensor (mini-pro pin A6 - intput)
-//#define DHW_TEMP ADC6
-// CH temperature sensor (mini-pro pin A7 - intput)
-//#define CH_TEMP ADC7
+// System analog inputs ADC channels 
+#define DHW_TEMP_ADC 6  // ADC6 - ADC Channel 6 (Pin A6)
+#define CH_TEMP_ADC 7   // ADC7 - ADC Channel 7 (Pin A7)
+#define DHW_POT_ADC 0   // ADC0 - ADC Channel 0 (Pin A0)
+#define CH_SET_ADC 1    // ADC1 - ADC Channel 1 (Pin A1)
+#define SYS_MOD_ADC 2   // ADC2 - ADC Channel 2 (Pin A2)
 
-#endif /* _HARDWARE_MAPPING_H_ */
+#endif  // _HARDWARE_MAPPING_H_

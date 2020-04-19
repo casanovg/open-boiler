@@ -116,28 +116,28 @@ bool GetFlag(SysInfo *p_sys, FlagsType flags_type, uint8_t flag_position) {
 void InitDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor) {
     switch (digital_sensor) {
         case DHW_REQUEST_F: {
-            DHW_RQ_DDR &= ~(1 << DHW_RQ_PIN); /* Set DHW request pin as input */
-            DHW_RQ_PORT |= (1 << DHW_RQ_PIN); /* Activate pull-up resistor on this pin */
+            DHW_RQ_DDR &= ~(1 << DHW_RQ_PIN);  // Set DHW request pin as input
+            DHW_RQ_PORT |= (1 << DHW_RQ_PIN);  // Activate pull-up resistor on this pin
             break;
         }
         case CH_REQUEST_F: {
-            CH_RQ_DDR &= ~(1 << CH_RQ_PIN); /* Set CH request pin as input */
-            CH_RQ_PORT |= (1 << CH_RQ_PIN); /* Activate pull-up resistor on this pin */
+            CH_RQ_DDR &= ~(1 << CH_RQ_PIN);  // Set CH request pin as input
+            CH_RQ_PORT |= (1 << CH_RQ_PIN);  // Activate pull-up resistor on this pin
             break;
         }
         case AIRFLOW_F: {
-            AIRFLOW_DDR &= ~(1 << AIRFLOW_PIN); /* Set Airflow detector pin as input */
-            AIRFLOW_PORT |= (1 << AIRFLOW_PIN); /* Activate pull-up resistor on this pin */
+            AIRFLOW_DDR &= ~(1 << AIRFLOW_PIN);  // Set Airflow detector pin as input
+            AIRFLOW_PORT |= (1 << AIRFLOW_PIN);  // Activate pull-up resistor on this pin
             break;
         }
         case FLAME_F: {
-            FLAME_DDR &= ~(1 << FLAME_PIN); /* Set Flame detector pin as input */
-            //FLAME_PORT &= ~(1 << FLAME_PIN); /* Deactivate pull-up resistor on this pin */
+            FLAME_DDR &= ~(1 << FLAME_PIN);  // Set Flame detector pin as input
+            //FLAME_PORT &= ~(1 << FLAME_PIN); // Deactivate pull-up resistor on this pin
             break;
         }
         case OVERHEAT_F: {
-            OVERHEAT_DDR &= ~(1 << OVERHEAT_PIN); /* Set Overheat detector pin as input */
-            //OVERHEAT_PORT &= ~(1 << OVERHEAT_PIN); /* Deactivate pull-up resistor on this pin */
+            OVERHEAT_DDR &= ~(1 << OVERHEAT_PIN);  // Set Overheat detector pin as input
+            //OVERHEAT_PORT &= ~(1 << OVERHEAT_PIN); // Deactivate pull-up resistor on this pin
             break;
         }
     }
@@ -148,7 +148,7 @@ void InitDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor) {
 //bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, DebounceSw *p_deb, bool ShowDashboard) {
 bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, bool ShowDashboard) {
     switch (digital_sensor) {
-        case DHW_REQUEST_F: { /* DHW request pin: Active = low, Inactive = high */
+        case DHW_REQUEST_F: {  // DHW request pin: Active = low, Inactive = high
             if ((DHW_RQ_PINP >> DHW_RQ_PIN) & true) {
                 ClearFlag(p_sys, INPUT_FLAGS, DHW_REQUEST_F);
             } else {
@@ -156,7 +156,7 @@ bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, bool ShowDashb
             }
             return ((p_sys->input_flags >> DHW_REQUEST_F) & true);
         }
-        case CH_REQUEST_F: { /* CH request pin: Active = low, Inactive = high (bimetallic room thermostat) */
+        case CH_REQUEST_F: {  // CH request pin: Active = low, Inactive = high (bimetallic room thermostat)
             if (GetKnobPosition(p_sys->system_mode, SYSTEM_MODE_STEPS) == SYS_COMBI) {
                 // CH request switch debouncing
                 if (((GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F)) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) || TimerExists(DEB_CH_SWITCH_TIMER_ID)) {
@@ -176,7 +176,7 @@ bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, bool ShowDashb
                 ClearFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F);
             }
         }
-        case AIRFLOW_F: { /* Flue air flow sensor pin: Active = low, Inactive = high (flue air pressure switch) */
+        case AIRFLOW_F: {  // Flue air flow sensor pin: Active = low, Inactive = high (flue air pressure switch)
             // Airflow sensor switch debouncing
             if (((GetFlag(p_sys, INPUT_FLAGS, AIRFLOW_F)) == ((AIRFLOW_PINP >> AIRFLOW_PIN) & true)) || TimerExists(DEB_AIRFLOW_TIMER_ID)) {
                 if (TimerExists(DEB_AIRFLOW_TIMER_ID)) {
@@ -192,7 +192,7 @@ bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, bool ShowDashb
             }
             return (GetFlag(p_sys, INPUT_FLAGS, AIRFLOW_F));
         }
-        case FLAME_F: { /* Flame sensor pin: Active = high, Inactive = low. IT NEEDS EXTERNAL PULL-DOWN RESISTOR !!! */
+        case FLAME_F: {  // Flame sensor pin: Active = high, Inactive = low. IT NEEDS EXTERNAL PULL-DOWN RESISTOR !!!
             if ((FLAME_PINP >> FLAME_PIN) & true) {
                 SetFlag(p_sys, INPUT_FLAGS, FLAME_F);
 #if LED_UI_FOR_FLAME
@@ -206,7 +206,7 @@ bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, bool ShowDashb
             }
             return ((p_sys->input_flags >> FLAME_F) & true);
         }
-        case OVERHEAT_F: { /* Overheat thermostat pin: Active = high, Inactive = low. ACTIVE INDICATES OVERTEMPERATURE !!! */
+        case OVERHEAT_F: {  // Overheat thermostat pin: Active = high, Inactive = low. ACTIVE INDICATES OVERTEMPERATURE !!!
             if ((OVERHEAT_PINP >> OVERHEAT_PIN) & true) {
                 ClearFlag(p_sys, INPUT_FLAGS, OVERHEAT_F);
             } else {
@@ -224,14 +224,14 @@ bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, bool ShowDashb
 
 //Function InitAnalogSensor: Sets the ADC hardware up and initializes the given sensor readout
 void InitAnalogSensor(SysInfo *p_sys, AnalogInput analog_sensor) {
-    ADMUX |= (1 << REFS0);                                /* reference voltage on AVCC */
-    ACSR &= ~(1 << ACIE);                                 /* Clear analog comparator IRQ flag */
-    ACSR = (1 << ACD);                                    /* Stop analog comparator */
-    ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0); /* ADC clock prescaler /128 */
-    //ADMUX |= (1 << ADLAR); /* left-adjust result, return only 8 bits */
-    ADCSRA |= (1 << ADEN); /* enable ADC */
-    //ADCSRA |= (1 << ADATE); /* auto-trigger enable */
-    //ADCSRA |= (1 << ADSC); /* start first conversion */
+    ADMUX |= (1 << REFS0);                                 // Set ADC reference to AVCC
+    ACSR &= ~(1 << ACIE);                                  // Clear analog comparator IRQ flag
+    ACSR = (1 << ACD);                                     // Stop analog comparator
+    ADCSRA |= (1 << ADPS2) | (1 << ADPS1) | (1 << ADPS0);  // Set ADC prescalar to 128 (125KHz sample rate @ 16MHz)
+    //ADMUX |= (1 << ADLAR); // left-adjust result, return only 8 bits
+    ADCSRA |= (1 << ADEN);  // enable ADC
+    //ADCSRA |= (1 << ADATE); // auto-trigger enable
+    //ADCSRA |= (1 << ADSC); // start first conversion
     switch (analog_sensor) {
         case DHW_TEMPERATURE: {
             p_sys->dhw_temperature = 0;
@@ -318,50 +318,50 @@ uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInpu
 void InitActuator(SysInfo *p_sys, OutputFlag device_flag) {
     switch (device_flag) {
         case EXHAUST_FAN_F: {
-            FAN_DDR |= (1 << FAN_PIN);   /* Set exhaust fan pin as output */
-            FAN_PORT &= ~(1 << FAN_PIN); /* Set exhaust fan pin low (inactive) */
+            FAN_DDR |= (1 << FAN_PIN);    // Set exhaust fan pin as output
+            FAN_PORT &= ~(1 << FAN_PIN);  // Set exhaust fan pin low (inactive)
             break;
         }
         case WATER_PUMP_F: {
-            PUMP_DDR |= (1 << PUMP_PIN);   /* Set water pump pin as output */
-            PUMP_PORT &= ~(1 << PUMP_PIN); /* Set water pump pin low (inactive) */
+            PUMP_DDR |= (1 << PUMP_PIN);    // Set water pump pin as output
+            PUMP_PORT &= ~(1 << PUMP_PIN);  // Set water pump pin low (inactive)
             break;
         }
         case SPARK_IGNITER_F: {
-            SPARK_DDR |= (1 << SPARK_PIN);  /* Set spark igniter pin as output */
-            SPARK_PORT |= (1 << SPARK_PIN); /* Set spark igniter pin high (inactive) */
+            SPARK_DDR |= (1 << SPARK_PIN);   // Set spark igniter pin as output
+            SPARK_PORT |= (1 << SPARK_PIN);  // Set spark igniter pin high (inactive)
             break;
         }
         case VALVE_S_F: {
-            VALVE_S_DDR |= (1 << VALVE_S_PIN);   /* Set security valve pin as output */
-            VALVE_S_PORT &= ~(1 << VALVE_S_PIN); /* Set security valve pin low (inactive) */
+            VALVE_S_DDR |= (1 << VALVE_S_PIN);    // Set security valve pin as output
+            VALVE_S_PORT &= ~(1 << VALVE_S_PIN);  // Set security valve pin low (inactive)
             break;
         }
         case VALVE_1_F: {
-            VALVE_1_DDR |= (1 << VALVE_1_PIN);   /* Set security valve pin as output */
-            VALVE_1_PORT &= ~(1 << VALVE_1_PIN); /* Set security valve pin low (inactive) */
+            VALVE_1_DDR |= (1 << VALVE_1_PIN);    // Set security valve pin as output
+            VALVE_1_PORT &= ~(1 << VALVE_1_PIN);  // Set security valve pin low (inactive)
             break;
         }
         case VALVE_2_F: {
-            VALVE_2_DDR |= (1 << VALVE_2_PIN);   /* Set security valve pin as output */
-            VALVE_2_PORT &= ~(1 << VALVE_2_PIN); /* Set security valve pin low (inactive) */
+            VALVE_2_DDR |= (1 << VALVE_2_PIN);    // Set security valve pin as output
+            VALVE_2_PORT &= ~(1 << VALVE_2_PIN);  // Set security valve pin low (inactive)
             break;
         }
         case VALVE_3_F: {
-            VALVE_3_DDR |= (1 << VALVE_3_PIN);   /* Set security valve pin as output */
-            VALVE_3_PORT &= ~(1 << VALVE_3_PIN); /* Set security valve pin low (inactive) */
+            VALVE_3_DDR |= (1 << VALVE_3_PIN);    // Set security valve pin as output
+            VALVE_3_PORT &= ~(1 << VALVE_3_PIN);  // Set security valve pin low (inactive)
             break;
         }
         case LED_UI_F: {
-            LED_UI_DDR |= (1 << LED_UI_PIN);   /* Set LED UI pin as output */
-            LED_UI_PORT &= ~(1 << LED_UI_PIN); /* Set LED UI pin low (inactive) */
+            LED_UI_DDR |= (1 << LED_UI_PIN);    // Set LED UI pin as output
+            LED_UI_PORT &= ~(1 << LED_UI_PIN);  // Set LED UI pin low (inactive)
             break;
         }
         default: {
             break;
         }
     }
-    ClearFlag(p_sys, OUTPUT_FLAGS, device_flag); /* Clear actuator flags */
+    ClearFlag(p_sys, OUTPUT_FLAGS, device_flag);  // Clear actuator flags
 }
 
 // Function ControlActuator: Turns an actuator pin and its associated flag on or off
@@ -369,65 +369,65 @@ void ControlActuator(SysInfo *p_sys, OutputFlag device_flag, HwSwitch command, b
     switch (device_flag) {
         case EXHAUST_FAN_F: {
             if (command == TURN_ON) {
-                FAN_PORT |= (1 << FAN_PIN); /* Set exhaust fan pin high (active) */
+                FAN_PORT |= (1 << FAN_PIN);  // Set exhaust fan pin high (active)
             } else {
-                FAN_PORT &= ~(1 << FAN_PIN); /* Set exhaust fan pin low (inactive) */
+                FAN_PORT &= ~(1 << FAN_PIN);  // Set exhaust fan pin low (inactive)
             }
             break;
         }
         case WATER_PUMP_F: {
             if (command == TURN_ON) {
-                PUMP_PORT |= (1 << PUMP_PIN); /* Set water pump pin high (active) */
+                PUMP_PORT |= (1 << PUMP_PIN);  // Set water pump pin high (active)
             } else {
-                PUMP_PORT &= ~(1 << PUMP_PIN); /* Set water pump pin low (inactive) */
+                PUMP_PORT &= ~(1 << PUMP_PIN);  // Set water pump pin low (inactive)
             }
             break;
         }
         case SPARK_IGNITER_F: {
             if (command == TURN_ON) {
-                SPARK_PORT &= ~(1 << SPARK_PIN); /* Set spark igniter pin low (active) */
+                SPARK_PORT &= ~(1 << SPARK_PIN);  // Set spark igniter pin low (active)
             } else {
-                SPARK_PORT |= (1 << SPARK_PIN); /* Set spark igniter pin high (inactive) */
+                SPARK_PORT |= (1 << SPARK_PIN);  // Set spark igniter pin high (inactive)
             }
             break;
         }
         case VALVE_S_F: {
             if (command == TURN_ON) {
-                VALVE_S_PORT |= (1 << VALVE_S_PIN); /* Set security valve pin high (active) */
+                VALVE_S_PORT |= (1 << VALVE_S_PIN);  // Set security valve pin high (active)
             } else {
-                VALVE_S_PORT &= ~(1 << VALVE_S_PIN); /* Set security valve pin low (inactive) */
+                VALVE_S_PORT &= ~(1 << VALVE_S_PIN);  // Set security valve pin low (inactive)
             }
             break;
         }
         case VALVE_1_F: {
             if (command == TURN_ON) {
-                VALVE_1_PORT |= (1 << VALVE_1_PIN); /* Set valve 1 pin high (active) */
+                VALVE_1_PORT |= (1 << VALVE_1_PIN);  // Set valve 1 pin high (active)
             } else {
-                VALVE_1_PORT &= ~(1 << VALVE_1_PIN); /* Set valve 1 pin low (inactive) */
+                VALVE_1_PORT &= ~(1 << VALVE_1_PIN);  // Set valve 1 pin low (inactive)
             }
             break;
         }
         case VALVE_2_F: {
             if (command == TURN_ON) {
-                VALVE_2_PORT |= (1 << VALVE_2_PIN); /* Set valve 2 pin high (active) */
+                VALVE_2_PORT |= (1 << VALVE_2_PIN);  // Set valve 2 pin high (active)
             } else {
-                VALVE_2_PORT &= ~(1 << VALVE_2_PIN); /* Set valve 2 pin low (inactive) */
+                VALVE_2_PORT &= ~(1 << VALVE_2_PIN);  // Set valve 2 pin low (inactive)
             }
             break;
         }
         case VALVE_3_F: {
             if (command == TURN_ON) {
-                VALVE_3_PORT |= (1 << VALVE_3_PIN); /* Set valve 3 pin high (active) */
+                VALVE_3_PORT |= (1 << VALVE_3_PIN);  // Set valve 3 pin high (active)
             } else {
-                VALVE_3_PORT &= ~(1 << VALVE_3_PIN); /* Set valve 3 pin low (inactive) */
+                VALVE_3_PORT &= ~(1 << VALVE_3_PIN);  // Set valve 3 pin low (inactive)
             }
             break;
         }
         case LED_UI_F: {
             if (command == TURN_ON) {
-                LED_UI_PORT |= (1 << LED_UI_PIN); /* Set LED UI pin high (active) */
+                LED_UI_PORT |= (1 << LED_UI_PIN);  // Set LED UI pin high (active)
             } else {
-                LED_UI_PORT &= ~(1 << LED_UI_PIN); /* Set LED UI pin low (inactive) */
+                LED_UI_PORT &= ~(1 << LED_UI_PIN);  // Set LED UI pin low (inactive)
             }
             break;
         }
@@ -438,11 +438,11 @@ void ControlActuator(SysInfo *p_sys, OutputFlag device_flag, HwSwitch command, b
     // If called directly, synchronize output flags with hardware status
     if (command == TURN_ON) {
         if (!(GetFlag(p_sys, OUTPUT_FLAGS, device_flag))) {
-            SetFlag(p_sys, OUTPUT_FLAGS, device_flag); /* Set actuator flags */
+            SetFlag(p_sys, OUTPUT_FLAGS, device_flag);  // Set actuator flags
         }
     } else {
         if (GetFlag(p_sys, OUTPUT_FLAGS, device_flag)) {
-            ClearFlag(p_sys, OUTPUT_FLAGS, device_flag); /* Clear actuator flags */
+            ClearFlag(p_sys, OUTPUT_FLAGS, device_flag);  // Clear actuator flags
         }
     }
     if (ShowDashboard == true) {
@@ -572,7 +572,7 @@ void ModulateHeat(SysInfo *p_sys, uint16_t potentiometer_readout, uint8_t potent
             if (p_sys->current_valve >= HEAT_MODULATOR_VALVES) {
                 // Cycle end: Reset to first valve
 #if LED_DEBUG
-                if (GetFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER_F)) { /* Toggle SPARK_IGNITER_F on each heat-cycle start */
+                if (GetFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER_F)) {  // Toggle SPARK_IGNITER_F on each heat-cycle start
                     ClearFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER_F);
                 } else {
                     SetFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER_F);
@@ -609,16 +609,10 @@ void ModulateHeat(SysInfo *p_sys, uint16_t potentiometer_readout, uint8_t potent
 
 // Function GasOff: Closes all heat valves and the security valve, turns the spark igniter and exhaust fan off
 void GasOff(SysInfo *p_sys) {
-    // Turn spark igniter off
-    ClearFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER_F);
-    // Close gas valve 3
-    ClearFlag(p_sys, OUTPUT_FLAGS, VALVE_3_F);
-    // Close gas valve 2
-    ClearFlag(p_sys, OUTPUT_FLAGS, VALVE_2_F);
-    // Close gas valve 1
-    ClearFlag(p_sys, OUTPUT_FLAGS, VALVE_1_F);
-    // Close gas security valve
-    ClearFlag(p_sys, OUTPUT_FLAGS, VALVE_S_F);
-    // Turn exhaust fan off
-    ClearFlag(p_sys, OUTPUT_FLAGS, EXHAUST_FAN_F);
+    ClearFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER_F);  // Turn spark igniter off
+    ClearFlag(p_sys, OUTPUT_FLAGS, VALVE_3_F);        // Close gas valve 3
+    ClearFlag(p_sys, OUTPUT_FLAGS, VALVE_2_F);        // Close gas valve 2
+    ClearFlag(p_sys, OUTPUT_FLAGS, VALVE_1_F);        // Close gas valve 1
+    ClearFlag(p_sys, OUTPUT_FLAGS, VALVE_S_F);        // Close gas security valve
+    ClearFlag(p_sys, OUTPUT_FLAGS, EXHAUST_FAN_F);    // Turn exhaust fan off
 }

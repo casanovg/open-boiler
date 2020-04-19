@@ -34,8 +34,8 @@
 #define V_LINE 46
 
 #ifndef SHOW_PUMP_TIMER
-#define SHOW_PUMP_TIMER true /* True: Shows the CH water pump auto-shutdown timer */
-#endif                       /* SHOW_PUMP_TIMER */
+#define SHOW_PUMP_TIMER true  // True: Shows the CH water pump auto-shutdown timer
+#endif                        // SHOW_PUMP_TIMER
 
 // Types
 
@@ -64,14 +64,6 @@ void DrawLine(uint8_t, char);
 
 // Global console UI literals
 
-// static const char __flash str_vs[] = {" V-S "};
-// static const char __flash str_v1[] = {" V-1 "};
-// static const char __flash str_v2[] = {" V-2 "};
-// static const char __flash str_v3[] = {" V-3 "};
-// static const char __flash str_spark[] = {" IGNITING "};
-// static const char __flash str_fan[] = {" F "};
-// static const char __flash str_pump[] = {" PUMP "};
-
 static const char __flash str_preboot_01[] = {" > Initializing ADC buffers ..."};
 static const char __flash str_preboot_02[] = {" > Initializing actuator controls ..."};
 static const char __flash str_preboot_03[] = {" > Turning all actuators off ..."};
@@ -89,7 +81,6 @@ static const char __flash str_heat_mod_05[] = {" | (O)"};
 static const char __flash str_heat_mod_06[] = {" | (X)"};
 static const char __flash str_heat_mod_07[] = {" | (=)"};
 static const char __flash str_heat_mod_08[] = {" ms "};
-
 static const char __flash str_iflags[] = {"Inputs: "};
 static const char __flash str_oflags[] = {"Outputs: "};
 static const char __flash str_lit_00[] = {"DHW request: "};
@@ -131,7 +122,6 @@ static const char __flash str_mode_40[] = {"   [ CH ON DUTY ] .\n\r"};
 static const char __flash str_mode_100[] = {"        [ ERROR ] .\n\r"};
 #if SHOW_PUMP_TIMER
 static const char __flash str_wptimer[] = {"  CH water pump auto-shutdown timer: "};
-#endif /* SHOW_PUMP_TIMER */
-//static const char __flash str_bug[] = {"  FORCED BUG !!! "};
+#endif  // SHOW_PUMP_TIMER
 
-#endif /* _SERIAL_UI_H_ */
+#endif  // _SERIAL_UI_H_

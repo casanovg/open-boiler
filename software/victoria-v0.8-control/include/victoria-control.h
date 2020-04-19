@@ -21,7 +21,6 @@
 #include <util/delay.h>
 
 #include "errors.h"
-#include "hw-mapping.h"
 #include "sys-settings.h"
 
-#endif /* _VICTORIA_CONTROL_H_ */
+#endif  // _VICTORIA_CONTROL_H_

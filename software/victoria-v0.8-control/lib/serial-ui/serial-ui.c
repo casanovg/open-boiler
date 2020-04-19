@@ -91,7 +91,6 @@ void SerialTxStr(const __flash char *ptr_string) {
 // Function DrawDashedLine
 void DrawLine(uint8_t length, char line_char) {
     for (uint8_t i = 0; i < length; i++) {
-        //SerialTxChr(61);
         SerialTxChr(line_char);
     }
 }
@@ -105,7 +104,6 @@ void ClrScr(void) {
 
 // Function Dashboard
 void Dashboard(SysInfo *p_sys, bool force_display) {
-
     if (force_display |
         (p_sys->input_flags != p_sys->last_displayed_iflags) |
         (p_sys->output_flags != p_sys->last_displayed_oflags)) {
@@ -114,11 +112,11 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
 
         ClrScr();
 
-        DrawLine(DASH_WIDTH, H_ELINE); /* Dashed line (= 61) */
+        DrawLine(DASH_WIDTH, H_ELINE);  // Dashed line (= 61)
 
-        SerialTxStr(str_crlf);         /* CR + new line */
+        SerialTxStr(str_crlf);  // CR + new line
 
-        SerialTxChr(V_LINE); /* Horizontal separator (|) */
+        SerialTxChr(V_LINE);  // Horizontal separator (|)
         SerialTxStr(str_header_01);
         SerialTxStr(str_header_02);
 
@@ -150,65 +148,65 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             }
         }
 
-        SerialTxChr(V_LINE); /* Horizontal separator (|) */
-        SerialTxChr(32);     /* Space (_) */
+        SerialTxChr(V_LINE);  // Horizontal separator (|)
+        SerialTxChr(32);      // Space (_)
 
-        DrawLine(DASH_WIDTH - 4, H_ILINE); /* Dotted line */
+        DrawLine(DASH_WIDTH - 4, H_ILINE);  // Dotted line
         SerialTxChr(32);
-        SerialTxChr(V_LINE); /* Horizontal separator (|) */
+        SerialTxChr(V_LINE);  // Horizontal separator (|)
 
-        SerialTxStr(str_crlf); /* CR + new line */
+        SerialTxStr(str_crlf);  // CR + new line
 
-        SerialTxChr(V_LINE); /* Horizontal separator (|) */
-        SerialTxChr(32);     /* Space (_) */
+        SerialTxChr(V_LINE);  // Horizontal separator (|)
+        SerialTxChr(32);      // Space (_)
 
         // Input flags
         SerialTxStr(str_iflags);
         SerialTxNum(p_sys->input_flags, DIGITS_3);
 
-        SerialTxChr(32); /* Space (_) */
-        SerialTxChr(32); /* Space (_) */
+        SerialTxChr(32);  // Space (_)
+        SerialTxChr(32);  // Space (_)
 
         // DHW temperature
         SerialTxStr(str_lit_13);
         SerialTxNum(p_sys->dhw_temperature, DIGITS_4);
-        SerialTxChr(32); /* Space (_) */
+        SerialTxChr(32);  // Space (_)
         SerialTxNum(GetNtcTemperature(p_sys->dhw_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_3);
 
-        SerialTxChr(32); /* Space (_) */
-        SerialTxChr(32); /* Space (_) */
+        SerialTxChr(32);  // Space (_)
+        SerialTxChr(32);  // Space (_)
 
         // CH temperature
         SerialTxStr(str_lit_14);
         SerialTxNum(p_sys->ch_temperature, DIGITS_4);
-        SerialTxChr(32); /* Space (_) */
+        SerialTxChr(32);  // Space (_)
         SerialTxNum(GetNtcTemperature(p_sys->ch_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_3);
 
-        SerialTxChr(32); /* Space (_) */
-        SerialTxChr(32); /* Space (_) */
+        SerialTxChr(32);  // Space (_)
+        SerialTxChr(32);  // Space (_)
 
         // Overheat
 #if !(OVERHEAT_OVERRIDE)
         SerialTxStr(str_lit_04);
 #else
         SerialTxStr(str_lit_04_override);
-#endif /* OVERHEAT_OVERRIDE */
+#endif  // OVERHEAT_OVERRIDE
         if (GetFlag(p_sys, INPUT_FLAGS, OVERHEAT_F)) {
             SerialTxStr(str_true);
         } else {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32);     /* Space (_) */
-        SerialTxChr(32);     /* Space (_) */
-        SerialTxChr(32);     /* Space (_) */
-        SerialTxChr(32);     /* Space (_) */
-        SerialTxChr(V_LINE); /* Horizontal separator (|) */
+        SerialTxChr(32);      // Space (_)
+        SerialTxChr(32);      // Space (_)
+        SerialTxChr(32);      // Space (_)
+        SerialTxChr(32);      // Space (_)
+        SerialTxChr(V_LINE);  // Horizontal separator (|)
 
-        SerialTxStr(str_crlf); /* CR + new line */
+        SerialTxStr(str_crlf);  // CR + new line
 
-        SerialTxChr(V_LINE); /* Horizontal separator (|) */
-        SerialTxChr(32);     /* Space (_) */
+        SerialTxChr(V_LINE);  // Horizontal separator (|)
+        SerialTxChr(32);      // Space (_)
 
         // DHW Request
         SerialTxStr(str_lit_00);
@@ -218,8 +216,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32); /* Space (_) */
-        SerialTxChr(32); /* Space (_) */
+        SerialTxChr(32);  // Space (_)
+        SerialTxChr(32);  // Space (_)
 
         //CH Request
         SerialTxStr(str_lit_01);
@@ -229,23 +227,23 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32); /* Space (_) */
-        SerialTxChr(32); /* Space (_) */
+        SerialTxChr(32);  // Space (_)
+        SerialTxChr(32);  // Space (_)
 
         // Airflow
 #if !(AIRFLOW_OVERRIDE)
         SerialTxStr(str_lit_02);
 #else
         SerialTxStr(str_lit_02_override);
-#endif /* AIRFLOW_OVERRIDE */
+#endif  // AIRFLOW_OVERRIDE
         if (GetFlag(p_sys, INPUT_FLAGS, AIRFLOW_F)) {
             SerialTxStr(str_true);
         } else {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32); /* Space (_) */
-        SerialTxChr(32); /* Space (_) */
+        SerialTxChr(32);  // Space (_)
+        SerialTxChr(32);  // Space (_)
 
         // Flame
         SerialTxStr(str_lit_03);
@@ -255,51 +253,44 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32);     /* Space (_) */
-        SerialTxChr(32);     /* Space (_) */
-        SerialTxChr(V_LINE); /* Horizontal separator (|) */
+        SerialTxChr(32);      // Space (_)
+        SerialTxChr(32);      // Space (_)
+        SerialTxChr(V_LINE);  // Horizontal separator (|)
 
-        SerialTxStr(str_crlf); /* CR + new line */
+        SerialTxStr(str_crlf);  // CR + new line
 
-        SerialTxChr(V_LINE); /* Horizontal separator (|) */
-        SerialTxChr(32);     /* Space (_) */
+        SerialTxChr(V_LINE);  // Horizontal separator (|)
+        SerialTxChr(32);      // Space (_)
 
-        DrawLine(DASH_WIDTH - 4, H_ILINE); /* Dotted line */
-        SerialTxChr(32);                   /* Space (_) */
-        SerialTxChr(V_LINE);               /* Horizontal separator (|) */
+        DrawLine(DASH_WIDTH - 4, H_ILINE);  // Dotted line
+        SerialTxChr(32);                    // Space (_)
+        SerialTxChr(V_LINE);                // Horizontal separator (|)
 
-        SerialTxStr(str_crlf); /* CR + new line */
+        SerialTxStr(str_crlf);  // CR + new line
 
-        SerialTxChr(V_LINE); /* Horizontal separator (|) */
-        SerialTxChr(32);     /* Space (_) */
+        SerialTxChr(V_LINE);  // Horizontal separator (|)
+        SerialTxChr(32);      // Space (_)
 
         SerialTxStr(str_lit_18);
-        SerialTxChr(32); /* Space (_) */
+        SerialTxChr(32);  // Space (_)
 
         SerialTxStr(str_lit_15);
-        //SerialTxNum(p_sys->dhw_setting, DIGITS_4);
-        //SerialTxChr(32); /* Space (_) */
         SerialTxNum(GetKnobPosition(p_sys->dhw_setting, DHW_SETTING_STEPS), DIGITS_2);
         SerialTxChr(32);
         SerialTxChr(32);
 
-        SerialTxChr(32); /* Space (_) */
-        SerialTxChr(32); /* Space (_) */
+        SerialTxChr(32);  // Space (_)
+        SerialTxChr(32);  // Space (_)
 
         SerialTxStr(str_lit_16);
-        //SerialTxNum(p_sys->ch_setting, DIGITS_4);
-        //SerialTxChr(32); /* Space (_) */
         SerialTxNum(GetKnobPosition(p_sys->ch_setting, CH_SETTING_STEPS), DIGITS_2);
         SerialTxChr(32);
         SerialTxChr(32);
 
-        SerialTxChr(32); /* Space (_) */
-        SerialTxChr(32); /* Space (_) */
+        SerialTxChr(32);  // Space (_)
+        SerialTxChr(32);  // Space (_)
 
         SerialTxStr(str_lit_17);
-        //SerialTxNum(p_sys->system_mode, DIGITS_4);
-        //SerialTxChr(32); /* Space (_) */
-        
         switch (GetKnobPosition(p_sys->system_mode, SYSTEM_MODE_STEPS)) {
             case SYS_COMBI: {
                 SerialTxStr(sys_mode_00);
@@ -318,28 +309,28 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
                 break;
             }
         }
-        
-        SerialTxChr(V_LINE); /* Horizontal separator (|) */
 
-        SerialTxStr(str_crlf); /* CR + new line */
+        SerialTxChr(V_LINE);  // Horizontal separator (|)
 
-        SerialTxChr(V_LINE); /* Horizontal separator (|) */
-        SerialTxChr(32);     /* Space (_) */
+        SerialTxStr(str_crlf);  // CR + new line
 
-        DrawLine(DASH_WIDTH - 4, H_ILINE); /* Dotted line */
+        SerialTxChr(V_LINE);  // Horizontal separator (|)
+        SerialTxChr(32);      // Space (_)
+
+        DrawLine(DASH_WIDTH - 4, H_ILINE);  // Dotted line
         SerialTxChr(32);
-        SerialTxChr(V_LINE); /* Horizontal separator (|) */
+        SerialTxChr(V_LINE);  // Horizontal separator (|)
 
         SerialTxStr(str_crlf);
 
-        SerialTxChr(V_LINE); /* Horizontal separator (|) */
-        SerialTxChr(32);     /* Space (_) */
+        SerialTxChr(V_LINE);  // Horizontal separator (|)
+        SerialTxChr(32);      // Space (_)
 
         SerialTxStr(str_oflags);
         SerialTxNum(p_sys->output_flags, DIGITS_3);
 
-        SerialTxChr(32); /* Space (_) */
-        SerialTxChr(32); /* Space (_) */
+        SerialTxChr(32);  // Space (_)
+        SerialTxChr(32);  // Space (_)
 
         // Exhaust fan
         SerialTxStr(str_lit_05);
@@ -349,8 +340,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32); /* Space (_) */
-        SerialTxChr(32); /* Space (_) */
+        SerialTxChr(32);  // Space (_)
+        SerialTxChr(32);  // Space (_)
 
         // Water pump
         SerialTxStr(str_lit_06);
@@ -360,8 +351,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32); /* Space (_) */
-        SerialTxChr(32); /* Space (_) */
+        SerialTxChr(32);  // Space (_)
+        SerialTxChr(32);  // Space (_)
 
         // Spark igniter
         SerialTxStr(str_lit_07);
@@ -371,8 +362,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32); /* Space (_) */
-        SerialTxChr(32); /* Space (_) */
+        SerialTxChr(32);  // Space (_)
+        SerialTxChr(32);  // Space (_)
 
         // LED UI
         SerialTxStr(str_lit_12);
@@ -382,14 +373,14 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32);     /* Space (_) */
-        SerialTxChr(32);     /* Space (_) */
-        SerialTxChr(V_LINE); /* Horizontal separator (|) */
+        SerialTxChr(32);      // Space (_)
+        SerialTxChr(32);      // Space (_)
+        SerialTxChr(V_LINE);  // Horizontal separator (|)
 
-        SerialTxStr(str_crlf); /* CR + new line */
+        SerialTxStr(str_crlf);  // CR + new line
 
-        SerialTxChr(V_LINE); /* Horizontal separator (|) */
-        SerialTxChr(32);     /* Space (_) */
+        SerialTxChr(V_LINE);  // Horizontal separator (|)
+        SerialTxChr(32);      // Space (_)
 
         // Security valve
         SerialTxStr(str_lit_08);
@@ -399,8 +390,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32); /* Space (_) */
-        SerialTxChr(32); /* Space (_) */
+        SerialTxChr(32);  // Space (_)
+        SerialTxChr(32);  // Space (_)
 
         // Valve 1
         SerialTxStr(str_lit_09);
@@ -410,8 +401,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32); /* Space (_) */
-        SerialTxChr(32); /* Space (_) */
+        SerialTxChr(32);  // Space (_)
+        SerialTxChr(32);  // Space (_)
 
         // Valve 2
         SerialTxStr(str_lit_10);
@@ -421,8 +412,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32); /* Space (_) */
-        SerialTxChr(32); /* Space (_) */
+        SerialTxChr(32);  // Space (_)
+        SerialTxChr(32);  // Space (_)
 
         // Valve 3
         SerialTxStr(str_lit_11);
@@ -432,12 +423,12 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32);     /* Space (_) */
-        SerialTxChr(V_LINE); /* Horizontal separator (|) */
+        SerialTxChr(32);      // Space (_)
+        SerialTxChr(V_LINE);  // Horizontal separator (|)
 
-        SerialTxStr(str_crlf);         /* CR + new line */
-        DrawLine(DASH_WIDTH, H_ELINE); /* Dashed line */
-        SerialTxStr(str_crlf);         /* CR + new line */
+        SerialTxStr(str_crlf);          // CR + new line
+        DrawLine(DASH_WIDTH, H_ELINE);  // Dashed line
+        SerialTxStr(str_crlf);          // CR + new line
 
 #if SHOW_PUMP_TIMER
         SerialTxStr(str_crlf);
@@ -446,7 +437,6 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
         SerialTxNum(GetTimeLeft(PUMP_TIMER_ID), DIGITS_7);
         //SerialTxNum(GetTimeLeft, DIGITS_7);
         SerialTxStr(str_crlf);
-#endif /* SHOW_PUMP_TIMER */
+#endif  // SHOW_PUMP_TIMER
     }
-
 }

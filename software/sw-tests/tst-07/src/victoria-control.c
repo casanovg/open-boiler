@@ -38,11 +38,11 @@ int main(void) {
     p_system->last_displayed_oflags = 0;
     p_system->error = ERROR_000;
     p_system->ignition_retries = 0;
-    p_system->pump_delay = 0;
     p_system->ch_on_duty_step = CH_ON_DUTY_1;
     p_system->cycle_in_progress = 0;
     p_system->current_heat_level = 0;
     p_system->current_valve = 0;
+    p_system->pump_timer_memory = 0;
     for (uint8_t valve = 0; valve < HEAT_MODULATOR_VALVES; valve++) {
         p_system->heat_modulator[valve] = gas_modulator[valve];
     }
@@ -104,7 +104,7 @@ int main(void) {
     // Set system-wide timers
     SetTimer(VALVE_3_LED_TIMER_ID, VALVE_3_LED_TIMER_DURATION, VALVE_3_LED_TIMER_MODE); /* Valve-3 timer */
     SetTimer(PUMP_TIMER_LED_ID, PUMP_TIMER_LED_DURATION, PUMP_TIMER_LED_MODE);          /* Water pump timer */
-    TimerLapse pump_timer_memory = 0;
+    
     uint32_t ms_var = 4294900000;
 
     // Enable global interrupts
@@ -149,8 +149,8 @@ int main(void) {
 
         if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {    
             SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);  // YE YE YE
-            if ((pump_timer_memory == 0) && GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
-                pump_timer_memory = GetTimeLeft(PUMP_TIMER_LED_ID);
+            if ((p_system->pump_timer_memory == 0) && GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
+                p_system->pump_timer_memory = GetTimeLeft(PUMP_TIMER_LED_ID);
                 ResetTimerLapse(PUMP_TIMER_LED_ID, 0);
                 if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
                     ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
@@ -164,10 +164,10 @@ int main(void) {
                 }
                 ResetTimerLapse(PUMP_TIMER_LED_ID, PUMP_TIMER_LED_DURATION);
             } else {
-                if (pump_timer_memory != 0) {
-                    ResetTimerLapse(PUMP_TIMER_LED_ID, pump_timer_memory);
+                if (p_system->pump_timer_memory != 0) {
+                    ResetTimerLapse(PUMP_TIMER_LED_ID, p_system->pump_timer_memory);
                     SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
-                    pump_timer_memory = 0;
+                    p_system->pump_timer_memory = 0;
                 }
             }
         }

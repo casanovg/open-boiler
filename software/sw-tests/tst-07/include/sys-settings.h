@@ -174,7 +174,8 @@ typedef struct sys_info {
     uint8_t last_displayed_oflags;                       /* Hardware activation flags last shown status */
     uint8_t ignition_retries;                            /* Burner ignition retry counter */
     uint8_t error;                                       /* System error code */
-    uint32_t pump_delay;                                 /* CH water pump auto-shutdown timer */
+    //uint32_t pump_delay;                               /* CH water pump auto-shutdown timer */
+    uint32_t pump_timer_memory;                        /* CH water pump auto-shutdown timer memory */
     InnerStep ch_on_duty_step;                           /* CH inner step before handing over control to DHW */
     uint8_t current_heat_level;                          /* Current gas modulator heat level, set by the DHW or CH temperature potentiometers */
     HeatValve current_valve;                             /* Heat modulator current valve */

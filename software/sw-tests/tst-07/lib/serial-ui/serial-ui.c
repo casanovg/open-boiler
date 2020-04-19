@@ -35,41 +35,53 @@ void SerialTxChr(unsigned char data) {
 
 // Function SerialTxNum
 void SerialTxNum(uint32_t data, DigitLength digits) {
-#define DATA_LNG 7
+#define DATA_LNG 10
     char str[DATA_LNG] = {0};
     switch (digits) {
         case DIGITS_1: {
-            sprintf(str, "%01u", (unsigned int)data);
+            sprintf(str, "%1lu", (unsigned long int)data);
             break;
         }
         case DIGITS_2: {
-            sprintf(str, "%02u", (unsigned int)data);
+            sprintf(str, "%2lu", (unsigned long int)data);
             break;
         }
         case DIGITS_3: {
-            sprintf(str, "%03u", (unsigned int)data);
+            sprintf(str, "%3lu", (unsigned long int)data);
             break;
         }
         case DIGITS_4: {
-            sprintf(str, "%04u", (unsigned int)data);
+            sprintf(str, "%4lu", (unsigned long int)data);
             break;
         }
         case DIGITS_5: {
-            sprintf(str, "%05u", (unsigned int)data);
+            sprintf(str, "%5lu", (unsigned long int)data);
             break;
         }
         case DIGITS_6: {
-            sprintf(str, "%06u", (unsigned int)data);
+            sprintf(str, "%6lu", (unsigned long int)data);
             break;
         }
         case DIGITS_7: {
             //sprintf(str, "%07lu", data);
-            sprintf(str, "%0lu", (unsigned long int)data);
+            sprintf(str, "%7lu", (unsigned long int)data);
             break;
         }
+        case DIGITS_8: {
+            sprintf(str, "%8lu", (unsigned long int)data);
+            break;
+        }
+        case DIGITS_9: {
+            sprintf(str, "%9lu", (unsigned long int)data);
+            break;
+        }
+        case DIGITS_10: {
+            sprintf(str, "%10lu", (unsigned long int)data);
+            break;
+        }                        
         case DIGITS_FREE:
         default: {
-            sprintf(str, "%u", (unsigned int)data);
+            sprintf(str, "%lu", (unsigned long int)data);
             break;
         }
     }

@@ -1,13 +1,8 @@
-/*
- *  Open-Boiler Control - Victoria 20-20 T/F boiler control
- *  Author: Gustavo Casanova
- *  ........................................................
- *  File: victoria-control.c (main code) for ATmega328
- *  ........................................................
- *  Version: 0.8 "Juan" / 2019-04-09 ("Easter Quarantine")
- *  gustavo.casanova@nicebots.com
- *  ........................................................
- */
+// ---------------------------------------------
+// Test 07 - 2020-04-18 - Gustavo Casanova
+// .............................................
+// System timers tests
+// ---------------------------------------------
 
 #include "victoria-control.h"
 
@@ -107,9 +102,9 @@ int main(void) {
 #define PUMP_TIMER_LED_MODE RUN_ONCE_AND_HOLD /* Timer mode */
 
     // Set system-wide timers
-    SetTimer(VALVE_3_LED_TIMER_ID, VALVE_3_LED_TIMER_DURATION, VALVE_3_LED_TIMER_MODE); /* Water pump timer */
-
-    TimerLapse pump_timer_Memory = 0;
+    SetTimer(VALVE_3_LED_TIMER_ID, VALVE_3_LED_TIMER_DURATION, VALVE_3_LED_TIMER_MODE); /* Valve-3 timer */
+    SetTimer(PUMP_TIMER_LED_ID, 0, PUMP_TIMER_LED_MODE);                                /* Water pump timer */
+    TimerLapse pump_timer_memory = 0;
 
     // Enable global interrupts
     sei();
@@ -131,41 +126,49 @@ int main(void) {
 
     //SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
 
-    for (;;) {
-        // if (TimerFinished(VALVE_3_LED_TIMER_ID)) {
-        //     ToggleFlag(p_system, OUTPUT_FLAGS, VALVE_3_F);
-        //     if (TimerExists(PUMP_TIMER_LED_ID) == false) {
-        //         SetTimer(PUMP_TIMER_LED_ID, PUMP_TIMER_LED_DURATION, PUMP_TIMER_LED_MODE); /* Water pump timer */
-        //     }
-        //     RestartTimer(VALVE_3_LED_TIMER_ID);
-        //     SerialTxChr(32);
-        //     SerialTxNum(GetTimeLeft(PUMP_TIMER_LED_ID), DIGITS_7);
-        // }
+    // DHW_RQ_DDR &= ~(1 << DHW_RQ_PIN); /* Set DHW request pin as input */
+    // DHW_RQ_PORT |= (1 << DHW_RQ_PIN); /* Activate pull-up resistor on this pin */
 
-        if (GetFlag(p_system, INPUT_FLAGS, FLAME_F)) {
-            // pump_timer_Memory = GetTimeLeft(PUMP_TIMER_LED_ID);
-            // ResetTimerLapse(PUMP_TIMER_LED_ID, 0);
-            // ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
-            if (GetFlag(p_system, OUTPUT_FLAGS, VALVE_S_F) == false) {
-                SetFlag(p_system, OUTPUT_FLAGS, VALVE_S_F);
+    // SPARK_DDR |= (1 << SPARK_PIN);  /* Set spark igniter pin as output */
+    // SPARK_PORT |= (1 << SPARK_PIN); /* Set spark igniter pin high (inactive) */
+
+    for (;;) {
+        if (TimerFinished(VALVE_3_LED_TIMER_ID)) {
+            ToggleFlag(p_system, OUTPUT_FLAGS, VALVE_3_F);
+            RestartTimer(VALVE_3_LED_TIMER_ID);
+
+            //SerialTxChr(32);
+            //SerialTxNum(GetTimeLeft(PUMP_TIMER_LED_ID), DIGITS_10);
+        }
+
+        if (((DHW_RQ_PINP >> DHW_RQ_PIN) & true) == false) {
+            SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);  // YE YE YE
+            if ((pump_timer_memory == 0) && GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
+                pump_timer_memory = GetTimeLeft(PUMP_TIMER_LED_ID);
+                ResetTimerLapse(PUMP_TIMER_LED_ID, 0);
+                if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
+                    ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                }
             }
-            SerialTxChr(46);
         } else {
-            // if (pump_timer_Memory != 0) {
-            //     ResetTimerLapse(PUMP_TIMER_LED_ID, pump_timer_Memory);
-            //     pump_timer_Memory = 0;
-            // }
-            if (GetFlag(p_system, OUTPUT_FLAGS, VALVE_S_F) == false) {
-                ClearFlag(p_system, OUTPUT_FLAGS, VALVE_S_F);
+            ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);  // YE YE YE
+            if (((CH_RQ_PINP >> CH_RQ_PIN) & true) == false) {
+                if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F) == false) {
+                    SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                }
+                ResetTimerLapse(PUMP_TIMER_LED_ID, PUMP_TIMER_LED_DURATION);
+            } else {
+                if (pump_timer_memory != 0) {
+                    ResetTimerLapse(PUMP_TIMER_LED_ID, pump_timer_memory);
+                    SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                    pump_timer_memory = 0;
+                }
             }
         }
 
-        // if (TimerFinished(PUMP_TIMER_LED_ID)) {
-        //     ToggleFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
-        //     RestartTimer(PUMP_TIMER_LED_ID);
-        //     SerialTxStr(str_crlf);
-        //     SerialTxStr(str_crlf);
-        // }
+        if (TimerFinished(PUMP_TIMER_LED_ID)) {
+            ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+        }
 
     } /* Main loop end */
 

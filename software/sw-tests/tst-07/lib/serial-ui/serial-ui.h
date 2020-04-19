@@ -47,6 +47,9 @@ typedef enum digit_length {
     DIGITS_5 = 5,
     DIGITS_6 = 6,
     DIGITS_7 = 7,
+    DIGITS_8 = 8,
+    DIGITS_9 = 9,
+    DIGITS_10 = 10,            
     FLOAT_TEMP = 8,
     DIGITS_FREE = 0
 } DigitLength;

@@ -562,13 +562,13 @@ void ModulateHeat(SysInfo *p_sys, uint16_t potentiometer_readout, uint8_t potent
             // Set cycle in progress
             p_sys->cycle_in_progress = true;
             p_sys->current_valve = 0;
-            ResetTimerLapse(GAS_MODULATOR_TIMER_ID, ((unsigned long)(heat_level[p_sys->current_heat_level].valve_open_time[p_sys->current_valve] * HEAT_CYCLE_TIME / 100)));
+            ResetTimerLapse(HEAT_TIMER_ID, ((unsigned long)(heat_level[p_sys->current_heat_level].valve_open_time[p_sys->current_valve] * HEAT_CYCLE_TIME / 100)));
         }
     } else {
-        if (TimerFinished(GAS_MODULATOR_TIMER_ID)) {
+        if (TimerFinished(HEAT_TIMER_ID)) {
             // Prepare timing for next valve
             p_sys->current_valve++;
-            ResetTimerLapse(GAS_MODULATOR_TIMER_ID, (heat_level[p_sys->current_heat_level].valve_open_time[p_sys->current_valve] * HEAT_CYCLE_TIME / 100));
+            ResetTimerLapse(HEAT_TIMER_ID, (heat_level[p_sys->current_heat_level].valve_open_time[p_sys->current_valve] * HEAT_CYCLE_TIME / 100));
             if (p_sys->current_valve >= HEAT_MODULATOR_VALVES) {
                 // Cycle end: Reset to first valve
 #if LED_DEBUG

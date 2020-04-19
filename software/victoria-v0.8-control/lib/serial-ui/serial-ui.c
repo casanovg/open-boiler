@@ -442,8 +442,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
 #if SHOW_PUMP_TIMER
         SerialTxStr(str_crlf);
         SerialTxStr(str_wptimer);
-        SerialTxNum(p_sys->pump_delay, DIGITS_7);
-        //SerialTxNum((unsigned long)GetTimeLeft(PUMP_TIMER_ID), DIGITS_7);
+        //SerialTxNum(p_sys->pump_delay, DIGITS_7);
+        SerialTxNum(GetTimeLeft(PUMP_TIMER_ID), DIGITS_7);
         //SerialTxNum(GetTimeLeft, DIGITS_7);
         SerialTxStr(str_crlf);
 #endif /* SHOW_PUMP_TIMER */

@@ -22,7 +22,7 @@
 #define CH_SETPOINT_HIGH 241 /* ADC-NTC CH temperature ~ 55°C */
 #define CH_SETPOINT_LOW 379  /* ADC-NTC CH temperature ~ 38°C */
 
-#define HEAT_CYCLE_TIME 10000 /* Heat modulator cycle time (milliseconds) */
+#define HEAT_CYCLE_TIME 3000 /* Heat modulator cycle time (milliseconds) */
 
 #define MAX_IGNITION_RETRIES 3 /* Number of ignition retries when no flame is detected */
 
@@ -37,12 +37,12 @@
 #define FSM_TIMER_DURATION 0             /* Main finite state machine timer time-lapse */
 #define FSM_TIMER_MODE RUN_ONCE_AND_HOLD /* Main finite state machine timer mode */
 
-#define GAS_MODULATOR_TIMER_ID 2                   /* Gas modulator heat level timer id */
-#define GAS_MODULATOR_TIMER_DURATION 0             /* Gas modulator heat level timer time-lapse */
-#define GAS_MODULATOR_TIMER_MODE RUN_ONCE_AND_HOLD /* Gas modulator heat level timer mode */
+#define HEAT_TIMER_ID 2                   /* Gas modulator heat level timer id */
+#define HEAT_TIMER_DURATION 0             /* Gas modulator heat level timer time-lapse */
+#define HEAT_TIMER_MODE RUN_ONCE_AND_HOLD /* Gas modulator heat level timer mode */
 
 #define PUMP_TIMER_ID 3                   /* Water pump timer id */
-#define PUMP_TIMER_DURATION 0             /* Water pump timer time-lapse */
+#define PUMP_TIMER_DURATION 30000         /* Water pump timer time-lapse */
 #define PUMP_TIMER_MODE RUN_ONCE_AND_HOLD /* Water pump timer mode */
 
 #define DEB_CH_SWITCH_TIMER_ID 4                   /* Central heating thermostat switch debounce timer id */
@@ -161,20 +161,21 @@ typedef struct heat_modulator {
 } HeatModulator;
 
 typedef struct sys_info {
-    State system_state;                                  /* System FSM running state */
-    InnerStep inner_step;                                /* System FSM state inner step (sub-states) */
-    uint8_t input_flags;                                 /* Flags signaling digital input sensor status */
-    uint8_t output_flags;                                /* Flags signaling hardware activation status */
-    uint16_t dhw_temperature;                            /* DHW NTC thermistor temperature ADC readout */
-    uint16_t ch_temperature;                             /* CH NTC thermistor temperature ADC readout */
-    uint16_t dhw_setting;                                /* DWH setting potentiometer ADC readout */
-    uint16_t ch_setting;                                 /* CH setting potentiometer ADC readout */
-    uint16_t system_mode;                                /* System mode potentiometer ADC readout */
-    uint8_t last_displayed_iflags;                       /* Input sensor flags last shown status */
-    uint8_t last_displayed_oflags;                       /* Hardware activation flags last shown status */
-    uint8_t ignition_retries;                            /* Burner ignition retry counter */
-    uint8_t error;                                       /* System error code */
-    uint32_t pump_delay;                                 /* CH water pump auto-shutdown timer */
+    State system_state;            /* System FSM running state */
+    InnerStep inner_step;          /* System FSM state inner step (sub-states) */
+    uint8_t input_flags;           /* Flags signaling digital input sensor status */
+    uint8_t output_flags;          /* Flags signaling hardware activation status */
+    uint16_t dhw_temperature;      /* DHW NTC thermistor temperature ADC readout */
+    uint16_t ch_temperature;       /* CH NTC thermistor temperature ADC readout */
+    uint16_t dhw_setting;          /* DWH setting potentiometer ADC readout */
+    uint16_t ch_setting;           /* CH setting potentiometer ADC readout */
+    uint16_t system_mode;          /* System mode potentiometer ADC readout */
+    uint8_t last_displayed_iflags; /* Input sensor flags last shown status */
+    uint8_t last_displayed_oflags; /* Hardware activation flags last shown status */
+    uint8_t ignition_retries;      /* Burner ignition retry counter */
+    uint8_t error;                 /* System error code */
+    // uint32_t pump_delay;                                 /* CH water pump auto-shutdown timer */
+    uint32_t pump_timer_memory;                          /* CH water pump auto-shutdown timer memory */
     InnerStep ch_on_duty_step;                           /* CH inner step before handing over control to DHW */
     uint8_t current_heat_level;                          /* Current gas modulator heat level, set by the DHW or CH temperature potentiometers */
     HeatValve current_valve;                             /* Heat modulator current valve */

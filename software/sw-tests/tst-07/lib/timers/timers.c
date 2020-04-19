@@ -95,7 +95,7 @@ uint8_t RestartTimer(TimerId timer_id) {
 }
 
 // Function ResetTimerLapse
-uint8_t ResetTimerLapse(TimerId timer_id, unsigned long time_lapse) {
+uint8_t ResetTimerLapse(TimerId timer_id, uint32_t time_lapse) {
     for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {
         if (timer_buffer[i].timer_id == timer_id) {
             if (timer_buffer[i].timer_mode == RUN_ONCE_AND_HOLD) {  //&&
@@ -162,7 +162,7 @@ void SetTickTimer(void) {
 }
 
 // Function GetMilliseconds: Returns the milliseconds that passed since the last counter overflow (every 49 days)
-unsigned long GetMilliseconds(void) {
+uint32_t GetMilliseconds(void) {
     uint32_t m;
     uint8_t oldSREG = SREG;
     // disable interrupts while we read timer0_milliseconds or we might get an

@@ -50,7 +50,7 @@
 #define DLY_CH_ON_DUTY_1 500      /* On_CH_Duty_1 step long delay */
 #define DLY_CH_ON_DUTY_LOOP 3000  /* On_DHW_Duty loop long delay */
 #define DLY_FLAME_MODULATION 9000 /* Modulation cycle: used in 1/3 parts */
-#define DLY_WATER_PUMP_OFF 600000 /* Delay until the water pump shuts down when there are no CH requests */
+#define DLY_WATER_PUMP_OFF 10000 /* Delay until the water pump shuts down when there are no CH requests */
                                   /* Time: 300000 / 60 / 1000 = 5 min aprox */
                                   /* Time: 600000 / 60 / 1000 = 10 min aprox */
                                   /* Time: 900000 / 60 / 1000 = 15 min aprox */
@@ -72,13 +72,13 @@ typedef enum timer_mode {
 
 typedef struct timer {
     uint8_t timer_id;
-    unsigned long timer_start_time;
-    unsigned long timer_time_lapse;
+    uint32_t timer_start_time;
+    uint32_t timer_time_lapse;
     TimerMode timer_mode;
 } SystemTimer;
 
 typedef uint8_t TimerId;
-typedef unsigned long TimerLapse;
+typedef uint32_t TimerLapse;
 
 // Prototypes
 
@@ -86,22 +86,22 @@ uint8_t SetTimer(TimerId, TimerLapse, TimerMode);
 bool TimerRunning(TimerId);
 bool TimerFinished(TimerId);
 bool TimerExists(TimerId);
-unsigned long GetTimeLeft(TimerId);
+uint32_t GetTimeLeft(TimerId);
 uint8_t RestartTimer(TimerId);
 uint8_t ResetTimerLapse(TimerId, TimerLapse);
 void ProcessTimers();
 bool CheckTimerExistence(TimerId);
 void DeleteTimer(TimerId);
 void SetTickTimer(void);
-unsigned long GetMilliseconds(void);
+uint32_t GetMilliseconds(void);
 //void OnTimer(uint8_t);
 //void OnTimer(SysInfo, uint8_t);
 
 // Globals
 
 // Timer function variables
-volatile static unsigned long timer0_milliseconds = 0; /* Range: 0 - 4294967295 milliseconds (49 days)*/
-volatile static unsigned char timer0_fractions = 0;    /* Range 0 - 4294967295 */
+volatile static uint32_t timer0_milliseconds = 0; /* Range: 0 - 4294967295 milliseconds (49 days)*/
+volatile static uint8_t timer0_fractions = 0;    /* Range 0 - 255 */
 //volatile static unsigned long timer0_overflow_cnt = 0; /* Range 0 - 4294967295 */
 
 // System Timers globals

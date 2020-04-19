@@ -43,11 +43,12 @@ int main(void) {
     p_system->last_displayed_oflags = 0;
     p_system->error = ERROR_000;
     p_system->ignition_retries = 0;
-    p_system->pump_delay = 0;
+    //p_system->pump_delay = 0;
     p_system->ch_on_duty_step = CH_ON_DUTY_1;
     p_system->cycle_in_progress = 0;
     p_system->current_heat_level = 0;
     p_system->current_valve = 0;
+    p_system->pump_timer_memory = 0;
     for (uint8_t valve = 0; valve < HEAT_MODULATOR_VALVES; valve++) {
         p_system->heat_modulator[valve] = gas_modulator[valve];
     }
@@ -97,9 +98,9 @@ int main(void) {
     wdt_enable(WDTO_8S);  // If the system freezes, reset the microcontroller after 8 seconds
 
     // Set system-wide timers
-    SetTimer(FSM_TIMER_ID, (unsigned long)FSM_TIMER_DURATION, FSM_TIMER_MODE);                               /* Main finite state machine timer */
-    SetTimer(PUMP_TIMER_ID, (unsigned long)PUMP_TIMER_DURATION, PUMP_TIMER_MODE);                            /* Water pump timer */
-    SetTimer(GAS_MODULATOR_TIMER_ID, (unsigned long)GAS_MODULATOR_TIMER_DURATION, GAS_MODULATOR_TIMER_MODE); /* Water pump timer */
+    SetTimer(FSM_TIMER_ID, FSM_TIMER_DURATION, FSM_TIMER_MODE);                               /* Main finite state machine timer */
+    SetTimer(HEAT_TIMER_ID, HEAT_TIMER_DURATION, HEAT_TIMER_MODE); /* Heat modulator timer */
+    SetTimer(PUMP_TIMER_ID, PUMP_TIMER_DURATION, PUMP_TIMER_MODE);                            /* Water pump timer */
 
     // Enable global interrupts
     sei();
@@ -125,13 +126,19 @@ int main(void) {
         }
 
         // If the pump is working, check delay counter to turn it off
-        if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
-            if (!(p_system->pump_delay--)) {
-                //if (TimerFinished(PUMP_TIMER_ID)) {
-                ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
-                //ResetTimerLapse(PUMP_TIMER_ID, 0);
-                p_system->pump_delay = 0;
+        if (TimerFinished(PUMP_TIMER_ID)) {
+            if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F) == false) {
+                if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
+                    ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                }
             }
+            // else {
+            //     ResetTimerLapse(PUMP_TIMER_ID, PUMP_TIMER_DURATION);
+            // }
+        //     if (!(p_system->pump_delay--)) {
+        //         ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+        //         p_system->pump_delay = 0;
+        //     }
         }
 
         // DHW temperature sensor out of range -> Error 008
@@ -169,8 +176,8 @@ int main(void) {
         if (GetKnobPosition(p_system->system_mode, SYSTEM_MODE_STEPS) < SYS_OFF) {
             // System FSM
             switch (p_system->system_state) {
-                
-                /*  ________________________
+            
+                 /* ________________________
                   |                         |
                   |   System state -> OFF   |
                   |_________________________|
@@ -307,10 +314,15 @@ int main(void) {
                     }
                     // If the water pump still has time to run before shutting
                     // down, let it run until the delay counter reaches zero
-                    if (p_system->pump_delay > 0) {
-                        //if (TimerRunning(PUMP_TIMER_ID)) {
+                    if (p_system->pump_timer_memory != 0) {
+                        ResetTimerLapse(PUMP_TIMER_ID, p_system->pump_timer_memory);
                         SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
-                    }
+                        p_system->pump_timer_memory = 0;
+                    }                    
+                    // if (p_system->pump_delay > 0) {
+                    //     //if (TimerRunning(PUMP_TIMER_ID)) {
+                    //     SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                    // }
                     // Check if there a DHW or CH request. If both are requested, DHW will have higher priority after ignition
                     if ((GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) || (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F))) {
                         p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
@@ -446,11 +458,11 @@ int main(void) {
                                     p_system->ignition_retries = 0;
                                     // Hand over control to the requested service (DHW has higher priority)
                                     if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
-                                        ResetTimerLapse(GAS_MODULATOR_TIMER_ID, GAS_MODULATOR_TIMER_DURATION);
+                                        ResetTimerLapse(HEAT_TIMER_ID, HEAT_TIMER_DURATION);
                                         p_system->inner_step = DHW_ON_DUTY_1;
                                         p_system->system_state = DHW_ON_DUTY;
                                     } else if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F)) {
-                                        ResetTimerLapse(GAS_MODULATOR_TIMER_ID, GAS_MODULATOR_TIMER_DURATION);
+                                        ResetTimerLapse(HEAT_TIMER_ID, HEAT_TIMER_DURATION);
                                         p_system->inner_step = CH_ON_DUTY_1;
                                         p_system->system_state = CH_ON_DUTY;
                                     } else {
@@ -511,10 +523,15 @@ int main(void) {
                         p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
                     }
 #endif /* AIRFLOW_OVERRIDE */
-                    // If the pump is on, halt it ...
-                    if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
+                    // If the pump is on, halt it and store the running time remaining ...
+                    if ((p_system->pump_timer_memory == 0) && GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
+                        p_system->pump_timer_memory = GetTimeLeft(PUMP_TIMER_ID);
+                        ResetTimerLapse(PUMP_TIMER_ID, 0);
                         ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
                     }
+                    // if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
+                    //     ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                    // }
                     // Check if the DHW request is over
                     if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F) == false) {
                         // If there is a CH request active, modulate to valve 1 and
@@ -572,15 +589,18 @@ int main(void) {
                             if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F) == false) {
                                 SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
                             }
-                            // Restart continuously the water pump shutdown timeout counter
-                            p_system->pump_delay = DLY_WATER_PUMP_OFF;
-                            //ResetTimerLapse(PUMP_TIMER_ID, DLY_WATER_PUMP_OFF);
+                            ResetTimerLapse(PUMP_TIMER_ID, PUMP_TIMER_DURATION);                            
+                            // if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F) == false) {
+                            //     SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                            // }
+                            // // Restart continuously the water pump shutdown timeout counter
+                            // p_system->pump_delay = DLY_WATER_PUMP_OFF;
 
                             // If there is a DHW request active, modulate and hand over control to DHW service
                             if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
                                 p_system->ch_on_duty_step = CH_ON_DUTY_1; /* Preserve current CH service step */
                                 // OpenHeatValve(p_system, VALVE_1); /* Change to valve 1 before handing over control to DHW state */
-                                ResetTimerLapse(GAS_MODULATOR_TIMER_ID, GAS_MODULATOR_TIMER_DURATION);
+                                ResetTimerLapse(HEAT_TIMER_ID, HEAT_TIMER_DURATION);
                                 p_system->inner_step = DHW_ON_DUTY_1;
                                 p_system->system_state = DHW_ON_DUTY;
                             } else {
@@ -588,7 +608,7 @@ int main(void) {
                                 if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F) == false) {
                                     // CH request canceled, turn gas off and return to "ready" state
                                     GasOff(p_system);
-                                    ResetTimerLapse(GAS_MODULATOR_TIMER_ID, GAS_MODULATOR_TIMER_DURATION);
+                                    ResetTimerLapse(HEAT_TIMER_ID, HEAT_TIMER_DURATION);
                                     p_system->inner_step = READY_1;
                                     p_system->system_state = READY;
                                     break;
@@ -622,9 +642,16 @@ int main(void) {
                             }
                             // If the water pump is off, but it still has time to run, turn it on
                             if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F) == false) {
-                                if (p_system->pump_delay > 0) {
-                                    SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                                if (p_system->pump_timer_memory != 0) {
+                                    ResetTimerLapse(PUMP_TIMER_ID, p_system->pump_timer_memory);
+                                    if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F) == false) {
+                                        SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                                    }
+                                    p_system->pump_timer_memory = 0;
                                 }
+                                // if (p_system->pump_delay > 0) {
+                                //     SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                                // }
                             }
                             // If the CH water temperature is colder than setpoint low, ignite the burner,
                             // then go back to CH_ON_DUTY_1 step

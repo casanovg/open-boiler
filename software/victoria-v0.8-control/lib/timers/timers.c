@@ -64,15 +64,15 @@ bool TimerExists(TimerId timer_id) {
 }
 
 // Function GetTimeLeft
-unsigned long GetTimeLeft(TimerId timer_id) {
-    unsigned long time_left = 0;
+uint32_t GetTimeLeft(TimerId timer_id) {
+    uint32_t time_left = 0;
     for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {
         if (timer_buffer[i].timer_id == timer_id) {
-            //unsigned long current_ms = GetMilliseconds();
-            //if ((current_ms - timer_buffer[i].timer_start_time) >= timer_buffer[i].timer_time_lapse) {
-                //time_left = timer_buffer[i].timer_start_time + timer_buffer[i].timer_time_lapse - current_ms;
-                time_left = timer_buffer[i].timer_start_time + timer_buffer[i].timer_time_lapse - GetMilliseconds();
-            //}
+            time_left = timer_buffer[i].timer_start_time + timer_buffer[i].timer_time_lapse - GetMilliseconds();
+            if (time_left > timer_buffer[i].timer_time_lapse) {
+                time_left = 0;
+            }
+
         }
     }
     return time_left;
@@ -95,7 +95,7 @@ uint8_t RestartTimer(TimerId timer_id) {
 }
 
 // Function ResetTimerLapse
-uint8_t ResetTimerLapse(TimerId timer_id, unsigned long time_lapse) {
+uint8_t ResetTimerLapse(TimerId timer_id, uint32_t time_lapse) {
     for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {
         if (timer_buffer[i].timer_id == timer_id) {
             if (timer_buffer[i].timer_mode == RUN_ONCE_AND_HOLD) {  //&&
@@ -162,8 +162,8 @@ void SetTickTimer(void) {
 }
 
 // Function GetMilliseconds: Returns the milliseconds that passed since the last counter overflow (every 49 days)
-unsigned long GetMilliseconds(void) {
-    unsigned long m;
+uint32_t GetMilliseconds(void) {
+    uint32_t m;
     uint8_t oldSREG = SREG;
     // disable interrupts while we read timer0_milliseconds or we might get an
     // inconsistent value (e.g. in the middle of a write to timer0_millis)
@@ -177,8 +177,8 @@ unsigned long GetMilliseconds(void) {
 ISR(TIMER0_OVF_vect) {
     // copy these to local variables so they can be stored in registers
     // (volatile variables must be read from memory on every access)
-    unsigned long m = timer0_milliseconds;
-    unsigned char f = timer0_fractions;
+    uint32_t m = timer0_milliseconds;
+    uint8_t f = timer0_fractions;
 
     m += MILLIS_INC;
     f += FRACT_INC;
@@ -191,5 +191,5 @@ ISR(TIMER0_OVF_vect) {
     timer0_milliseconds = m;
     //timer0_overflow_cnt++;
 
-    ProcessTimers();
+    //ProcessTimers();
 }

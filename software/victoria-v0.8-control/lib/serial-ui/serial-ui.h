@@ -32,6 +32,7 @@
 #define H_ELINE 46
 #define H_ILINE 46
 #define V_LINE 46
+#define SPACE 32
 
 #ifndef SHOW_PUMP_TIMER
 #define SHOW_PUMP_TIMER true  // True: Shows the CH water pump auto-shutdown timer
@@ -122,6 +123,8 @@ static const char __flash str_mode_40[] = {"   [ CH ON DUTY ] .\n\r"};
 static const char __flash str_mode_100[] = {"        [ ERROR ] .\n\r"};
 #if SHOW_PUMP_TIMER
 static const char __flash str_wptimer[] = {"  CH water pump auto-shutdown timer: "};
+static const char __flash str_wpmemory[] = {"Remaining time in memory: "};
+
 #endif  // SHOW_PUMP_TIMER
 
 #endif  // _SERIAL_UI_H_

@@ -149,41 +149,41 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
         }
 
         SerialTxChr(V_LINE);  // Horizontal separator (|)
-        SerialTxChr(32);      // Space (_)
+        SerialTxChr(SPACE);   // Space (_)
 
         DrawLine(DASH_WIDTH - 4, H_ILINE);  // Dotted line
-        SerialTxChr(32);
+        SerialTxChr(SPACE);
         SerialTxChr(V_LINE);  // Horizontal separator (|)
 
         SerialTxStr(str_crlf);  // CR + new line
 
         SerialTxChr(V_LINE);  // Horizontal separator (|)
-        SerialTxChr(32);      // Space (_)
+        SerialTxChr(SPACE);   // Space (_)
 
         // Input flags
         SerialTxStr(str_iflags);
         SerialTxNum(p_sys->input_flags, DIGITS_3);
 
-        SerialTxChr(32);  // Space (_)
-        SerialTxChr(32);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
 
         // DHW temperature
         SerialTxStr(str_lit_13);
         SerialTxNum(p_sys->dhw_temperature, DIGITS_4);
-        SerialTxChr(32);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
         SerialTxNum(GetNtcTemperature(p_sys->dhw_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_3);
 
-        SerialTxChr(32);  // Space (_)
-        SerialTxChr(32);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
 
         // CH temperature
         SerialTxStr(str_lit_14);
         SerialTxNum(p_sys->ch_temperature, DIGITS_4);
-        SerialTxChr(32);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
         SerialTxNum(GetNtcTemperature(p_sys->ch_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_3);
 
-        SerialTxChr(32);  // Space (_)
-        SerialTxChr(32);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
 
         // Overheat
 #if !(OVERHEAT_OVERRIDE)
@@ -197,16 +197,16 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32);      // Space (_)
-        SerialTxChr(32);      // Space (_)
-        SerialTxChr(32);      // Space (_)
-        SerialTxChr(32);      // Space (_)
+        SerialTxChr(SPACE);   // Space (_)
+        SerialTxChr(SPACE);   // Space (_)
+        SerialTxChr(SPACE);   // Space (_)
+        SerialTxChr(SPACE);   // Space (_)
         SerialTxChr(V_LINE);  // Horizontal separator (|)
 
         SerialTxStr(str_crlf);  // CR + new line
 
         SerialTxChr(V_LINE);  // Horizontal separator (|)
-        SerialTxChr(32);      // Space (_)
+        SerialTxChr(SPACE);   // Space (_)
 
         // DHW Request
         SerialTxStr(str_lit_00);
@@ -216,8 +216,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32);  // Space (_)
-        SerialTxChr(32);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
 
         //CH Request
         SerialTxStr(str_lit_01);
@@ -227,8 +227,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32);  // Space (_)
-        SerialTxChr(32);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
 
         // Airflow
 #if !(AIRFLOW_OVERRIDE)
@@ -242,8 +242,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32);  // Space (_)
-        SerialTxChr(32);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
 
         // Flame
         SerialTxStr(str_lit_03);
@@ -253,42 +253,42 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32);      // Space (_)
-        SerialTxChr(32);      // Space (_)
+        SerialTxChr(SPACE);   // Space (_)
+        SerialTxChr(SPACE);   // Space (_)
         SerialTxChr(V_LINE);  // Horizontal separator (|)
 
         SerialTxStr(str_crlf);  // CR + new line
 
         SerialTxChr(V_LINE);  // Horizontal separator (|)
-        SerialTxChr(32);      // Space (_)
+        SerialTxChr(SPACE);   // Space (_)
 
         DrawLine(DASH_WIDTH - 4, H_ILINE);  // Dotted line
-        SerialTxChr(32);                    // Space (_)
+        SerialTxChr(SPACE);                 // Space (_)
         SerialTxChr(V_LINE);                // Horizontal separator (|)
 
         SerialTxStr(str_crlf);  // CR + new line
 
         SerialTxChr(V_LINE);  // Horizontal separator (|)
-        SerialTxChr(32);      // Space (_)
+        SerialTxChr(SPACE);   // Space (_)
 
         SerialTxStr(str_lit_18);
-        SerialTxChr(32);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
 
         SerialTxStr(str_lit_15);
         SerialTxNum(GetKnobPosition(p_sys->dhw_setting, DHW_SETTING_STEPS), DIGITS_2);
-        SerialTxChr(32);
-        SerialTxChr(32);
+        SerialTxChr(SPACE);
+        SerialTxChr(SPACE);
 
-        SerialTxChr(32);  // Space (_)
-        SerialTxChr(32);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
 
         SerialTxStr(str_lit_16);
         SerialTxNum(GetKnobPosition(p_sys->ch_setting, CH_SETTING_STEPS), DIGITS_2);
-        SerialTxChr(32);
-        SerialTxChr(32);
+        SerialTxChr(SPACE);
+        SerialTxChr(SPACE);
 
-        SerialTxChr(32);  // Space (_)
-        SerialTxChr(32);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
 
         SerialTxStr(str_lit_17);
         switch (GetKnobPosition(p_sys->system_mode, SYSTEM_MODE_STEPS)) {
@@ -315,22 +315,22 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
         SerialTxStr(str_crlf);  // CR + new line
 
         SerialTxChr(V_LINE);  // Horizontal separator (|)
-        SerialTxChr(32);      // Space (_)
+        SerialTxChr(SPACE);   // Space (_)
 
         DrawLine(DASH_WIDTH - 4, H_ILINE);  // Dotted line
-        SerialTxChr(32);
+        SerialTxChr(SPACE);
         SerialTxChr(V_LINE);  // Horizontal separator (|)
 
         SerialTxStr(str_crlf);
 
         SerialTxChr(V_LINE);  // Horizontal separator (|)
-        SerialTxChr(32);      // Space (_)
+        SerialTxChr(SPACE);   // Space (_)
 
         SerialTxStr(str_oflags);
         SerialTxNum(p_sys->output_flags, DIGITS_3);
 
-        SerialTxChr(32);  // Space (_)
-        SerialTxChr(32);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
 
         // Exhaust fan
         SerialTxStr(str_lit_05);
@@ -340,8 +340,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32);  // Space (_)
-        SerialTxChr(32);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
 
         // Water pump
         SerialTxStr(str_lit_06);
@@ -351,8 +351,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32);  // Space (_)
-        SerialTxChr(32);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
 
         // Spark igniter
         SerialTxStr(str_lit_07);
@@ -362,8 +362,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32);  // Space (_)
-        SerialTxChr(32);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
 
         // LED UI
         SerialTxStr(str_lit_12);
@@ -373,14 +373,14 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32);      // Space (_)
-        SerialTxChr(32);      // Space (_)
+        SerialTxChr(SPACE);   // Space (_)
+        SerialTxChr(SPACE);   // Space (_)
         SerialTxChr(V_LINE);  // Horizontal separator (|)
 
         SerialTxStr(str_crlf);  // CR + new line
 
         SerialTxChr(V_LINE);  // Horizontal separator (|)
-        SerialTxChr(32);      // Space (_)
+        SerialTxChr(SPACE);   // Space (_)
 
         // Security valve
         SerialTxStr(str_lit_08);
@@ -390,8 +390,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32);  // Space (_)
-        SerialTxChr(32);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
 
         // Valve 1
         SerialTxStr(str_lit_09);
@@ -401,8 +401,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32);  // Space (_)
-        SerialTxChr(32);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
 
         // Valve 2
         SerialTxStr(str_lit_10);
@@ -412,8 +412,8 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32);  // Space (_)
-        SerialTxChr(32);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
 
         // Valve 3
         SerialTxStr(str_lit_11);
@@ -423,7 +423,7 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(32);      // Space (_)
+        SerialTxChr(SPACE);   // Space (_)
         SerialTxChr(V_LINE);  // Horizontal separator (|)
 
         SerialTxStr(str_crlf);          // CR + new line
@@ -436,7 +436,13 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
         //SerialTxNum(p_sys->pump_delay, DIGITS_7);
         SerialTxNum(GetTimeLeft(PUMP_TIMER_ID), DIGITS_7);
         //SerialTxNum(GetTimeLeft, DIGITS_7);
-        SerialTxStr(str_crlf);
+
+        if (p_sys->pump_timer_memory) {
+            SerialTxChr(SPACE);   // Space (_)
+            SerialTxStr(str_wpmemory);
+            SerialTxNum(p_sys->pump_timer_memory, DIGITS_7);
+            SerialTxStr(str_crlf);
+        }
 #endif  // SHOW_PUMP_TIMER
     }
 }

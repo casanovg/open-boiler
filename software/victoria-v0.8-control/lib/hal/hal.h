@@ -54,6 +54,10 @@ typedef struct adc_buffers {
     RingBuffer sys_mod_adc_buffer;
 } AdcBuffers;
 
+typedef uint16_t PotentiometerReadout;
+typedef uint8_t PotentiometerSteps;
+typedef uint16_t PotentiometerReadout;
+
 // Prototypes
 
 void SystemRestart(void);

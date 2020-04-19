@@ -105,10 +105,12 @@ int main(void) {
     SetTimer(VALVE_3_LED_TIMER_ID, VALVE_3_LED_TIMER_DURATION, VALVE_3_LED_TIMER_MODE); /* Valve-3 timer */
     SetTimer(PUMP_TIMER_LED_ID, PUMP_TIMER_LED_DURATION, PUMP_TIMER_LED_MODE);                                /* Water pump timer */
     TimerLapse pump_timer_memory = 0;
+    uint32_t juju = 4294900000;
 
     // Enable global interrupts
     sei();
     SetTickTimer();
+    ClrScr();
 
     /*  ___________________
       |                   | 
@@ -124,20 +126,14 @@ int main(void) {
     // #############################
     //for(;;) {};
 
-    //SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
-
-    // DHW_RQ_DDR &= ~(1 << DHW_RQ_PIN); /* Set DHW request pin as input */
-    // DHW_RQ_PORT |= (1 << DHW_RQ_PIN); /* Activate pull-up resistor on this pin */
-
-    // SPARK_DDR |= (1 << SPARK_PIN);  /* Set spark igniter pin as output */
-    // SPARK_PORT |= (1 << SPARK_PIN); /* Set spark igniter pin high (inactive) */
-
     for (;;) {
         if (TimerFinished(VALVE_3_LED_TIMER_ID)) {
             ToggleFlag(p_system, OUTPUT_FLAGS, VALVE_3_F);
             RestartTimer(VALVE_3_LED_TIMER_ID);
             SerialTxChr(32);
-            SerialTxNum(GetTimeLeft(PUMP_TIMER_LED_ID), DIGITS_10);
+            //SerialTxNum(GetTimeLeft(PUMP_TIMER_LED_ID), DIGITS_10);
+            SerialTxNum(juju, DIGITS_10);
+            juju += 500;
         }
 
         if (((DHW_RQ_PINP >> DHW_RQ_PIN) & true) == false) {
@@ -173,23 +169,3 @@ int main(void) {
 
     return 0;
 }
-
-#if SERIAL_DEBUG
-// // SerialTxStr(str_crlf);
-// SerialTxStr(str_heat_mod_01);
-// SerialTxNum(p_system->current_heat_level, DIGITS_2);
-#endif
-
-#if LED_DEBUG
-// SetFlag(p_system, OUTPUT_FLAGS, VALVE_S_F);  // Heat level setting error, the sum of the opening time of all valves must be 100!
-// _delay_ms(1000);
-// ClearFlag(p_system, OUTPUT_FLAGS, VALVE_S_F);
-#endif
-
-#if SERIAL_DEBUG
-// SerialTxStr(str_heat_mod_03);
-#endif
-
-#if SERIAL_DEBUG
-// SerialTxStr(str_heat_mod_02);
-#endif

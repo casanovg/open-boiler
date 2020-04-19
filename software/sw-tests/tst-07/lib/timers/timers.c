@@ -64,8 +64,8 @@ bool TimerExists(TimerId timer_id) {
 }
 
 // Function GetTimeLeft
-unsigned long GetTimeLeft(TimerId timer_id) {
-    unsigned long time_left = 0;
+uint32_t GetTimeLeft(TimerId timer_id) {
+    uint32_t time_left = 0;
     for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {
         if (timer_buffer[i].timer_id == timer_id) {
             time_left = timer_buffer[i].timer_start_time + timer_buffer[i].timer_time_lapse - GetMilliseconds();
@@ -163,7 +163,7 @@ void SetTickTimer(void) {
 
 // Function GetMilliseconds: Returns the milliseconds that passed since the last counter overflow (every 49 days)
 unsigned long GetMilliseconds(void) {
-    unsigned long m;
+    uint32_t m;
     uint8_t oldSREG = SREG;
     // disable interrupts while we read timer0_milliseconds or we might get an
     // inconsistent value (e.g. in the middle of a write to timer0_millis)
@@ -177,8 +177,8 @@ unsigned long GetMilliseconds(void) {
 ISR(TIMER0_OVF_vect) {
     // copy these to local variables so they can be stored in registers
     // (volatile variables must be read from memory on every access)
-    unsigned long m = timer0_milliseconds;
-    unsigned char f = timer0_fractions;
+    uint32_t m = timer0_milliseconds;
+    uint8_t f = timer0_fractions;
 
     m += MILLIS_INC;
     f += FRACT_INC;

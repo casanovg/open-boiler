@@ -116,7 +116,6 @@ int main(void) {
 
         // Update digital input sensors status
         for (InputFlag digital_sensor = DHW_REQUEST_F; digital_sensor <= OVERHEAT_F; digital_sensor++) {
-            //CheckDigitalSensor(p_system, digital_sensor, p_debounce, false);
             CheckDigitalSensor(p_system, digital_sensor, false);
         }
 

@@ -103,9 +103,9 @@ int main(void) {
 
     // Set system-wide timers
     SetTimer(VALVE_3_LED_TIMER_ID, VALVE_3_LED_TIMER_DURATION, VALVE_3_LED_TIMER_MODE); /* Valve-3 timer */
-    SetTimer(PUMP_TIMER_LED_ID, PUMP_TIMER_LED_DURATION, PUMP_TIMER_LED_MODE);                                /* Water pump timer */
+    SetTimer(PUMP_TIMER_LED_ID, PUMP_TIMER_LED_DURATION, PUMP_TIMER_LED_MODE);          /* Water pump timer */
     TimerLapse pump_timer_memory = 0;
-    uint32_t juju = 4294900000;
+    uint32_t ms_var = 4294900000;
 
     // Enable global interrupts
     sei();
@@ -127,16 +127,27 @@ int main(void) {
     //for(;;) {};
 
     for (;;) {
+        
+        // Update digital input sensors status
+        for (InputFlag digital_sensor = DHW_REQUEST_F; digital_sensor <= OVERHEAT_F; digital_sensor++) {
+            CheckDigitalSensor(p_system, digital_sensor, false);
+        }
+
+        // Update analog input sensors status
+        for (AnalogInput analog_sensor = DHW_SETTING; analog_sensor <= CH_TEMPERATURE; analog_sensor++) {
+            CheckAnalogSensor(p_system, p_buffer_pack, analog_sensor, false);
+        }
+
         if (TimerFinished(VALVE_3_LED_TIMER_ID)) {
             ToggleFlag(p_system, OUTPUT_FLAGS, VALVE_3_F);
             RestartTimer(VALVE_3_LED_TIMER_ID);
             SerialTxChr(32);
             //SerialTxNum(GetTimeLeft(PUMP_TIMER_LED_ID), DIGITS_10);
-            SerialTxNum(juju, DIGITS_10);
-            juju += 500;
+            SerialTxNum(ms_var, DIGITS_10);
+            ms_var += 500;
         }
 
-        if (((DHW_RQ_PINP >> DHW_RQ_PIN) & true) == false) {
+        if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {    
             SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);  // YE YE YE
             if ((pump_timer_memory == 0) && GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
                 pump_timer_memory = GetTimeLeft(PUMP_TIMER_LED_ID);
@@ -147,7 +158,7 @@ int main(void) {
             }
         } else {
             ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);  // YE YE YE
-            if (((CH_RQ_PINP >> CH_RQ_PIN) & true) == false) {
+            if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F)) {
                 if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F) == false) {
                     SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
                 }

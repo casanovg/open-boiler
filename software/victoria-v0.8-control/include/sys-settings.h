@@ -44,7 +44,7 @@
 #define HEAT_TIMER_MODE RUN_ONCE_AND_HOLD  // Gas modulator heat level timer mode
 
 #define PUMP_TIMER_ID 3                    // Water pump timer id
-#define PUMP_TIMER_DURATION 60000          // Water pump timer time-lapse
+#define PUMP_TIMER_DURATION 300000         // Water pump timer time-lapse
 #define PUMP_TIMER_MODE RUN_ONCE_AND_HOLD  // Water pump timer mode
 
 #define DEB_CH_SWITCH_TIMER_ID 4                    // Central heating thermostat switch debounce timer id

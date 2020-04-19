@@ -526,7 +526,7 @@ int main(void) {
                     // If the pump is on, halt it and store the running time remaining ...
                     if ((p_system->pump_timer_memory == 0) && GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
                         p_system->pump_timer_memory = GetTimeLeft(PUMP_TIMER_ID);
-                        ResetTimerLapse(PUMP_TIMER_ID, 0);
+                        //ResetTimerLapse(PUMP_TIMER_ID, 0);
                         ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
                     }
                     // if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
@@ -589,7 +589,8 @@ int main(void) {
                             if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F) == false) {
                                 SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
                             }
-                            ResetTimerLapse(PUMP_TIMER_ID, PUMP_TIMER_DURATION);                            
+                            ResetTimerLapse(PUMP_TIMER_ID, PUMP_TIMER_DURATION);
+                            p_system->pump_timer_memory = 0;
                             // if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F) == false) {
                             //     SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
                             // }

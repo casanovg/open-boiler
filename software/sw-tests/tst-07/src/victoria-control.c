@@ -103,7 +103,7 @@ int main(void) {
 
     // Set system-wide timers
     SetTimer(VALVE_3_LED_TIMER_ID, VALVE_3_LED_TIMER_DURATION, VALVE_3_LED_TIMER_MODE); /* Valve-3 timer */
-    SetTimer(PUMP_TIMER_LED_ID, 0, PUMP_TIMER_LED_MODE);                                /* Water pump timer */
+    SetTimer(PUMP_TIMER_LED_ID, PUMP_TIMER_LED_DURATION, PUMP_TIMER_LED_MODE);                                /* Water pump timer */
     TimerLapse pump_timer_memory = 0;
 
     // Enable global interrupts
@@ -136,9 +136,8 @@ int main(void) {
         if (TimerFinished(VALVE_3_LED_TIMER_ID)) {
             ToggleFlag(p_system, OUTPUT_FLAGS, VALVE_3_F);
             RestartTimer(VALVE_3_LED_TIMER_ID);
-
-            //SerialTxChr(32);
-            //SerialTxNum(GetTimeLeft(PUMP_TIMER_LED_ID), DIGITS_10);
+            SerialTxChr(32);
+            SerialTxNum(GetTimeLeft(PUMP_TIMER_LED_ID), DIGITS_10);
         }
 
         if (((DHW_RQ_PINP >> DHW_RQ_PIN) & true) == false) {

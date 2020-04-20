@@ -35,41 +35,45 @@ void SerialTxChr(unsigned char data) {
 
 // Function SerialTxNum
 void SerialTxNum(uint32_t data, DigitLength digits) {
-#define DATA_LNG 7
+#define DATA_LNG 10
     char str[DATA_LNG] = {0};
     switch (digits) {
         case DIGITS_1: {
-            sprintf(str, "%01u", (unsigned int)data);
+            sprintf(str, "%01u", (uint16_t)data);
             break;
         }
         case DIGITS_2: {
-            sprintf(str, "%02u", (unsigned int)data);
+            sprintf(str, "%02u", (uint16_t)data);
             break;
         }
         case DIGITS_3: {
-            sprintf(str, "%03u", (unsigned int)data);
+            sprintf(str, "%03u", (uint16_t)data);
             break;
         }
         case DIGITS_4: {
-            sprintf(str, "%04u", (unsigned int)data);
+            sprintf(str, "%04u", (uint16_t)data);
             break;
         }
-        case DIGITS_5: {
-            sprintf(str, "%05u", (unsigned int)data);
+        case DIGITS_5:
+        case DIGITS_6:
+        case DIGITS_7:
+        case DIGITS_8:
+        case DIGITS_9:
+        case DIGITS_10: {
+            sprintf(str, "%0lu", (uint32_t)data);
             break;
         }
-        case DIGITS_6: {
-            sprintf(str, "%06u", (unsigned int)data);
+        case TEMP_NN: {
+            sprintf(str, "%2u", DivRound((uint16_t)data, 1000));
             break;
         }
-        case DIGITS_7: {
-            //sprintf(str, "%07lu", data);
-            sprintf(str, "%0lu", (unsigned long int)data);
+        case TEMP_DD: {
+            sprintf(str, "%1u", DivRound(((uint16_t)data % 1000), 100));
             break;
         }
         case DIGITS_FREE:
         default: {
-            sprintf(str, "%u", (unsigned int)data);
+            sprintf(str, "%lu", (uint32_t)data);
             break;
         }
     }
@@ -100,6 +104,17 @@ void ClrScr(void) {
     for (uint8_t i = 0; i < (sizeof(clr_ascii) / sizeof(clr_ascii[0])); i++) {
         SerialTxChr(clr_ascii[i]);
     }
+}
+
+// Function DivRound
+int DivRound(const int numerator, const int denominator) {
+    int result = 0;
+    if ((numerator < 0) ^ (denominator < 0)) {
+        result = ((numerator - denominator / 2) / denominator);
+    } else {
+        result = ((numerator + denominator / 2) / denominator);
+    }
+    return result;
 }
 
 // Function Dashboard
@@ -169,9 +184,14 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
 
         // DHW temperature
         SerialTxStr(str_lit_13);
-        SerialTxNum(p_sys->dhw_temperature, DIGITS_4);
+        //SerialTxNum(p_sys->dhw_temperature, DIGITS_4);
+        //SerialTxChr(SPACE);  // Space (_)
+        //SerialTxNum(GetNtcTemperature(p_sys->dhw_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_4);
+        SerialTxNum(GetNtcTemperature(p_sys->dhw_temperature, TO_CELSIUS, DT_CELSIUS), TEMP_NN);
+        SerialTxChr(V_LINE);
+        SerialTxNum(GetNtcTemperature(p_sys->dhw_temperature, TO_CELSIUS, DT_CELSIUS), TEMP_DD);
         SerialTxChr(SPACE);  // Space (_)
-        SerialTxNum(GetNtcTemperature(p_sys->dhw_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_3);
+        SerialTxChr(67);
 
         SerialTxChr(SPACE);  // Space (_)
         SerialTxChr(SPACE);  // Space (_)
@@ -180,7 +200,13 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
         SerialTxStr(str_lit_14);
         SerialTxNum(p_sys->ch_temperature, DIGITS_4);
         SerialTxChr(SPACE);  // Space (_)
-        SerialTxNum(GetNtcTemperature(p_sys->ch_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_3);
+        //SerialTxNum(GetNtcTemperature(p_sys->ch_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_4);
+        //SerialTxNum(GetNtcTemperature(p_sys->ch_temperature, TO_CELSIUS, DT_CELSIUS), FLOAT_NN);
+        SerialTxNum(GetNtcTemperature(p_sys->ch_temperature, TO_CELSIUS, DT_CELSIUS), TEMP_NN);
+        SerialTxChr(V_LINE);
+        SerialTxNum(GetNtcTemperature(p_sys->ch_temperature, TO_CELSIUS, DT_CELSIUS), TEMP_DD);
+        SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(67);
 
         SerialTxChr(SPACE);  // Space (_)
         SerialTxChr(SPACE);  // Space (_)
@@ -434,15 +460,16 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
         SerialTxStr(str_crlf);
         SerialTxStr(str_wptimer);
         //SerialTxNum(p_sys->pump_delay, DIGITS_7);
-        SerialTxNum(GetTimeLeft(PUMP_TIMER_ID), DIGITS_7);
+        SerialTxNum(GetTimeLeft(PUMP_TIMER_ID) / 1000, DIGITS_7);
         //SerialTxNum(GetTimeLeft, DIGITS_7);
 
         if (p_sys->pump_timer_memory) {
-            SerialTxChr(SPACE);   // Space (_)
+            SerialTxChr(SPACE);  // Space (_)
             SerialTxStr(str_wpmemory);
-            SerialTxNum(p_sys->pump_timer_memory, DIGITS_7);
+            SerialTxNum(p_sys->pump_timer_memory / 1000, DIGITS_7);
             SerialTxStr(str_crlf);
         }
+        SerialTxStr(str_crlf);
 #endif  // SHOW_PUMP_TIMER
     }
 }

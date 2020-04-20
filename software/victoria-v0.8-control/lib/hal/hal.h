@@ -56,7 +56,7 @@ typedef struct adc_buffers {
 
 typedef uint16_t PotentiometerReadout;
 typedef uint8_t PotentiometerSteps;
-typedef uint16_t PotentiometerReadout;
+typedef uint32_t HeatCycleTime;
 
 // Prototypes
 
@@ -76,7 +76,7 @@ void InitAdcBuffers(AdcBuffers *, uint8_t);
 uint16_t AverageAdc(uint16_t[], uint8_t, uint8_t, AverageType);
 uint8_t GetKnobPosition(int16_t, uint8_t);
 void OpenHeatValve(SysInfo *, HeatValve);
-void ModulateHeat(SysInfo *, uint16_t, uint8_t);
+void ModulateHeat(SysInfo *, PotentiometerReadout, PotentiometerSteps, HeatCycleTime);
 void GasOff(SysInfo *);
 
 // Globals

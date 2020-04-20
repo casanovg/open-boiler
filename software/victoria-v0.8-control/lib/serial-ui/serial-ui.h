@@ -48,7 +48,11 @@ typedef enum digit_length {
     DIGITS_5 = 5,
     DIGITS_6 = 6,
     DIGITS_7 = 7,
-    FLOAT_TEMP = 8,
+    DIGITS_8 = 8,
+    DIGITS_9 = 9,
+    DIGITS_10 = 10,            
+    TEMP_NN = 50,
+    TEMP_DD = 51,
     DIGITS_FREE = 0
 } DigitLength;
 
@@ -62,6 +66,7 @@ void SerialTxStr(const __flash char *);
 void ClrScr(void);
 void Dashboard(SysInfo *, bool);
 void DrawLine(uint8_t, char);
+int DivRound(const int , const int);
 
 // Global console UI literals
 
@@ -123,7 +128,7 @@ static const char __flash str_mode_40[] = {"   [ CH ON DUTY ] .\n\r"};
 static const char __flash str_mode_100[] = {"        [ ERROR ] .\n\r"};
 #if SHOW_PUMP_TIMER
 static const char __flash str_wptimer[] = {"  CH water pump auto-shutdown timer: "};
-static const char __flash str_wpmemory[] = {"Remaining time in memory: "};
+static const char __flash str_wpmemory[] = {"<- Remaining time in memory: "};
 
 #endif  // SHOW_PUMP_TIMER
 

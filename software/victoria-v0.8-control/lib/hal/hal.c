@@ -538,7 +538,7 @@ void OpenHeatValve(SysInfo *p_sys, HeatValve valve_to_open) {
 }
 
 // Function ModulateHeat: Modulates heat by toggling system valves according to a potentiometer ADC value
-void ModulateHeat(SysInfo *p_sys, uint16_t potentiometer_readout, uint8_t potentiometer_steps) {
+void ModulateHeat(SysInfo *p_sys, PotentiometerReadout potentiometer_readout, PotentiometerSteps potentiometer_steps, HeatCycleTime heat_cycle_time) {
     //
     // [ # # # ] Heat modulation code  [ # # # ]
     //
@@ -562,13 +562,13 @@ void ModulateHeat(SysInfo *p_sys, uint16_t potentiometer_readout, uint8_t potent
             // Set cycle in progress
             p_sys->cycle_in_progress = true;
             p_sys->current_valve = 0;
-            ResetTimerLapse(HEAT_TIMER_ID, ((uint32_t)(heat_level[p_sys->current_heat_level].valve_open_time[p_sys->current_valve] * HEAT_CYCLE_TIME / 100)));
+            ResetTimerLapse(HEAT_TIMER_ID, ((uint32_t)(heat_level[p_sys->current_heat_level].valve_open_time[p_sys->current_valve] * heat_cycle_time / 100)));
         }
     } else {
         if (TimerFinished(HEAT_TIMER_ID)) {
             // Prepare timing for next valve
             p_sys->current_valve++;
-            ResetTimerLapse(HEAT_TIMER_ID, ((uint32_t)heat_level[p_sys->current_heat_level].valve_open_time[p_sys->current_valve] * HEAT_CYCLE_TIME / 100));
+            ResetTimerLapse(HEAT_TIMER_ID, ((uint32_t)heat_level[p_sys->current_heat_level].valve_open_time[p_sys->current_valve] * heat_cycle_time / 100));
             if (p_sys->current_valve >= HEAT_MODULATOR_VALVES) {
                 // Cycle end: Reset to first valve
 #if LED_DEBUG

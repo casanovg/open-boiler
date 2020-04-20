@@ -95,7 +95,7 @@ int main(void) {
     // Set system-wide timers
     SetTimer(FSM_TIMER_ID, FSM_TIMER_DURATION, FSM_TIMER_MODE);     // Main finite state machine timer
     SetTimer(HEAT_TIMER_ID, HEAT_TIMER_DURATION, HEAT_TIMER_MODE);  // Heat modulator timer
-    SetTimer(PUMP_TIMER_ID, PUMP_TIMER_DURATION, PUMP_TIMER_MODE);  // Water pump timer
+    SetTimer(PUMP_TIMER_ID, 0, PUMP_TIMER_MODE);                    // Water pump timer
 
     // Enable global interrupts
     sei();
@@ -529,11 +529,11 @@ int main(void) {
                             p_system->system_state = READY;
                         }
                     } else {
-                        // ****************************************************************
-                        //																	*
-                        ModulateHeat(p_system, p_system->dhw_setting, DHW_SETTING_STEPS);  // *
-                        //																	*
-                        // ****************************************************************
+                        // *************************************************************************************
+                        //																                         *
+                        ModulateHeat(p_system, p_system->dhw_setting, DHW_SETTING_STEPS, DHW_HEAT_CYCLE_TIME);  // *
+                        //																                         *
+                        // *************************************************************************************
                     }
                     break;
                 }
@@ -593,11 +593,11 @@ int main(void) {
                             // Otherwise, close gas and move on to CH_ON_DUTY_2 step
                             // NOTE: The temperature reading last bit is masked out to avoid oscillations
                             if ((p_system->ch_temperature & CH_TEMP_MASK) >= CH_SETPOINT_HIGH) {
-                                // **************************************************************
-                                //																  *
-                                ModulateHeat(p_system, p_system->ch_setting, CH_SETTING_STEPS);  // *
-                                //																  *
-                                // **************************************************************
+                                // **********************************************************************************
+                                //																                      *
+                                ModulateHeat(p_system, p_system->ch_setting, CH_SETTING_STEPS, CH_HEAT_CYCLE_TIME);  // *
+                                //																                      *
+                                // **********************************************************************************
                             } else {
                                 //Close gas
                                 GasOff(p_system);

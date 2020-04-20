@@ -16,7 +16,7 @@
 
 // This software
 #define FW_NAME "OPEN-BOILER"
-#define FW_VERSION "v0.8a"
+#define FW_VERSION "v0.8"
 #define FW_ALIAS "\"Easter Quarantine\"       "
 
 // System defines

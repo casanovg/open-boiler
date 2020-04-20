@@ -49,10 +49,10 @@
 #define DLY_DHW_ON_DUTY_LOOP 3000  // On_DHW_Duty loop long delay
 #define DLY_CH_ON_DUTY_1 500       // On_CH_Duty_1 step long delay
 #define DLY_CH_ON_DUTY_LOOP 3000   // On_DHW_Duty loop long delay
-#define DLY_WATER_PUMP_OFF 600000  // Delay until the water pump shuts down when there are no CH requests \
-                                   // Time: 300000 / 60 / 1000 = 5 min aprox                              \
-                                   // Time: 600000 / 60 / 1000 = 10 min aprox                             \
-                                   // Time: 900000 / 60 / 1000 = 15 min aprox                             \
+#define DLY_WATER_PUMP_OFF 600000  // Delay until the water pump shuts down when there are no CH requests
+                                   // Time: 300000 / 60 / 1000 = 5 min aprox                              
+                                   // Time: 600000 / 60 / 1000 = 10 min aprox                             
+                                   // Time: 900000 / 60 / 1000 = 15 min aprox                             
                                    // Time: 1800000 / 60 / 1000 = 30 min aprox
 #define DLY_FLAME_OFF 100          // Delay before checking if the flame is off after closing gas
 #define DLY_AIRFLOW_OFF 2000       // Delay before checking if the airflow sensor switches off when the fan gets turned off

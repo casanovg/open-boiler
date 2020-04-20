@@ -35,7 +35,7 @@ void SerialTxChr(unsigned char data) {
 
 // Function SerialTxNum
 void SerialTxNum(uint32_t data, DigitLength digits) {
-#define DATA_LNG 10
+#define DATA_LNG 7
     char str[DATA_LNG] = {0};
     switch (digits) {
         case DIGITS_1: {
@@ -54,8 +54,14 @@ void SerialTxNum(uint32_t data, DigitLength digits) {
             sprintf(str, "%04u", (uint16_t)data);
             break;
         }
-        case DIGITS_5:
-        case DIGITS_6:
+        case DIGITS_5: {
+            sprintf(str, "%05u", (uint16_t)data);
+            break;
+        }
+        case DIGITS_6: {
+            sprintf(str, "%06u", (uint16_t)data);
+            break;
+        }
         case DIGITS_7:
         case DIGITS_8:
         case DIGITS_9:
@@ -64,16 +70,17 @@ void SerialTxNum(uint32_t data, DigitLength digits) {
             break;
         }
         case TEMP_NN: {
-            sprintf(str, "%2u", DivRound((uint16_t)data, 1000));
+            sprintf(str, "%2u", DivRound((uint16_t)data, 10));
             break;
         }
         case TEMP_DD: {
-            sprintf(str, "%1u", DivRound(((uint16_t)data % 1000), 100));
+            //sprintf(str, "%1u", DivRound(((uint16_t)data % 10), 10));
+            sprintf(str, "%1u", (uint16_t)data % 10);
             break;
         }
         case DIGITS_FREE:
         default: {
-            sprintf(str, "%lu", (uint32_t)data);
+            sprintf(str, "%u", (uint16_t)data);
             break;
         }
     }
@@ -184,9 +191,9 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
 
         // DHW temperature
         SerialTxStr(str_lit_13);
-        //SerialTxNum(p_sys->dhw_temperature, DIGITS_4);
-        //SerialTxChr(SPACE);  // Space (_)
-        //SerialTxNum(GetNtcTemperature(p_sys->dhw_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_4);
+        SerialTxNum(p_sys->dhw_temperature, DIGITS_5);
+        SerialTxChr(SPACE);  // Space (_)
+        //SerialTxNum(GetNtcTemperature(p_sys->dhw_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_3);
         SerialTxNum(GetNtcTemperature(p_sys->dhw_temperature, TO_CELSIUS, DT_CELSIUS), TEMP_NN);
         SerialTxChr(V_LINE);
         SerialTxNum(GetNtcTemperature(p_sys->dhw_temperature, TO_CELSIUS, DT_CELSIUS), TEMP_DD);
@@ -198,10 +205,9 @@ void Dashboard(SysInfo *p_sys, bool force_display) {
 
         // CH temperature
         SerialTxStr(str_lit_14);
-        SerialTxNum(p_sys->ch_temperature, DIGITS_4);
+        SerialTxNum(p_sys->ch_temperature, DIGITS_5);
         SerialTxChr(SPACE);  // Space (_)
-        //SerialTxNum(GetNtcTemperature(p_sys->ch_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_4);
-        //SerialTxNum(GetNtcTemperature(p_sys->ch_temperature, TO_CELSIUS, DT_CELSIUS), FLOAT_NN);
+        //SerialTxNum(GetNtcTemperature(p_sys->ch_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_3);
         SerialTxNum(GetNtcTemperature(p_sys->ch_temperature, TO_CELSIUS, DT_CELSIUS), TEMP_NN);
         SerialTxChr(V_LINE);
         SerialTxNum(GetNtcTemperature(p_sys->ch_temperature, TO_CELSIUS, DT_CELSIUS), TEMP_DD);

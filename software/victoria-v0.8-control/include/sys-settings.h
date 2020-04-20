@@ -37,15 +37,20 @@
 #define SYSTEM_TIMERS 5          // Number of system timers
 
 #define FSM_TIMER_ID 1                    // Main finite state machine timer id
-#define FSM_TIMER_DURATION 0              // Main finite state machine timer time-lapse
+#define FSM_TIMER_DURATION 0              // Main finite state machine timer time-lapse (milliseconds)
 #define FSM_TIMER_MODE RUN_ONCE_AND_HOLD  // Main finite state machine timer mode
 
 #define HEAT_TIMER_ID 2                    // Gas modulator heat level timer id
-#define HEAT_TIMER_DURATION 0              // Gas modulator heat level timer time-lapse
+#define HEAT_TIMER_DURATION 0              // Gas modulator heat level timer time-lapse (milliseconds)
 #define HEAT_TIMER_MODE RUN_ONCE_AND_HOLD  // Gas modulator heat level timer mode
 
+// This timer controls the water pump auto-shutdown when there are no CH requests
+//  * Time: 300000 / 60 / 1000 = 5 min aprox
+//  * Time: 600000 / 60 / 1000 = 10 min aprox <- default
+//  * Time: 900000 / 60 / 1000 = 15 min aprox
+//  * Time: 1800000 / 60 / 1000 = 30 min aprox
 #define PUMP_TIMER_ID 3                    // Water pump timer id
-#define PUMP_TIMER_DURATION 300000         // Water pump timer time-lapse
+#define PUMP_TIMER_DURATION 600000         // Water pump timer time-lapse (milliseconds)
 #define PUMP_TIMER_MODE RUN_ONCE_AND_HOLD  // Water pump timer mode
 
 #define DEB_CH_SWITCH_TIMER_ID 4                    // Central heating thermostat switch debounce timer id

@@ -121,10 +121,8 @@ int main(void) {
 
         // If the CH water pump is on, check if its timer is finished to turn it off
         if (TimerFinished(PUMP_TIMER_ID)) {
-            if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F) == false) {
-                if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
-                    ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
-                }
+            if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
+                ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
             }
         }
 

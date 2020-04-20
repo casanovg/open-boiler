@@ -50,7 +50,7 @@ typedef enum digit_length {
     DIGITS_7 = 7,
     DIGITS_8 = 8,
     DIGITS_9 = 9,
-    DIGITS_10 = 10,            
+    DIGITS_10 = 10,
     TEMP_NN = 50,
     TEMP_DD = 51,
     DIGITS_FREE = 0
@@ -66,7 +66,7 @@ void SerialTxStr(const __flash char *);
 void ClrScr(void);
 void Dashboard(SysInfo *, bool);
 void DrawLine(uint8_t, char);
-int DivRound(const int , const int);
+int DivRound(const int, const int);
 
 // Global console UI literals
 

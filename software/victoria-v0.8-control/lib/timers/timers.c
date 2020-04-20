@@ -15,7 +15,7 @@
 uint8_t SetTimer(TimerId timer_id, TimerLapse time_lapse, TimerMode timer_mode) {
     // Disable timers..
     //cli();
-    for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {   // loop through and check for free spot, then place timer in there...
+    for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {       // loop through and check for free spot, then place timer in there...
         if (timer_buffer[i].timer_id == TIMER_EMPTY) {  // place new timer here...
             timer_buffer[i].timer_id = timer_id;
             timer_buffer[i].timer_start_time = GetMilliseconds();
@@ -72,7 +72,6 @@ uint32_t GetTimeLeft(TimerId timer_id) {
             if (time_left > timer_buffer[i].timer_time_lapse) {
                 time_left = 0;
             }
-
         }
     }
     return time_left;
@@ -140,8 +139,8 @@ void ProcessTimers() {
 void DeleteTimer(TimerId timer_id) {
     // Disable timer interrupt
     //#asm("cli");
-    for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {  // loop through and check for timers of this type, then kill them...
-        if (timer_buffer[i].timer_id == timer_id) {    // kill timers...
+    for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {    // loop through and check for timers of this type, then kill them...
+        if (timer_buffer[i].timer_id == timer_id) {  // kill timers...
             timer_buffer[i].timer_id = TIMER_EMPTY;
             timer_buffer[i].timer_start_time = 0;
             timer_buffer[i].timer_time_lapse = 0;

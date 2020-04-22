@@ -39,11 +39,10 @@
 #define DT_FAHRENHEIT 180 /* Fahrenheit delta T (difference between two consecutive table entries) */
 
 // Prototypes
-uint16_t FilterFir(uint16_t[], uint8_t, uint8_t);
-uint16_t FilterIir(uint16_t);
-int GetNtcTemperature(uint16_t, int, int);
-int GetNtcTempTenths(uint16_t, int, int);
-float GetNtcTempDegrees(uint16_t, int, int);
+uint16_t FilterFir(uint16_t adc_buffer[], uint8_t buffer_length, uint8_t buffer_position);
+uint16_t FilterIir(uint16_t adc_value);
+int GetNtcTemperature(uint16_t ntc_adc_value, int temp_offset, int temp_delta);
+float GetNtcTempDegrees(uint16_t ntc_adc_value, int temp_offset, int temp_delta);
 
 // Temperature to ADC readings conversion table
 //  T°C:  -20, -10,   0,  10,  20,  30,  40,  50,  60,  70,  80, 90

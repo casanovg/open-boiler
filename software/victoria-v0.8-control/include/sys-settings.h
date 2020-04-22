@@ -27,14 +27,26 @@
 #define DHW_HEAT_CYCLE_TIME 15000  // DHW heat modulator cycle time (milliseconds)
 #define CH_HEAT_CYCLE_TIME 20000   // CH heat modulator cycle time (milliseconds)
 
-#define MAX_IGNITION_RETRIES 3  // Number of ignition retries when no flame is detected
+#define MAX_IGNITION_RETRIES 2  // Number of ignition retries when no flame is detected
 
 #define DHW_SETTING_STEPS 12  // DHW setting potentiometer steps
 #define CH_SETTING_STEPS 12   // CH setting potentiometer steps
 #define SYSTEM_MODE_STEPS 4   // System mode potentiometer steps
 
-#define HEAT_MODULATOR_VALVES 3  // Number of heat modulator valves
 #define SYSTEM_TIMERS 5          // Number of system timers
+#define HEAT_MODULATOR_VALVES 3  // Number of heat modulator valves
+
+#define OVERHEAT_OVERRIDE false     // True: Overheating thermostat override
+#define AIRFLOW_OVERRIDE true       // True: Flue airflow sensor override
+#define FAN_TEST_OVERRIDE true      // True: Flue airflow sensor override
+#define FAST_FLAME_DETECTION true  // True: Spark igniter is turned off when the flame is detected instead of checking the flame sensor after a delay
+#define LED_UI_FOR_FLAME true       // True: Activates onboard LED when the flame detector is on
+#define HEAT_MODULATOR_DEMO false   // True: ONLY FOR DEBUG!!! loops through all heat levels, from lower to higher. False: NORMAL OPERATION -> Heat modulator code reads DHW potentiometer to determine current heat level
+#define SERIAL_DEBUG false          // True: Shows current heat level and valve timing instead of the dashboard
+#define LED_DEBUG false             // True: ONLY FOR DEBUG!!! Toggles SPARK_IGNITER_F on each heat-cycle start and keeps it on to show cycle's valve-time errors
+#define TIMER_INDEX_OVF_STOP true   // True: halt system if the system doesn't have enough timer slots (index overflow)!
+#define AUTO_DHW_DSP_REFRESH false  // True: Force a dashboard refresh when in a DHW_ON_DUTY loop every DLY_DHW_ON_DUTY_LOOP ms
+#define AUTO_CH_DSP_REFRESH true    // True: Force a dashboard refresh when in a CH_ON_DUTY loop every DLY_CH_ON_DUTY_LOOP ms
 
 #define FSM_TIMER_ID 1                    // Main finite state machine timer id
 #define FSM_TIMER_DURATION 0              // Main finite state machine timer time-lapse (milliseconds)
@@ -58,24 +70,8 @@
 #define DEB_CH_SWITCH_TIMER_MODE RUN_ONCE_AND_HOLD  // Central heating thermostat switch debounce timer mode
 
 #define DEB_AIRFLOW_TIMER_ID 5                    // Airflow sensor switch debounce timer id
-#define DEB_AIRFLOW_TIMER_DURATION 50             // Airflow sensor switch debounce timer time-lapse
+#define DEB_AIRFLOW_TIMER_DURATION 125            // Airflow sensor switch debounce timer time-lapse
 #define DEB_AIRFLOW_TIMER_MODE RUN_ONCE_AND_HOLD  // Airflow sensor switch debounce timer mode
-
-#define OVERHEAT_OVERRIDE false  // True: Overheating thermostat override
-
-#define AIRFLOW_OVERRIDE true  // True: Flue airflow sensor override
-
-#define FAN_TEST_OVERRIDE true  // True: Flue airflow sensor override
-
-#define FAST_FLAME_DETECTION false  // True: Spark igniter is turned off when the flame is detected instead of checking the flame sensor after a delay
-
-#define LED_UI_FOR_FLAME true  // True: Activates onboard LED when the flame detector is on
-
-#define HEAT_MODULATOR_DEMO false  // True: ONLY FOR DEBUG!!! loops through all heat levels, from lower to higher. False: NORMAL OPERATION -> Heat modulator code reads DHW potentiometer to determine current heat level
-
-#define SERIAL_DEBUG false  // True: Shows current heat level and valve timing instead of the dashboard
-
-#define LED_DEBUG false  // True: ONLY FOR DEBUG!!! Toggles SPARK_IGNITER_F on each heat-cycle start and keeps it on to show cycle's valve-time errors
 
 // System types
 

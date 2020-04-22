@@ -12,21 +12,38 @@
 #include "timers.h"
 
 // Function SetTimer
-uint8_t SetTimer(TimerId timer_id, TimerLapse time_lapse, TimerMode timer_mode) {
-    // Disable timers..
-    //cli();
+bool SetTimer(TimerId timer_id, TimerLapse time_lapse, TimerMode timer_mode) {
+    // Disable interrupts ...
+    // cli();
     for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {       // loop through and check for free spot, then place timer in there...
         if (timer_buffer[i].timer_id == TIMER_EMPTY) {  // place new timer here...
             timer_buffer[i].timer_id = timer_id;
             timer_buffer[i].timer_start_time = GetMilliseconds();
             timer_buffer[i].timer_time_lapse = time_lapse;
             timer_buffer[i].timer_mode = timer_mode;
-            return i;
+            return true;
         }
     }
-    // Re-enable timers..
-    //sei();
-    return 0;
+#if TIMER_INDEX_OVF_STOP
+    // If by this point the function didn't set a system timer and returned, indicate not enough slots!
+    VALVE_S_PORT &= ~(1 << VALVE_S_PIN);  // Set security valve pin low (inactive)
+    for (;;) {
+        for (int i = 0; i < 3; i++) {
+            LED_UI_PORT ^= (1 << LED_UI_PIN);
+            _delay_ms(125);  // Blocking delay
+            while (!(UCSR0A & (1 << UDRE0))) {
+            };
+            UDR0 = 84;  // "T"
+        }
+        while (!(UCSR0A & (1 << UDRE0))) {
+        };
+        UDR0 = 32;  // "SPACE"
+        _delay_ms(250);
+    }
+#endif
+    // Enable interrupts ...
+    // sei();
+    return false;
 }
 
 // Function TimerRunning
@@ -53,7 +70,7 @@ bool TimerFinished(TimerId timer_id) {
     return false;
 }
 
-// Function CheckTimerExistence
+// Function TimerExists
 bool TimerExists(TimerId timer_id) {
     for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {
         if (timer_buffer[i].timer_id == timer_id) {
@@ -111,7 +128,7 @@ uint8_t ResetTimerLapse(TimerId timer_id, uint32_t time_lapse) {
 }
 
 // Function ProcessTimers
-void ProcessTimers() {
+void ProcessTimers(void) {
     for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {
         if ((GetMilliseconds() - timer_buffer[i].timer_start_time >= timer_buffer[i].timer_time_lapse) &&
             (timer_buffer[i].timer_id != TIMER_EMPTY)) {
@@ -137,8 +154,8 @@ void ProcessTimers() {
 
 // Function DeleteTimers (Deletes all timers of the same type)
 void DeleteTimer(TimerId timer_id) {
-    // Disable timer interrupt
-    //#asm("cli");
+    // Disable interrupts ...
+    // cli();
     for (uint8_t i = 0; i < SYSTEM_TIMERS; i++) {    // loop through and check for timers of this type, then kill them...
         if (timer_buffer[i].timer_id == timer_id) {  // kill timers...
             timer_buffer[i].timer_id = TIMER_EMPTY;
@@ -147,8 +164,8 @@ void DeleteTimer(TimerId timer_id) {
             return;
         }
     }
-    // Enable Timer Interrupts
-    //#asm("sei");
+    // Enable interrupts ...
+    // sei();
 }
 
 // Function SetTickTimer: Sets the Timer0 hardware up
@@ -190,5 +207,7 @@ ISR(TIMER0_OVF_vect) {
     timer0_milliseconds = m;
     //timer0_overflow_cnt++;
 
-    //ProcessTimers();
+#if ENABLE_TIMERS_CALLBACKS
+    ProcessTimers();
+#endif
 }

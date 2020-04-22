@@ -19,14 +19,14 @@ void SystemRestart(void) {
 }
 
 // Function InitFlags: Assigns 0 (false) to all bits of a system flag byte
-void InitFlags(SysInfo *p_sys, FlagsType flags_type) {
+void InitFlags(SysInfo *p_system, FlagsType flags_type) {
     switch (flags_type) {
         case INPUT_FLAGS: {
-            p_sys->input_flags = 0;
+            p_system->input_flags = 0;
             break;
         }
         case OUTPUT_FLAGS: {
-            p_sys->output_flags = 0;
+            p_system->output_flags = 0;
             break;
         }
         default: {
@@ -36,16 +36,16 @@ void InitFlags(SysInfo *p_sys, FlagsType flags_type) {
 }
 
 // Function SetFlag: Assigns 1 (true) to a given system flag and turns its associate actuator's pin on
-void SetFlag(SysInfo *p_sys, FlagsType flags_type, uint8_t flag_position) {
+void SetFlag(SysInfo *p_system, FlagsType flags_type, uint8_t flag_position) {
     switch (flags_type) {
         case INPUT_FLAGS: {
-            p_sys->input_flags |= (1 << flag_position);
+            p_system->input_flags |= (1 << flag_position);
             break;
         }
         case OUTPUT_FLAGS: {
             // WARNING !!! HARDWARE ACTIVATION !!!
-            p_sys->output_flags |= (1 << flag_position);
-            ControlActuator(p_sys, flag_position, TURN_ON, false);
+            p_system->output_flags |= (1 << flag_position);
+            ControlActuator(p_system, flag_position, TURN_ON, false);
             break;
         }
         default: {
@@ -55,16 +55,16 @@ void SetFlag(SysInfo *p_sys, FlagsType flags_type, uint8_t flag_position) {
 }
 
 // Function ClearFlag: Assigns 0 (false) to a given system flag and turns its associate actuator's pin off
-void ClearFlag(SysInfo *p_sys, FlagsType flags_type, uint8_t flag_position) {
+void ClearFlag(SysInfo *p_system, FlagsType flags_type, uint8_t flag_position) {
     switch (flags_type) {
         case INPUT_FLAGS: {
-            p_sys->input_flags &= ~(1 << flag_position);
+            p_system->input_flags &= ~(1 << flag_position);
             break;
         }
         case OUTPUT_FLAGS: {
             // WARNING !!! HARDWARE DEACTIVATION !!!
-            p_sys->output_flags &= ~(1 << flag_position);
-            ControlActuator(p_sys, flag_position, TURN_OFF, false);
+            p_system->output_flags &= ~(1 << flag_position);
+            ControlActuator(p_system, flag_position, TURN_OFF, false);
             break;
         }
         default: {
@@ -74,19 +74,19 @@ void ClearFlag(SysInfo *p_sys, FlagsType flags_type, uint8_t flag_position) {
 }
 
 // Function ToggleFlag: Inverts the current value (0/1) of a given system flag and its associate actuator's pin
-void ToggleFlag(SysInfo *p_sys, FlagsType flags_type, uint8_t flag_position) {
+void ToggleFlag(SysInfo *p_system, FlagsType flags_type, uint8_t flag_position) {
     switch (flags_type) {
         case INPUT_FLAGS: {
-            p_sys->input_flags ^= (1 << flag_position);
+            p_system->input_flags ^= (1 << flag_position);
             break;
         }
         case OUTPUT_FLAGS: {
             // WARNING !!! HARDWARE OPERATING STATUS CHANGE !!!
-            p_sys->output_flags ^= (1 << flag_position);
-            if (GetFlag(p_sys, OUTPUT_FLAGS, flag_position)) {
-                ControlActuator(p_sys, flag_position, TURN_ON, false);
+            p_system->output_flags ^= (1 << flag_position);
+            if (GetFlag(p_system, OUTPUT_FLAGS, flag_position)) {
+                ControlActuator(p_system, flag_position, TURN_ON, false);
             } else {
-                ControlActuator(p_sys, flag_position, TURN_OFF, false);
+                ControlActuator(p_system, flag_position, TURN_OFF, false);
             }
             break;
         }
@@ -97,15 +97,15 @@ void ToggleFlag(SysInfo *p_sys, FlagsType flags_type, uint8_t flag_position) {
 }
 
 // Function GetFlag: Returns the binary value of a given system flag
-bool GetFlag(SysInfo *p_sys, FlagsType flags_type, uint8_t flag_position) {
+bool GetFlag(SysInfo *p_system, FlagsType flags_type, uint8_t flag_position) {
     bool flag = 0;
     switch (flags_type) {
         case INPUT_FLAGS: {
-            flag = ((p_sys->input_flags >> flag_position) & true);
+            flag = ((p_system->input_flags >> flag_position) & true);
             break;
         }
         case OUTPUT_FLAGS: {
-            flag = ((p_sys->output_flags >> flag_position) & true);
+            flag = ((p_system->output_flags >> flag_position) & true);
             break;
         }
     }
@@ -113,7 +113,7 @@ bool GetFlag(SysInfo *p_sys, FlagsType flags_type, uint8_t flag_position) {
 }
 
 // Function InitDigitalSensor: Initializes a digital sensor's input pin
-void InitDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor) {
+void InitDigitalSensor(SysInfo *p_system, InputFlag digital_sensor) {
     switch (digital_sensor) {
         case DHW_REQUEST_F: {
             DHW_RQ_DDR &= ~(1 << DHW_RQ_PIN);  // Set DHW request pin as input
@@ -141,29 +141,28 @@ void InitDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor) {
             break;
         }
     }
-    ClearFlag(p_sys, INPUT_FLAGS, digital_sensor);
+    ClearFlag(p_system, INPUT_FLAGS, digital_sensor);
 }
 
 // Function CheckDigitalSensor: Returns the binary value of a given digital sensor and updates its associated flag
-//bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, DebounceSw *p_deb, bool ShowDashboard) {
-bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, bool ShowDashboard) {
+bool CheckDigitalSensor(SysInfo *p_system, InputFlag digital_sensor, bool show_dashboard) {
     switch (digital_sensor) {
         case DHW_REQUEST_F: {  // DHW request pin: Active = low, Inactive = high
             if ((DHW_RQ_PINP >> DHW_RQ_PIN) & true) {
-                ClearFlag(p_sys, INPUT_FLAGS, DHW_REQUEST_F);
+                ClearFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F);
             } else {
-                SetFlag(p_sys, INPUT_FLAGS, DHW_REQUEST_F);
+                SetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F);
             }
-            return ((p_sys->input_flags >> DHW_REQUEST_F) & true);
+            return ((p_system->input_flags >> DHW_REQUEST_F) & true);
         }
         case CH_REQUEST_F: {  // CH request pin: Active = low, Inactive = high (bimetallic room thermostat)
-            if (GetKnobPosition(p_sys->system_mode, SYSTEM_MODE_STEPS) == SYS_COMBI) {
+            if (GetKnobPosition(p_system->system_mode, SYSTEM_MODE_STEPS) == SYS_COMBI) {
                 // CH request switch debouncing
-                if (((GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F)) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) || TimerExists(DEB_CH_SWITCH_TIMER_ID)) {
+                if (((GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F)) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) || TimerExists(DEB_CH_SWITCH_TIMER_ID)) {
                     if (TimerExists(DEB_CH_SWITCH_TIMER_ID)) {
                         if (TimerFinished(DEB_CH_SWITCH_TIMER_ID)) {
-                            if ((GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F)) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) {
-                                ToggleFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F);
+                            if ((GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F)) == ((CH_RQ_PINP >> CH_RQ_PIN) & true)) {
+                                ToggleFlag(p_system, INPUT_FLAGS, CH_REQUEST_F);
                             }
                             DeleteTimer(DEB_CH_SWITCH_TIMER_ID);
                         }
@@ -171,18 +170,18 @@ bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, bool ShowDashb
                         SetTimer(DEB_CH_SWITCH_TIMER_ID, DEB_CH_SWITCH_TIMER_DURATION, DEB_CH_SWITCH_TIMER_MODE);
                     }
                 }
-                return (GetFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F));
+                return (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F));
             } else {
-                ClearFlag(p_sys, INPUT_FLAGS, CH_REQUEST_F);
+                ClearFlag(p_system, INPUT_FLAGS, CH_REQUEST_F);
             }
         }
         case AIRFLOW_F: {  // Flue air flow sensor pin: Active = low, Inactive = high (flue air pressure switch)
             // Airflow sensor switch debouncing
-            if (((GetFlag(p_sys, INPUT_FLAGS, AIRFLOW_F)) == ((AIRFLOW_PINP >> AIRFLOW_PIN) & true)) || TimerExists(DEB_AIRFLOW_TIMER_ID)) {
+            if (((GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F)) == ((AIRFLOW_PINP >> AIRFLOW_PIN) & true)) || TimerExists(DEB_AIRFLOW_TIMER_ID)) {
                 if (TimerExists(DEB_AIRFLOW_TIMER_ID)) {
                     if (TimerFinished(DEB_AIRFLOW_TIMER_ID)) {
-                        if ((GetFlag(p_sys, INPUT_FLAGS, AIRFLOW_F)) == ((AIRFLOW_PINP >> AIRFLOW_PIN) & true)) {
-                            ToggleFlag(p_sys, INPUT_FLAGS, AIRFLOW_F);
+                        if ((GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F)) == ((AIRFLOW_PINP >> AIRFLOW_PIN) & true)) {
+                            ToggleFlag(p_system, INPUT_FLAGS, AIRFLOW_F);
                         }
                         DeleteTimer(DEB_AIRFLOW_TIMER_ID);
                     }
@@ -190,40 +189,40 @@ bool CheckDigitalSensor(SysInfo *p_sys, InputFlag digital_sensor, bool ShowDashb
                     SetTimer(DEB_AIRFLOW_TIMER_ID, DEB_AIRFLOW_TIMER_DURATION, DEB_AIRFLOW_TIMER_MODE);
                 }
             }
-            return (GetFlag(p_sys, INPUT_FLAGS, AIRFLOW_F));
+            return (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F));
         }
         case FLAME_F: {  // Flame sensor pin: Active = high, Inactive = low. IT NEEDS EXTERNAL PULL-DOWN RESISTOR !!!
             if ((FLAME_PINP >> FLAME_PIN) & true) {
-                SetFlag(p_sys, INPUT_FLAGS, FLAME_F);
+                SetFlag(p_system, INPUT_FLAGS, FLAME_F);
 #if LED_UI_FOR_FLAME
-                SetFlag(p_sys, OUTPUT_FLAGS, LED_UI_F);
+                SetFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
 #endif /* LED_UI_FOR_FLAME */
             } else {
-                ClearFlag(p_sys, INPUT_FLAGS, FLAME_F);
+                ClearFlag(p_system, INPUT_FLAGS, FLAME_F);
 #if LED_UI_FOR_FLAME
-                ClearFlag(p_sys, OUTPUT_FLAGS, LED_UI_F);
+                ClearFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
 #endif /* LED_UI_FOR_FLAME */
             }
-            return ((p_sys->input_flags >> FLAME_F) & true);
+            return ((p_system->input_flags >> FLAME_F) & true);
         }
         case OVERHEAT_F: {  // Overheat thermostat pin: Active = high, Inactive = low. ACTIVE INDICATES OVERTEMPERATURE !!!
             if ((OVERHEAT_PINP >> OVERHEAT_PIN) & true) {
-                ClearFlag(p_sys, INPUT_FLAGS, OVERHEAT_F);
+                ClearFlag(p_system, INPUT_FLAGS, OVERHEAT_F);
             } else {
-                SetFlag(p_sys, INPUT_FLAGS, OVERHEAT_F);
-                p_sys->input_flags |= (1 << OVERHEAT_F);
+                SetFlag(p_system, INPUT_FLAGS, OVERHEAT_F);
+                p_system->input_flags |= (1 << OVERHEAT_F);
             }
-            return ((p_sys->input_flags >> OVERHEAT_F) & true);
+            return ((p_system->input_flags >> OVERHEAT_F) & true);
         }
     }
-    if (ShowDashboard == true) {
-        Dashboard(p_sys, false);
+    if (show_dashboard == true) {
+        Dashboard(p_system, false);
     }
     return 0;
 }
 
 //Function InitAnalogSensor: Sets the ADC hardware up and initializes the given sensor readout
-void InitAnalogSensor(SysInfo *p_sys, AnalogInput analog_sensor) {
+void InitAnalogSensor(SysInfo *p_system, AnalogInput analog_sensor) {
     ADMUX |= (1 << REFS0);                                 // Set ADC reference to AVCC
     ACSR &= ~(1 << ACIE);                                  // Clear analog comparator IRQ flag
     ACSR = (1 << ACD);                                     // Stop analog comparator
@@ -234,23 +233,23 @@ void InitAnalogSensor(SysInfo *p_sys, AnalogInput analog_sensor) {
     //ADCSRA |= (1 << ADSC); // start first conversion
     switch (analog_sensor) {
         case DHW_TEMPERATURE: {
-            p_sys->dhw_temperature = 0;
+            p_system->dhw_temperature = 0;
             break;
         }
         case CH_TEMPERATURE: {
-            p_sys->ch_temperature = 0;
+            p_system->ch_temperature = 0;
             break;
         }
         case DHW_SETTING: {
-            p_sys->dhw_setting = 0;
+            p_system->dhw_setting = 0;
             break;
         }
         case CH_SETTING: {
-            p_sys->ch_setting = 0;
+            p_system->ch_setting = 0;
             break;
         }
         case SYSTEM_MODE: {
-            p_sys->system_mode = 0;
+            p_system->system_mode = 0;
             break;
         }
         default:
@@ -259,7 +258,7 @@ void InitAnalogSensor(SysInfo *p_sys, AnalogInput analog_sensor) {
 }
 
 // Function CheckAnalogSensor: Returns the ADC readout of a given analog sensor
-uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInput analog_sensor, bool ShowDashboard) {
+uint16_t CheckAnalogSensor(SysInfo *p_system, AdcBuffers *p_buffer_pack, AnalogInput analog_sensor, bool show_dashboard) {
     ADMUX = (0xF0 & ADMUX) | analog_sensor;
     ADCSRA |= (1 << ADSC);
     loop_until_bit_is_clear(ADCSRA, ADSC);
@@ -269,7 +268,7 @@ uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInpu
             if (p_buffer_pack->dhw_temp_adc_buffer.ix >= BUFFER_LENGTH) {
                 p_buffer_pack->dhw_temp_adc_buffer.ix = 0;
             }
-            p_sys->dhw_temperature = AverageAdc(p_buffer_pack->dhw_temp_adc_buffer.data, BUFFER_LENGTH, 0, MEAN);
+            p_system->dhw_temperature = AverageAdc(p_buffer_pack->dhw_temp_adc_buffer.data, BUFFER_LENGTH, 0, MEAN);
             break;
         }
         case CH_TEMPERATURE: {
@@ -277,7 +276,7 @@ uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInpu
             if (p_buffer_pack->ch_temp_adc_buffer.ix >= BUFFER_LENGTH) {
                 p_buffer_pack->ch_temp_adc_buffer.ix = 0;
             }
-            p_sys->ch_temperature = AverageAdc(p_buffer_pack->ch_temp_adc_buffer.data, BUFFER_LENGTH, 0, MEAN);
+            p_system->ch_temperature = AverageAdc(p_buffer_pack->ch_temp_adc_buffer.data, BUFFER_LENGTH, 0, MEAN);
             break;
         }
         case DHW_SETTING: {
@@ -285,7 +284,7 @@ uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInpu
             if (p_buffer_pack->dhw_set_adc_buffer.ix >= BUFFER_LENGTH) {
                 p_buffer_pack->dhw_set_adc_buffer.ix = 0;
             }
-            p_sys->dhw_setting = AverageAdc(p_buffer_pack->dhw_set_adc_buffer.data, BUFFER_LENGTH, 0, MEAN);
+            p_system->dhw_setting = AverageAdc(p_buffer_pack->dhw_set_adc_buffer.data, BUFFER_LENGTH, 0, MEAN);
             break;
         }
         case CH_SETTING: {
@@ -293,7 +292,7 @@ uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInpu
             if (p_buffer_pack->ch_set_adc_buffer.ix >= BUFFER_LENGTH) {
                 p_buffer_pack->ch_set_adc_buffer.ix = 0;
             }
-            p_sys->ch_setting = AverageAdc(p_buffer_pack->ch_set_adc_buffer.data, BUFFER_LENGTH, 0, MEAN);
+            p_system->ch_setting = AverageAdc(p_buffer_pack->ch_set_adc_buffer.data, BUFFER_LENGTH, 0, MEAN);
             break;
         }
         case SYSTEM_MODE: {
@@ -301,21 +300,21 @@ uint16_t CheckAnalogSensor(SysInfo *p_sys, AdcBuffers *p_buffer_pack, AnalogInpu
             if (p_buffer_pack->sys_mod_adc_buffer.ix >= BUFFER_LENGTH) {
                 p_buffer_pack->sys_mod_adc_buffer.ix = 0;
             }
-            p_sys->system_mode = AverageAdc(p_buffer_pack->sys_mod_adc_buffer.data, BUFFER_LENGTH, 0, MEAN);
+            p_system->system_mode = AverageAdc(p_buffer_pack->sys_mod_adc_buffer.data, BUFFER_LENGTH, 0, MEAN);
             break;
         }
         default: {
             break;
         }
     }
-    if (ShowDashboard == true) {
-        Dashboard(p_sys, false);
+    if (show_dashboard == true) {
+        Dashboard(p_system, false);
     }
     return (ADC & 0x3FF);
 }
 
 // Function InitActuator: Initializes a device actuator's output pin
-void InitActuator(SysInfo *p_sys, OutputFlag device_flag) {
+void InitActuator(SysInfo *p_system, OutputFlag device_flag) {
     switch (device_flag) {
         case EXHAUST_FAN_F: {
             FAN_DDR |= (1 << FAN_PIN);    // Set exhaust fan pin as output
@@ -361,11 +360,11 @@ void InitActuator(SysInfo *p_sys, OutputFlag device_flag) {
             break;
         }
     }
-    ClearFlag(p_sys, OUTPUT_FLAGS, device_flag);  // Clear actuator flags
+    ClearFlag(p_system, OUTPUT_FLAGS, device_flag);  // Clear actuator flags
 }
 
 // Function ControlActuator: Turns an actuator pin and its associated flag on or off
-void ControlActuator(SysInfo *p_sys, OutputFlag device_flag, HwSwitch command, bool ShowDashboard) {
+void ControlActuator(SysInfo *p_system, OutputFlag device_flag, HwSwitch command, bool show_dashboard) {
     switch (device_flag) {
         case EXHAUST_FAN_F: {
             if (command == TURN_ON) {
@@ -437,16 +436,16 @@ void ControlActuator(SysInfo *p_sys, OutputFlag device_flag, HwSwitch command, b
     }
     // If called directly, synchronize output flags with hardware status
     if (command == TURN_ON) {
-        if (!(GetFlag(p_sys, OUTPUT_FLAGS, device_flag))) {
-            SetFlag(p_sys, OUTPUT_FLAGS, device_flag);  // Set actuator flags
+        if (!(GetFlag(p_system, OUTPUT_FLAGS, device_flag))) {
+            SetFlag(p_system, OUTPUT_FLAGS, device_flag);  // Set actuator flags
         }
     } else {
-        if (GetFlag(p_sys, OUTPUT_FLAGS, device_flag)) {
-            ClearFlag(p_sys, OUTPUT_FLAGS, device_flag);  // Clear actuator flags
+        if (GetFlag(p_system, OUTPUT_FLAGS, device_flag)) {
+            ClearFlag(p_system, OUTPUT_FLAGS, device_flag);  // Clear actuator flags
         }
     }
-    if (ShowDashboard == true) {
-        Dashboard(p_sys, false);
+    if (show_dashboard == true) {
+        Dashboard(p_system, false);
     }
 }
 
@@ -522,71 +521,71 @@ uint8_t GetKnobPosition(int16_t pot_adc_value, uint8_t knob_steps) {
 }
 
 // Function OpenHeatValve: Opens a given heat valve exclusively, closing all the others
-void OpenHeatValve(SysInfo *p_sys, HeatValve valve_to_open) {
+void OpenHeatValve(SysInfo *p_system, HeatValve valve_to_open) {
     uint8_t modulator_valve_count = HEAT_MODULATOR_VALVES;
     for (uint8_t valve = 0; valve < modulator_valve_count; valve++) {
         if (valve == valve_to_open) {
-            if (GetFlag(p_sys, OUTPUT_FLAGS, p_sys->heat_modulator[valve].valve_flag) == false) {
-                SetFlag(p_sys, OUTPUT_FLAGS, p_sys->heat_modulator[valve].valve_flag);
+            if (GetFlag(p_system, OUTPUT_FLAGS, p_system->heat_modulator[valve].valve_flag) == false) {
+                SetFlag(p_system, OUTPUT_FLAGS, p_system->heat_modulator[valve].valve_flag);
             }
         } else {
-            if (GetFlag(p_sys, OUTPUT_FLAGS, p_sys->heat_modulator[valve].valve_flag)) {
-                ClearFlag(p_sys, OUTPUT_FLAGS, p_sys->heat_modulator[valve].valve_flag);
+            if (GetFlag(p_system, OUTPUT_FLAGS, p_system->heat_modulator[valve].valve_flag)) {
+                ClearFlag(p_system, OUTPUT_FLAGS, p_system->heat_modulator[valve].valve_flag);
             }
         }
     }
 }
 
 // Function ModulateHeat: Modulates heat by toggling system valves according to a potentiometer ADC value
-void ModulateHeat(SysInfo *p_sys, PotentiometerReadout potentiometer_readout, PotentiometerSteps potentiometer_steps, HeatCycleTime heat_cycle_time) {
+void ModulateHeat(SysInfo *p_system, uint16_t potentiometer_readout, uint8_t potentiometer_steps, uint32_t heat_cycle_time) {
     //
     // [ # # # ] Heat modulation code  [ # # # ]
     //
-    if (p_sys->cycle_in_progress == false) {
+    if (p_system->cycle_in_progress == false) {
         uint8_t heat_level_time_usage = 0;
         // Check heat level integrity
         for (uint8_t valve_time_check = 0; valve_time_check < HEAT_MODULATOR_VALVES; valve_time_check++) {
-            heat_level_time_usage += heat_level[p_sys->current_heat_level].valve_open_time[valve_time_check];
+            heat_level_time_usage += heat_level[p_system->current_heat_level].valve_open_time[valve_time_check];
         }
         if (heat_level_time_usage != 100) {
 #if LED_DEBUG
-            SetFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER_F);  // Heat level setting error, the sum of the opening time of all valves must be 100!
-            _delay_ms(5000);                                // 5-second blocking delay to indicate heat level setting errors
-            ClearFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER_F);
+            SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);  // Heat level setting error, the sum of the opening time of all valves must be 100!
+            _delay_ms(5000);                                   // 5-second blocking delay to indicate heat level setting errors
+            ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
 #endif
             // FAIL-SAFE: Auto cool down in case of heat cycle error
-            p_sys->current_heat_level = 0;
-            p_sys->cycle_in_progress = false;
+            p_system->current_heat_level = 0;
+            p_system->cycle_in_progress = false;
             // return 1; // At his point, it should jump to the error state
         } else {
             // Set cycle in progress
-            p_sys->cycle_in_progress = true;
-            p_sys->current_valve = 0;
-            ResetTimerLapse(HEAT_TIMER_ID, ((uint32_t)(heat_level[p_sys->current_heat_level].valve_open_time[p_sys->current_valve] * heat_cycle_time / 100)));
+            p_system->cycle_in_progress = true;
+            p_system->current_valve = 0;
+            ResetTimerLapse(HEAT_TIMER_ID, ((uint32_t)(heat_level[p_system->current_heat_level].valve_open_time[p_system->current_valve] * heat_cycle_time / 100)));
         }
     } else {
         if (TimerFinished(HEAT_TIMER_ID)) {
             // Prepare timing for next valve
-            p_sys->current_valve++;
-            ResetTimerLapse(HEAT_TIMER_ID, ((uint32_t)heat_level[p_sys->current_heat_level].valve_open_time[p_sys->current_valve] * heat_cycle_time / 100));
-            if (p_sys->current_valve >= HEAT_MODULATOR_VALVES) {
+            p_system->current_valve++;
+            ResetTimerLapse(HEAT_TIMER_ID, ((uint32_t)heat_level[p_system->current_heat_level].valve_open_time[p_system->current_valve] * heat_cycle_time / 100));
+            if (p_system->current_valve >= HEAT_MODULATOR_VALVES) {
                 // Cycle end: Reset to first valve
 #if LED_DEBUG
-                if (GetFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER_F)) {  // Toggle SPARK_IGNITER_F on each heat-cycle start
-                    ClearFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER_F);
+                if (GetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F)) {  // Toggle SPARK_IGNITER_F on each heat-cycle start
+                    ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
                 } else {
-                    SetFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER_F);
+                    SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
                 }
 #endif
-                p_sys->cycle_in_progress = false;
+                p_system->cycle_in_progress = false;
 #if HEAT_MODULATOR_DEMO
                 // DEMO MODE: loops through all heat levels, from lower to higher
-                if (p_sys->current_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
-                    p_sys->current_heat_level = 0;
+                if (p_system->current_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
+                    p_system->current_heat_level = 0;
                 }
 #else
                 // Read the DHW potentiometer to determine current heat level
-                p_sys->current_heat_level = GetKnobPosition(potentiometer_readout, potentiometer_steps);
+                p_system->current_heat_level = GetKnobPosition(potentiometer_readout, potentiometer_steps);
 #endif
             }
         } else {
@@ -595,11 +594,11 @@ void ModulateHeat(SysInfo *p_sys, PotentiometerReadout potentiometer_readout, Po
             // DEBUG: Show current heat level and open valve -> HL.V
             SerialTxChr(32);
             SerialTxChr(32);
-            SerialTxNum(p_sys->current_heat_level, DIGITS_2);
+            SerialTxNum(p_system->current_heat_level, DIGITS_2);
             SerialTxChr(V_LINE); /* Horizontal separator (|) */
-            SerialTxNum(p_sys->heat_modulator[p_sys->current_valve].heat_valve + 1, DIGITS_1);
+            SerialTxNum(p_system->heat_modulator[p_system->current_valve].heat_valve + 1, DIGITS_1);
 #endif
-            OpenHeatValve(p_sys, p_sys->heat_modulator[p_sys->current_valve].heat_valve);
+            OpenHeatValve(p_system, p_system->heat_modulator[p_system->current_valve].heat_valve);
         }
     }
     //
@@ -608,11 +607,17 @@ void ModulateHeat(SysInfo *p_sys, PotentiometerReadout potentiometer_readout, Po
 }
 
 // Function GasOff: Closes all heat valves and the security valve, turns the spark igniter and exhaust fan off
-void GasOff(SysInfo *p_sys) {
-    ClearFlag(p_sys, OUTPUT_FLAGS, SPARK_IGNITER_F);  // Turn spark igniter off
-    ClearFlag(p_sys, OUTPUT_FLAGS, VALVE_3_F);        // Close gas valve 3
-    ClearFlag(p_sys, OUTPUT_FLAGS, VALVE_2_F);        // Close gas valve 2
-    ClearFlag(p_sys, OUTPUT_FLAGS, VALVE_1_F);        // Close gas valve 1
-    ClearFlag(p_sys, OUTPUT_FLAGS, VALVE_S_F);        // Close gas security valve
-    ClearFlag(p_sys, OUTPUT_FLAGS, EXHAUST_FAN_F);    // Turn exhaust fan off
+void GasOff(SysInfo *p_system) {
+    ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);  // Turn spark igniter off
+    _delay_ms(5);                                        // Blocking delay
+    ClearFlag(p_system, OUTPUT_FLAGS, VALVE_3_F);        // Close gas valve 3
+    _delay_ms(5);                                        // Blocking delay
+    ClearFlag(p_system, OUTPUT_FLAGS, VALVE_2_F);        // Close gas valve 2
+    _delay_ms(5);                                        // Blocking delay
+    ClearFlag(p_system, OUTPUT_FLAGS, VALVE_1_F);        // Close gas valve 1
+    _delay_ms(5);                                        // Blocking delay
+    ClearFlag(p_system, OUTPUT_FLAGS, VALVE_S_F);        // Close gas security valve
+    _delay_ms(5);                                        // Blocking delay
+    ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN_F);    // Turn exhaust fan off
+    _delay_ms(5);                                        // Blocking delay
 }

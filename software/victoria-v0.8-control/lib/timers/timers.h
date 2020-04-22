@@ -16,6 +16,7 @@
 #include <avr/io.h>
 #include <avr/pgmspace.h>
 #include <stdbool.h>
+#include <util/delay.h>
 
 #include "../../include/sys-settings.h"
 
@@ -34,25 +35,8 @@
 #define FRACT_INC ((MICROSECONDS_PER_TIMER0_OVERFLOW % 1000) >> 3)
 #define FRACT_MAX (1000 >> 3)
 
-// Long delay values: range -> 0 - 65535
-#define DLY_OFF_2 100              // Off_2 step long delay
-#define DLY_OFF_3 5000             // Off_3 step long delay
-#define DLY_OFF_4 3000             // Off_4 step long delay
-#define DLY_READY_1 3000           // Ready_1 step long delay
-#define DLY_IGNITING_1 5           // Igniting_1 step long delay
-#define DLY_IGNITING_2 5000        // Igniting_2 step long delay
-#define DLY_IGNITING_3 200         // Igniting_3 step long delay
-#define DLY_IGNITING_4 100         // Igniting_4 step long delay
-#define DLY_IGNITING_5 300         // Igniting_5 step long delay
-#define DLY_IGNITING_6 500         // Igniting_6 step long delay
-#define DLY_DHW_ON_DUTY_1 100      // On_DHW_Duty_1 step long delay
-#define DLY_DHW_ON_DUTY_LOOP 3000  // On_DHW_Duty loop long delay
-#define DLY_CH_ON_DUTY_1 500       // On_CH_Duty_1 step long delay
-#define DLY_CH_ON_DUTY_LOOP 3000   // On_DHW_Duty loop long delay
-#define DLY_FLAME_OFF 100          // Delay before checking if the flame is off after closing gas
-#define DLY_AIRFLOW_OFF 2000       // Delay before checking if the airflow sensor switches off when the fan gets turned off
-
-#define TIMER_EMPTY 0  // Timer empty value
+#define TIMER_EMPTY 0                  // Timer empty value
+#define ENABLE_TIMERS_CALLBACKS false  // Sets if the ProcessTimers function, which makes the callbacks, will be run by the ISR
 
 // Types
 
@@ -74,16 +58,15 @@ typedef uint32_t TimerLapse;
 
 // Prototypes
 
-uint8_t SetTimer(TimerId, TimerLapse, TimerMode);
-bool TimerRunning(TimerId);
-bool TimerFinished(TimerId);
-bool TimerExists(TimerId);
-uint32_t GetTimeLeft(TimerId);
-uint8_t RestartTimer(TimerId);
-uint8_t ResetTimerLapse(TimerId, TimerLapse);
-void ProcessTimers();
-bool CheckTimerExistence(TimerId);
-void DeleteTimer(TimerId);
+bool SetTimer(TimerId timer_id, TimerLapse time_lapse, TimerMode timer_mode);
+bool TimerRunning(TimerId timer_id);
+bool TimerFinished(TimerId timer_id);
+bool TimerExists(TimerId timer_id);
+uint32_t GetTimeLeft(TimerId timer_id);
+uint8_t RestartTimer(TimerId timer_id);
+uint8_t ResetTimerLapse(TimerId timer_id, uint32_t time_lapse);
+void ProcessTimers(void);
+void DeleteTimer(TimerId timer_id);
 void SetTickTimer(void);
 uint32_t GetMilliseconds(void);
 //void OnTimer(uint8_t);

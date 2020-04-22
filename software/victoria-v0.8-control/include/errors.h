@@ -24,5 +24,6 @@
 #define ERROR_009 9   // E009: CH sensor out of range: NTX thermistor failure or cable disconnected
 #define ERROR_010 10  // E010: Unexpected CH overtemperature
 #define ERROR_011 11  // E011: Heat level inconsistency detected
+#define ERROR_012 12  // E012: Unable to create system timer, not enough slots
 
 #endif /* _ERRORS_H_ */

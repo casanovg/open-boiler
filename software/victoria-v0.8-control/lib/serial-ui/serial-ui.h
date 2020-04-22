@@ -59,14 +59,14 @@ typedef enum digit_length {
 // Prototypes
 
 void SerialInit(void);
-unsigned char SerialRxChr(void);
-void SerialTxChr(unsigned char);
-void SerialTxNum(uint32_t, DigitLength);
-void SerialTxStr(const __flash char *);
+uint8_t SerialRxChr(void);
+void SerialTxChr(uint8_t character_code);
+void SerialTxNum(uint32_t number, DigitLength digits);
+void SerialTxStr(const __flash char *ptr_string);
+void DrawLine(uint8_t length, char line_char);
+int DivRound(const int numerator, const int denominator);
 void ClrScr(void);
-void Dashboard(SysInfo *, bool);
-void DrawLine(uint8_t, char);
-int DivRound(const int, const int);
+void Dashboard(SysInfo *p_system, bool force_refresh);
 
 // Global console UI literals
 
@@ -120,11 +120,13 @@ static const char __flash sys_mode_00[] = {"[ WINTER ] "};
 static const char __flash sys_mode_01[] = {"[ SUMMER ] "};
 static const char __flash sys_mode_02[] = {"[ PWR-OFF ]"};
 static const char __flash sys_mode_03[] = {"[ RESET ]  "};
-static const char __flash str_mode_00[] = {"          [ OFF ] .\n\r"};
-static const char __flash str_mode_10[] = {"        [ READY ] .\n\r"};
-static const char __flash str_mode_20[] = {"     [ IGNITING ] .\n\r"};
-static const char __flash str_mode_30[] = {"  [ DHW ON DUTY ] .\n\r"};
-static const char __flash str_mode_40[] = {"   [ CH ON DUTY ] .\n\r"};
+static const char __flash str_mode_00[] = {"           [ OFF ] .\n\r"};
+static const char __flash str_mode_10[] = {"         [ READY ] .\n\r"};
+static const char __flash str_mode_20[] = {"      [ IGNITING ] .\n\r"};
+static const char __flash str_mode_30[] = {"   [ DHW ON DUTY ] .\n\r"};
+static const char __flash str_mode_40[] = {"  [ CH ON DUTY "};
+static const char __flash str_mode_41[] = {"1 ] .\n\r"};
+static const char __flash str_mode_42[] = {"2 ] .\n\r"};
 static const char __flash str_mode_100[] = {"        [ ERROR ] .\n\r"};
 #if SHOW_PUMP_TIMER
 static const char __flash str_wptimer[] = {"  CH water pump auto-shutdown timer: "};

@@ -9,8 +9,8 @@
  *  ........................................................
  */
 
-#ifndef _HAL_
-#define _HAL_
+#ifndef _HAL_H_
+#define _HAL_H_
 
 #include <avr/pgmspace.h>
 #include <avr/wdt.h>
@@ -20,6 +20,7 @@
 #include <timers.h>
 #include <util/delay.h>
 
+#include "../../include/errors.h"
 #include "../../include/hw-mapping.h"
 #include "../../include/sys-settings.h"
 
@@ -36,11 +37,6 @@ typedef enum average_type {
     MOVING = 2
 } AverageType;
 
-typedef struct debounce_sw {
-    uint16_t ch_request_deb;  // CH request switch debouncing delay
-    uint16_t airflow_deb;     // Airflow sensor switch debouncing delay
-} DebounceSw;
-
 typedef struct ring_buffer {
     uint16_t data[BUFFER_LENGTH];
     uint8_t ix;
@@ -54,30 +50,26 @@ typedef struct adc_buffers {
     RingBuffer sys_mod_adc_buffer;
 } AdcBuffers;
 
-typedef uint16_t PotentiometerReadout;
-typedef uint8_t PotentiometerSteps;
-typedef uint32_t HeatCycleTime;
-
 // Prototypes
 
 void SystemRestart(void);
-void InitFlags(SysInfo *, FlagsType);
-void SetFlag(SysInfo *, FlagsType, uint8_t);
-void ClearFlag(SysInfo *, FlagsType, uint8_t);
-void ToggleFlag(SysInfo *, FlagsType, uint8_t);
-bool GetFlag(SysInfo *, FlagsType, uint8_t);
-void InitDigitalSensor(SysInfo *, InputFlag);
-bool CheckDigitalSensor(SysInfo *, InputFlag, bool);
-void InitAnalogSensor(SysInfo *, AnalogInput);
-uint16_t CheckAnalogSensor(SysInfo *, AdcBuffers *, AnalogInput, bool);
-void InitActuator(SysInfo *, OutputFlag);
-void ControlActuator(SysInfo *, OutputFlag, HwSwitch, bool);
-void InitAdcBuffers(AdcBuffers *, uint8_t);
-uint16_t AverageAdc(uint16_t[], uint8_t, uint8_t, AverageType);
-uint8_t GetKnobPosition(int16_t, uint8_t);
-void OpenHeatValve(SysInfo *, HeatValve);
-void ModulateHeat(SysInfo *, PotentiometerReadout, PotentiometerSteps, HeatCycleTime);
-void GasOff(SysInfo *);
+void InitFlags(SysInfo *p_system, FlagsType flags_type);
+void SetFlag(SysInfo *p_system, FlagsType flags_type, uint8_t flag_position);
+void ClearFlag(SysInfo *p_system, FlagsType flags_type, uint8_t flag_position);
+void ToggleFlag(SysInfo *p_system, FlagsType flags_type, uint8_t flag_position);
+bool GetFlag(SysInfo *p_system, FlagsType flags_type, uint8_t flag_position);
+void InitDigitalSensor(SysInfo *p_system, InputFlag digital_sensor);
+bool CheckDigitalSensor(SysInfo *p_system, InputFlag digital_sensor, bool show_dashboard);
+void InitAnalogSensor(SysInfo *p_system, AnalogInput analog_sensor);
+uint16_t CheckAnalogSensor(SysInfo *p_system, AdcBuffers *p_buffer_pack, AnalogInput analog_sensor, bool show_dashboard);
+void InitActuator(SysInfo *p_system, OutputFlag device_flag);
+void ControlActuator(SysInfo *p_system, OutputFlag device_flag, HwSwitch command, bool show_dashboard);
+void InitAdcBuffers(AdcBuffers *p_buffer_pack, uint8_t buffer_length);
+uint16_t AverageAdc(uint16_t adc_buffer[], uint8_t buffer_len, uint8_t start, AverageType average_type);
+uint8_t GetKnobPosition(int16_t pot_adc_value, uint8_t knob_steps);
+void OpenHeatValve(SysInfo *p_system, HeatValve valve_to_open);
+void ModulateHeat(SysInfo *p_system, uint16_t potentiometer_readout, uint8_t potentiometer_steps, uint32_t heat_cycle_time);
+void GasOff(SysInfo *p_system);
 
 // Globals
 
@@ -116,4 +108,4 @@ static const HeatLevel __flash heat_level[] = {
     {{0, 0, 100}, 20000, 2.390}    // Heat level 27 = 20000 Kcal/h
 };
 
-#endif  // _HAL_
+#endif  // _HAL_H_

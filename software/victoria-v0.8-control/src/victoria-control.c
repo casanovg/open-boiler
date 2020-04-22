@@ -461,7 +461,7 @@ int main(void) {
                                         p_system->error = ERROR_005;
                                         p_system->system_state = ERROR;
                                     } else {
-                                        //ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_4);
+                                        ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_4);
                                         p_system->inner_step = IGNITING_4;
                                     }
                                 }

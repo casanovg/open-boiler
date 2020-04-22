@@ -4,8 +4,8 @@
  *  ........................................................
  *  File: victoria-control.h (headers) for ATmega328
  *  ........................................................
- *  Version: 0.7 "Juan" / 2019-10-11 (Easter Quarantine)
- *  gustavo.casanova@nicebots.com
+ *	Version: 0.8 "Juan" / 2019-04-09 (Easter Quarantine)
+ *	gustavo.casanova@nicebots.com
  *  ........................................................
  */
 

@@ -27,19 +27,18 @@
 #define DHW_HEAT_CYCLE_TIME 15000  // DHW heat modulator cycle time (milliseconds)
 #define CH_HEAT_CYCLE_TIME 20000   // CH heat modulator cycle time (milliseconds)
 
-#define MAX_IGNITION_RETRIES 2  // Number of ignition retries when no flame is detected
+#define MAX_IGNITION_RETRIES 3  // Number of ignition retries when no flame is detected
 
 #define DHW_SETTING_STEPS 12  // DHW setting potentiometer steps
 #define CH_SETTING_STEPS 12   // CH setting potentiometer steps
 #define SYSTEM_MODE_STEPS 4   // System mode potentiometer steps
 
-#define SYSTEM_TIMERS 5          // Number of system timers
+#define SYSTEM_TIMERS 6          // Number of system timers
 #define HEAT_MODULATOR_VALVES 3  // Number of heat modulator valves
 
 #define OVERHEAT_OVERRIDE false     // True: Overheating thermostat override
 #define AIRFLOW_OVERRIDE true       // True: Flue airflow sensor override
 #define FAN_TEST_OVERRIDE true      // True: Flue airflow sensor override
-#define FAST_FLAME_DETECTION true  // True: Spark igniter is turned off when the flame is detected instead of checking the flame sensor after a delay
 #define LED_UI_FOR_FLAME true       // True: Activates onboard LED when the flame detector is on
 #define HEAT_MODULATOR_DEMO false   // True: ONLY FOR DEBUG!!! loops through all heat levels, from lower to higher. False: NORMAL OPERATION -> Heat modulator code reads DHW potentiometer to determine current heat level
 #define SERIAL_DEBUG false          // True: Shows current heat level and valve timing instead of the dashboard
@@ -65,25 +64,29 @@
 #define PUMP_TIMER_DURATION 600000         // Water pump timer time-lapse (milliseconds)
 #define PUMP_TIMER_MODE RUN_ONCE_AND_HOLD  // Water pump timer mode
 
-#define DEB_CH_SWITCH_TIMER_ID 4                    // Central heating thermostat switch debounce timer id
+#define DEB_FLAME_TIMER_ID 4                    // Flame detector debounce timer id
+#define DEB_FLAME_TIMER_DURATION 1000           // Flame detector debounce timer time-lapse
+#define DEB_FLAME_TIMER_MODE RUN_ONCE_AND_HOLD  // Flame detector debounce timer mode
+
+#define DEB_CH_SWITCH_TIMER_ID 5                    // Central heating thermostat switch debounce timer id
 #define DEB_CH_SWITCH_TIMER_DURATION 250            // Central heating thermostat switch debounce timer time-lapse
 #define DEB_CH_SWITCH_TIMER_MODE RUN_ONCE_AND_HOLD  // Central heating thermostat switch debounce timer mode
 
-#define DEB_AIRFLOW_TIMER_ID 5                    // Airflow sensor switch debounce timer id
+#define DEB_AIRFLOW_TIMER_ID 6                    // Airflow sensor switch debounce timer id
 #define DEB_AIRFLOW_TIMER_DURATION 125            // Airflow sensor switch debounce timer time-lapse
 #define DEB_AIRFLOW_TIMER_MODE RUN_ONCE_AND_HOLD  // Airflow sensor switch debounce timer mode
 
 // FSM non-blocking delay times (milliseconds)
-#define DLY_OFF_2 10               // Off_2: Time before turning the fan for the flue exhaust test
-#define DLY_OFF_3 5000             // Off_3: Time to let the fan to rev up and the airflow sensor closes (fan test)
-#define DLY_OFF_4 3000             // Off_4: Time to let the fan to rev down after testing it (when the test is enabled)
-#define DLY_READY_1 3000           // Ready_1: Time to allow the flame and airflow sensors to switch off after the gas is closed
-#define DLY_IGNITING_1 10          // Igniting_1: Time-lapse from an ignition request until turning the fan on
-#define DLY_IGNITING_2 5000        // Igniting_2: Time to let the fan to rev up and the airflow sensor closes (ignition)
-#define DLY_IGNITING_3 250         // Igniting_3: Time before opening the security valve after the fan is running
-#define DLY_IGNITING_4 125         // Igniting_4: Time before opening the valve 1 (or 2) after opening the security valve
-#define DLY_IGNITING_5 125         // Igniting_5: Time before turning the spark igniter on after opening the valve 1 (or 2)
-#define DLY_IGNITING_6 3000        // Igniting_6: Wait time for ignition with spark igniter and gas open before retrying
+#define DLY_OFF_2 10         // Off_2: Time before turning the fan for the flue exhaust test
+#define DLY_OFF_3 5000       // Off_3: Time to let the fan to rev up and the airflow sensor closes (fan test)
+#define DLY_OFF_4 3000       // Off_4: Time to let the fan to rev down after testing it (when the test is enabled)
+#define DLY_READY_1 3000     // Ready_1: Time to allow the flame and airflow sensors to switch off after the gas is closed
+#define DLY_IGNITING_1 10    // Igniting_1: Time-lapse from an ignition request until turning the fan on
+#define DLY_IGNITING_2 5000  // Igniting_2: Time to let the fan to rev up and the airflow sensor closes (ignition)
+#define DLY_IGNITING_3 250   // Igniting_3: Time before opening the security valve after the fan is running
+#define DLY_IGNITING_4 125   // Igniting_4: Time before opening the valve 1 (or 2) after opening the security valve
+#define DLY_IGNITING_5 500   // Igniting_5: Time before turning the spark igniter on while the valve 1 (or 2) is open
+#define DLY_IGNITING_6 (DEB_FLAME_TIMER_DURATION + 2000)  // Igniting_6: Waiting time for flame lit with gas open and spark igniter on before retrying
 #define DLY_DHW_ON_DUTY_LOOP 3000  // DHW_on_Duty: Dashboard refreshing time when looping through DHW on-duty mode
 #define DLY_CH_ON_DUTY_LOOP 3000   // CH_on_Duty: Dashboard refreshing time when looping through CH on-duty mode
 

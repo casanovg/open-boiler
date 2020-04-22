@@ -149,6 +149,7 @@ bool CheckDigitalSensor(SysInfo *p_system, InputFlag digital_sensor, bool show_d
     switch (digital_sensor) {
         case DHW_REQUEST_F: {  // DHW request pin: Active = low, Inactive = high
             if ((DHW_RQ_PINP >> DHW_RQ_PIN) & true) {
+                //if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
                 ClearFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F);
             } else {
                 SetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F);
@@ -192,21 +193,24 @@ bool CheckDigitalSensor(SysInfo *p_system, InputFlag digital_sensor, bool show_d
             return (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F));
         }
         case FLAME_F: {  // Flame sensor pin: Active = high, Inactive = low. IT NEEDS EXTERNAL PULL-DOWN RESISTOR !!!
-            if ((FLAME_PINP >> FLAME_PIN) & true) {
-                SetFlag(p_system, INPUT_FLAGS, FLAME_F);
-#if LED_UI_FOR_FLAME
-                SetFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
-#endif /* LED_UI_FOR_FLAME */
-            } else {
-                ClearFlag(p_system, INPUT_FLAGS, FLAME_F);
-#if LED_UI_FOR_FLAME
-                ClearFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
-#endif /* LED_UI_FOR_FLAME */
+            // Flame sensor debouncing
+            if (((GetFlag(p_system, INPUT_FLAGS, FLAME_F)) != ((FLAME_PINP >> FLAME_PIN) & true)) || TimerExists(DEB_FLAME_TIMER_ID)) {
+                if (TimerExists(DEB_FLAME_TIMER_ID)) {
+                    if (TimerFinished(DEB_FLAME_TIMER_ID)) {
+                        if ((GetFlag(p_system, INPUT_FLAGS, FLAME_F)) != ((FLAME_PINP >> FLAME_PIN) & true)) {
+                            ToggleFlag(p_system, INPUT_FLAGS, FLAME_F);
+                        }
+                        DeleteTimer(DEB_FLAME_TIMER_ID);
+                    }
+                } else {
+                    SetTimer(DEB_FLAME_TIMER_ID, DEB_FLAME_TIMER_DURATION, DEB_FLAME_TIMER_MODE);
+                }
             }
-            return ((p_system->input_flags >> FLAME_F) & true);
+            return (GetFlag(p_system, INPUT_FLAGS, FLAME_F));
         }
         case OVERHEAT_F: {  // Overheat thermostat pin: Active = high, Inactive = low. ACTIVE INDICATES OVERTEMPERATURE !!!
             if ((OVERHEAT_PINP >> OVERHEAT_PIN) & true) {
+                //if (GetFlag(p_system, INPUT_FLAGS, OVERHEAT_F)) {
                 ClearFlag(p_system, INPUT_FLAGS, OVERHEAT_F);
             } else {
                 SetFlag(p_system, INPUT_FLAGS, OVERHEAT_F);

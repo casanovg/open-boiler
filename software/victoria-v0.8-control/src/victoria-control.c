@@ -405,7 +405,7 @@ int main(void) {
                             if (TimerFinished(FSM_TIMER_ID)) { /* DLY_IGNITING_5 */
                                 SetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
                                 // Stretch flame detection timeout on each ignition retry
-                                ResetTimerLapse(FSM_TIMER_ID, (DLY_IGNITING_6 * (p_system->ignition_retries + 1)));
+                                ResetTimerLapse(FSM_TIMER_ID, (DLY_IGNITING_6));
                                 p_system->inner_step = IGNITING_6;
                             }
                             break;
@@ -413,54 +413,50 @@ int main(void) {
                         // ...............................................................................
                         // . Step IGNITING_6 : Check flame and hand over control to the requested service .
                         // ...............................................................................
-                        // If the request ceased, close gas and return to "ready" state.
-                        // If there is no flame on time, close gas and go to "error" state.
                         case IGNITING_6: {
-#if FAST_FLAME_DETECTION
-                            // Spark igniter is turned off ass soon as the flame is detected instead
-                            // instead of checking the flame sensor after a delay.
-                            // NOTE: False positives due to sparks could cause ignition retries
+                            // As soon as the flame is detected, the spark igniter is turned off
+                            // and control is handed over to the requested service
                             if (GetFlag(p_system, INPUT_FLAGS, FLAME_F)) {
                                 // Turn spark igniter off
-                                ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
-                            }
-#endif                                                         /* FAST_FLAME_DETECTION */
-                            if (TimerFinished(FSM_TIMER_ID)) { /* DLY_IGNITING_6 */
-                                // Increment ignition retry counter
-                                p_system->ignition_retries++;
-                                // Turn spark igniter off
-                                //ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F); // +++ +++ +++ +++ +++ +++ +++
-                                // If the burner is lit on time
-                                if (GetFlag(p_system, INPUT_FLAGS, FLAME_F)) {
-                                    // Turn spark igniter off
+                                if (GetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F)) {
                                     ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
-                                    // Reset ignition retry counter
-                                    p_system->ignition_retries = 0;
-                                    // Hand over control to the requested service (DHW has higher priority)
-                                    if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
-                                        ResetTimerLapse(HEAT_TIMER_ID, HEAT_TIMER_DURATION);
-                                        ResetTimerLapse(FSM_TIMER_ID, DLY_DHW_ON_DUTY_LOOP);
-                                        p_system->inner_step = DHW_ON_DUTY_1;
-                                        p_system->system_state = DHW_ON_DUTY;
-                                    } else if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F)) {
-                                        ResetTimerLapse(HEAT_TIMER_ID, HEAT_TIMER_DURATION);
-                                        ResetTimerLapse(FSM_TIMER_ID, DLY_CH_ON_DUTY_LOOP);
-                                        p_system->inner_step = CH_ON_DUTY_1;
-                                        p_system->system_state = CH_ON_DUTY;
-                                    } else {
-                                        // Request canceled, turn actuators off and return to "ready" state
-                                        GasOff(p_system);
-                                        ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
-                                        p_system->inner_step = READY_1;
-                                        p_system->system_state = READY;
-                                    }
+                                }
+                                // Reset ignition retry counter
+                                p_system->ignition_retries = 0;
+                                // Hand over control to the requested service (DHW has higher priority)
+                                if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
+                                    ResetTimerLapse(HEAT_TIMER_ID, HEAT_TIMER_DURATION);
+                                    ResetTimerLapse(FSM_TIMER_ID, DLY_DHW_ON_DUTY_LOOP);
+                                    p_system->inner_step = DHW_ON_DUTY_1;
+                                    p_system->system_state = DHW_ON_DUTY;
+                                } else if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F)) {
+                                    ResetTimerLapse(HEAT_TIMER_ID, HEAT_TIMER_DURATION);
+                                    ResetTimerLapse(FSM_TIMER_ID, DLY_CH_ON_DUTY_LOOP);
+                                    p_system->inner_step = CH_ON_DUTY_1;
+                                    p_system->system_state = CH_ON_DUTY;
                                 } else {
-                                    if (p_system->ignition_retries >= MAX_IGNITION_RETRIES) {
+                                    // Request canceled, turn actuators off and return to "ready" state
+                                    GasOff(p_system);
+                                    ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
+                                    p_system->inner_step = READY_1;
+                                    p_system->system_state = READY;
+                                }
+                            } else {
+                                // Timer finished without detecting flame
+                                if (TimerFinished(FSM_TIMER_ID)) {  // DLY_IGNITING_6
+                                    // Increment ignition retry counter
+                                    if (p_system->ignition_retries++ >= MAX_IGNITION_RETRIES - 1) {
+                                        // If the number of ignition retries reached the maximum, close gas and indicate an error
                                         GasOff(p_system);
+                                        // Reset ignition retry counter
                                         p_system->ignition_retries = 0;
                                         p_system->error = ERROR_005;
                                         p_system->system_state = ERROR;
                                     } else {
+                                        // If there are retries to be tried, restart the ignition cycle with the new parameters
+                                        if (GetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F)) {
+                                            ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
+                                        }
                                         ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_4);
                                         p_system->inner_step = IGNITING_4;
                                     }

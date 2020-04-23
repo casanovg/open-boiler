@@ -332,6 +332,7 @@ int main(void) {
                         GasOff(p_system);
                         p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
                         ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
+                        p_system->ignition_retries = 0;
                         p_system->inner_step = READY_1;
                         p_system->system_state = READY;
                         break;  // *** *** *** *** *** *** *** *** *** *** *** *** //

@@ -429,17 +429,19 @@ int main(void) {
                                     ResetTimerLapse(FSM_TIMER_ID, DLY_DHW_ON_DUTY_LOOP);
                                     p_system->inner_step = DHW_ON_DUTY_1;
                                     p_system->system_state = DHW_ON_DUTY;
-                                } else if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F)) {
-                                    ResetTimerLapse(HEAT_TIMER_ID, HEAT_TIMER_DURATION);
-                                    ResetTimerLapse(FSM_TIMER_ID, DLY_CH_ON_DUTY_LOOP);
-                                    p_system->inner_step = CH_ON_DUTY_1;
-                                    p_system->system_state = CH_ON_DUTY;
                                 } else {
-                                    // Request canceled, turn actuators off and return to "ready" state
-                                    GasOff(p_system);
-                                    ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
-                                    p_system->inner_step = READY_1;
-                                    p_system->system_state = READY;
+                                    if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F)) {
+                                        ResetTimerLapse(HEAT_TIMER_ID, HEAT_TIMER_DURATION);
+                                        ResetTimerLapse(FSM_TIMER_ID, DLY_CH_ON_DUTY_LOOP);
+                                        p_system->inner_step = CH_ON_DUTY_1;
+                                        p_system->system_state = CH_ON_DUTY;
+                                    } else {
+                                        // Request canceled, turn actuators off and return to "ready" state
+                                        GasOff(p_system);
+                                        ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
+                                        p_system->inner_step = READY_1;
+                                        p_system->system_state = READY;
+                                    }
                                 }
                             } else {
                                 // Timer finished without detecting flame

@@ -142,6 +142,10 @@ void Dashboard(SysInfo *p_system, bool force_refresh) {
         SerialTxStr(str_header_01);
         SerialTxStr(str_header_02);
 
+        SerialTxChr(SPACE);                                 // Space (_) // ZUMUMBA !!!
+        SerialTxNum(p_system->ignition_retries, DIGITS_2);  // ZUMUMBA !!!
+        SerialTxChr(SPACE);                                 // Space (_)// ZUMUMBA !!!
+
         // Mode display
         switch (p_system->system_state) {
             case OFF: {

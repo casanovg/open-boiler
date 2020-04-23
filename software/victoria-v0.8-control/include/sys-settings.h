@@ -17,7 +17,7 @@
 // This software
 #define FW_NAME "OPEN-BOILER"
 #define FW_VERSION "v0.8"
-#define FW_ALIAS "\"Easter Quarantine\"       "
+#define FW_ALIAS "\"Easter Quarantine\"      "
 
 // System defines
 
@@ -65,7 +65,7 @@
 #define PUMP_TIMER_MODE RUN_ONCE_AND_HOLD  // Water pump timer mode
 
 #define DEB_FLAME_TIMER_ID 4                    // Flame detector debounce timer id
-#define DEB_FLAME_TIMER_DURATION 1000           // Flame detector debounce timer time-lapse
+#define DEB_FLAME_TIMER_DURATION 500            // Flame detector debounce timer time-lapse
 #define DEB_FLAME_TIMER_MODE RUN_ONCE_AND_HOLD  // Flame detector debounce timer mode
 
 #define DEB_CH_SWITCH_TIMER_ID 5                    // Central heating thermostat switch debounce timer id
@@ -86,7 +86,7 @@
 #define DLY_IGNITING_3 250   // Igniting_3: Time before opening the security valve after the fan is running
 #define DLY_IGNITING_4 125   // Igniting_4: Time before opening the valve 1 (or 2) after opening the security valve
 #define DLY_IGNITING_5 25    // Igniting_5: Time before turning the spark igniter on while the valve 1 (or 2) is open
-#define DLY_IGNITING_6 (DEB_FLAME_TIMER_DURATION + 2000)  // Igniting_6: Waiting time for flame lit with gas open and spark igniter on before retrying
+#define DLY_IGNITING_6 (DEB_FLAME_TIMER_DURATION + 2500)  // Igniting_6: Waiting time for flame lit with gas open and spark igniter on before retrying
 #define DLY_DHW_ON_DUTY_LOOP 3000  // DHW_on_Duty: Dashboard refreshing time when looping through DHW on-duty mode
 #define DLY_CH_ON_DUTY_LOOP 3000   // CH_on_Duty: Dashboard refreshing time when looping through CH on-duty mode
 

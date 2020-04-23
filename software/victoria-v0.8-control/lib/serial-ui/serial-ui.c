@@ -142,7 +142,8 @@ void Dashboard(SysInfo *p_system, bool force_refresh) {
         SerialTxStr(str_header_01);
         SerialTxStr(str_header_02);
 
-        SerialTxNum(p_system->ignition_retries, DIGITS_2);  // Displays ignition retries
+        SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
 
         // Mode display
         switch (p_system->system_state) {
@@ -198,20 +199,17 @@ void Dashboard(SysInfo *p_system, bool force_refresh) {
 
         // Input flags
         SerialTxStr(str_iflags);
-        SerialTxNum(p_system->input_flags, DIGITS_3);
+        SerialTxNum(p_system->input_flags, DIGITS_2);
 
         SerialTxChr(SPACE);  // Space (_)
         SerialTxChr(SPACE);  // Space (_)
 
         // DHW temperature
         SerialTxStr(str_lit_13);
-        //SerialTxNum(p_system->dhw_temperature, DIGITS_5);
-        //SerialTxChr(SPACE);  // Space (_)
-        //SerialTxNum(GetNtcTemperature(p_system->dhw_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_3);
         SerialTxNum(GetNtcTemperature(p_system->dhw_temperature, TO_CELSIUS, DT_CELSIUS), TEMP_NN);
         SerialTxChr(V_LINE);
         SerialTxNum(GetNtcTemperature(p_system->dhw_temperature, TO_CELSIUS, DT_CELSIUS), TEMP_DD);
-        SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(126);  // Space (_)
         SerialTxChr(67);
 
         SerialTxChr(SPACE);  // Space (_)
@@ -219,16 +217,13 @@ void Dashboard(SysInfo *p_system, bool force_refresh) {
 
         // CH temperature
         SerialTxStr(str_lit_14);
-        SerialTxNum(p_system->ch_temperature, DIGITS_5);
-        SerialTxChr(SPACE);  // Space (_)
-        //SerialTxNum(GetNtcTemperature(p_system->ch_temperature, TO_CELSIUS, DT_CELSIUS), DIGITS_3);
         SerialTxNum(GetNtcTemperature(p_system->ch_temperature, TO_CELSIUS, DT_CELSIUS), TEMP_NN);
         SerialTxChr(V_LINE);
         SerialTxNum(GetNtcTemperature(p_system->ch_temperature, TO_CELSIUS, DT_CELSIUS), TEMP_DD);
-        SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(126);  // Space (_)
         SerialTxChr(67);
-
         SerialTxChr(SPACE);  // Space (_)
+        SerialTxNum(p_system->ch_temperature, DIGITS_4);
         SerialTxChr(SPACE);  // Space (_)
 
         // Overheat
@@ -243,9 +238,6 @@ void Dashboard(SysInfo *p_system, bool force_refresh) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(SPACE);   // Space (_)
-        SerialTxChr(SPACE);   // Space (_)
-        SerialTxChr(SPACE);   // Space (_)
         SerialTxChr(SPACE);   // Space (_)
         SerialTxChr(V_LINE);  // Horizontal separator (|)
 
@@ -373,8 +365,10 @@ void Dashboard(SysInfo *p_system, bool force_refresh) {
         SerialTxChr(SPACE);   // Space (_)
 
         SerialTxStr(str_oflags);
-        SerialTxNum(p_system->output_flags, DIGITS_3);
+        SerialTxNum(p_system->output_flags, DIGITS_2);
 
+        SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
         SerialTxChr(SPACE);  // Space (_)
         SerialTxChr(SPACE);  // Space (_)
 
@@ -388,6 +382,7 @@ void Dashboard(SysInfo *p_system, bool force_refresh) {
 
         SerialTxChr(SPACE);  // Space (_)
         SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
 
         // Water pump
         SerialTxStr(str_lit_06);
@@ -399,13 +394,21 @@ void Dashboard(SysInfo *p_system, bool force_refresh) {
 
         SerialTxChr(SPACE);  // Space (_)
         SerialTxChr(SPACE);  // Space (_)
+        SerialTxChr(SPACE);  // Space (_)
 
         // Spark igniter
         SerialTxStr(str_lit_07);
         if (GetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F)) {
             SerialTxStr(str_true);
+            SerialTxChr(SPACE);                                 // Space (_)
+            SerialTxChr(82);                                    // Displays ignition retries
+            SerialTxNum(p_system->ignition_retries, DIGITS_1);  // Displays ignition retries
+            SerialTxChr(SPACE);                                 // Space (_)
         } else {
             SerialTxStr(str_false);
+            SerialTxChr(SPACE);  // Space (_)
+            SerialTxChr(SPACE);  // Space (_)
+
         }
 
         SerialTxChr(SPACE);  // Space (_)

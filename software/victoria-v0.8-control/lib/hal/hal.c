@@ -540,8 +540,8 @@ void OpenHeatValve(SysInfo *p_system, HeatValve valve_to_open) {
     }
 }
 
-// Function ModulateHeat: Modulates heat by toggling system valves according to a potentiometer ADC value
-void ModulateHeat(SysInfo *p_system, uint16_t potentiometer_readout, uint8_t potentiometer_steps, uint32_t heat_cycle_time) {
+// Function Modulate Heat: Modulates heat by toggling system valves according to the selected heat level
+void ModulateHeat(SysInfo *p_system, uint8_t new_heat_level, uint32_t heat_cycle_time) {
     //
     // [ # # # ] Heat modulation code  [ # # # ]
     //
@@ -589,7 +589,7 @@ void ModulateHeat(SysInfo *p_system, uint16_t potentiometer_readout, uint8_t pot
                 }
 #else
                 // Read the DHW potentiometer to determine current heat level
-                p_system->current_heat_level = GetKnobPosition(potentiometer_readout, potentiometer_steps);
+                p_system->current_heat_level = new_heat_level;
 #endif
             }
         } else {

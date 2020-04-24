@@ -526,11 +526,12 @@ int main(void) {
                             p_system->system_state = READY;
                         }
                     } else {
-                        // *************************************************************************************
-                        //																                         *
-                        ModulateHeat(p_system, p_system->dhw_setting, DHW_SETTING_STEPS, DHW_HEAT_CYCLE_TIME);  // *
-                        //																                         *
-                        // *************************************************************************************
+                        // ***************************************************************************************
+                        //                                                                                         *
+                        p_system->current_heat_level = GetKnobPosition(p_system->dhw_setting, DHW_SETTING_STEPS);  //*
+                        ModulateHeat(p_system, p_system->current_heat_level, DHW_HEAT_CYCLE_TIME);                 //*
+                        //																                          *
+                        // ***************************************************************************************
                     }
 #if AUTO_DHW_DSP_REFRESH
                     if (TimerFinished(FSM_TIMER_ID)) {  // DLY_DHW_ON_DUTY_1
@@ -597,11 +598,13 @@ int main(void) {
                             // Otherwise, close gas and move on to CH_ON_DUTY_2 step
                             // NOTE: The temperature reading last bit is masked out to avoid oscillations
                             if ((p_system->ch_temperature & CH_TEMP_MASK) >= CH_SETPOINT_HIGH) {
-                                // **********************************************************************************
-                                //																                      *
-                                ModulateHeat(p_system, p_system->ch_setting, CH_SETTING_STEPS, CH_HEAT_CYCLE_TIME);  // *
-                                //																                      *
-                                // **********************************************************************************
+                                // *************************************************************************************
+                                //                                                                                       *
+                                p_system->current_heat_level = GetKnobPosition(p_system->ch_setting, CH_SETTING_STEPS);  //*
+                                ModulateHeat(p_system, p_system->current_heat_level, DHW_HEAT_CYCLE_TIME);               //*
+                                //                                                                                       *
+                                // *************************************************************************************
+
                             } else {
                                 //Close gas
                                 GasOff(p_system);

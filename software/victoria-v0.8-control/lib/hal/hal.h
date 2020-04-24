@@ -68,7 +68,8 @@ void InitAdcBuffers(AdcBuffers *p_buffer_pack, uint8_t buffer_length);
 uint16_t AverageAdc(uint16_t adc_buffer[], uint8_t buffer_len, uint8_t start, AverageType average_type);
 uint8_t GetKnobPosition(int16_t pot_adc_value, uint8_t knob_steps);
 void OpenHeatValve(SysInfo *p_system, HeatValve valve_to_open);
-void ModulateHeat(SysInfo *p_system, uint16_t potentiometer_readout, uint8_t potentiometer_steps, uint32_t heat_cycle_time);
+//void ModulateHeat(SysInfo *p_system, uint16_t potentiometer_readout, uint8_t potentiometer_steps, uint32_t heat_cycle_time);
+void ModulateHeat(SysInfo *p_system, uint8_t new_heat_level, uint32_t heat_cycle_time);
 void GasOff(SysInfo *p_system);
 
 // Globals

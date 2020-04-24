@@ -2,7 +2,6 @@
 #define _TST_01_H
 
 int input_values[] = {7000, 14000, 20000};
-
 int target_values[] = {
     7000, 7500, 8000,
     8500, 9000, 9500,

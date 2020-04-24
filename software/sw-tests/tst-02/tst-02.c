@@ -1,63 +1,76 @@
 // ---------------------------------------------
-// Test 02 - 2019-10-15 - Gustavo Casanova
+// Test 02 - 2019-10-03 - Gustavo Casanova
 // .............................................
-// NTC resistance to ADC values to °C Temp
+// Heat modulation algorithm
 // ---------------------------------------------
 
-#include "tst-02.h"
+#include "tst-01.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <time.h>
 
-// ADC value range
-#define ADC_MAX 1023
-#define ADC_MIN 0
+// Typedefs
+typedef struct heat_level {
+    uint8_t valve_open_time[3];
+    uint16_t kcal_h;
+    float gas_usage;
+} HeatLevel;
 
-// ADC Buffer lenght
-#define BUFF_LEN 34
+typedef struct gas_valve {
+    uint8_t valve_number;
+    uint16_t kcal_h;
+    float gas_usage;
+    bool status;
+} GasValve;
 
-// DHW setting steps
-#define DHW_SETTING_STEPS 12
+// Globals
+HeatLevel heat_level[] = {
+    /* { { %valve-1, %valve-3, %valve-3 }, Kcal/h, G20_m3 } */
+    {{100, 0, 0}, 7000, 0.870},   /* Heat level 0 = 7000 Kcal/h */
+    {{83, 17, 0}, 7833, 0.968},   /* Heat level 1 = 7833 Kcal/h */
+    {{67, 33, 0}, 8667, 1.067},   /* Heat level 2 = 8667 Kcal/h */
+    {{83, 0, 17}, 9167, 1.123},   /* Heat level 3 = 9167 Kcal/h */
+    {{50, 50, 0}, 9500, 1.165},   /* Heat level 4 = 9500 Kcal/h */
+    {{67, 17, 16}, 10000, 1.222}, /* Heat level 5 = 10000 Kcal/h */
+    {{33, 67, 0}, 10333, 1.263},  /* Heat level 6 = 10333 Kcal/h */
+    {{50, 33, 17}, 10833, 1.320}, /* Heat level 7 = 10833 Kcal/h */
+    {{17, 83, 0}, 11167, 1.362},  /* Heat level 8 = 11167 Kcal/h */
+    {{67, 0, 33}, 11333, 1.377},  /* Heat level 9 = 11333 Kcal/h */
+    {{33, 50, 17}, 11667, 1.418}, /* Heat level 10 = 11667 Kcal/h */
+    {{0, 100, 0}, 12000, 1.460},  /* Heat level 11 = 12000 Kcal/h */
+    {{50, 17, 33}, 12167, 1.475}, /* Heat level 12 = 12167 Kcal/h */
+    {{17, 67, 16}, 12500, 1.517}, /* Heat level 13 = 12500 Kcal/h */
+    {{34, 33, 33}, 13000, 1.573}, /* Heat level 14 = 13000 Kcal/h */
+    {{0, 83, 17}, 13333, 1.615},  /* Heat level 15 = 13333 Kcal/h */
+    {{50, 0, 50}, 13500, 1.630},  /* Heat level 16 = 13500 Kcal/h */
+    {{17, 50, 33}, 13833, 1.672}, /* Heat level 17 = 13833 Kcal/h */
+    {{33, 17, 50}, 14333, 1.728}, /* Heat level 18 = 14333 Kcal/h */
+    {{0, 67, 33}, 14667, 1.770},  /* Heat level 19 = 14667 Kcal/h */
+    {{17, 33, 50}, 15167, 1.827}, /* Heat level 20 = 15167 Kcal/h */
+    {{33, 0, 67}, 15667, 1.883},  /* Heat level 21 = 15667 Kcal/h */
+    {{0, 50, 50}, 16000, 1.925},  /* Heat level 22 = 16000 Kcal/h */
+    {{17, 17, 66}, 16500, 1.982}, /* Heat level 23 = 16500 Kcal/h */
+    {{0, 33, 67}, 17333, 2.080},  /* Heat level 24 = 17333 Kcal/h */
+    {{17, 0, 83}, 17833, 2.137},  /* Heat level 25 = 17833 Kcal/h */
+    {{0, 17, 83}, 18667, 2.235},  /* Heat level 26 = 18667 Kcal/h */
+    {{0, 0, 100}, 20000, 2.390}   /* Heat level 27 = 20000 Kcal/h */
+};
 
-// Number of NTC ADC values used for calculating temperature
-#define NTC_VALUES 12
-#define PuntosTabla (12)
+GasValve gas_valve[] = {
+    {1, 7000, 0.87, 0},
+    {2, 12000, 1.46, 0},
+    {3, 20000, 2.39, 0}
+};
 
-// NTC ADC temperature values
-const uint16_t ntc_adc_table[NTC_VALUES] = {
-    929, 869, 787, 685, 573, 461, 359, 274, 206, 154, 116, 87};
-
-const unsigned int TablaADC[PuntosTabla] = {
-    939, 892, 828, 749, 657, 560, 464, 377, 300, 237, 186, 55};
-//-30,-20, -10,  0,   10,  20,  30,  40,  50,  60,  70 ºC
-//  0   1    2   3     4    5    6    7    8    9   10  i
-
-// Temperature calculation settings
-#define TO_CELSIUS (-200)    /* Celsius offset value */
-#define DT_CELSIUS (100)     /* Celsius delta T (difference between two consecutive table entries) */
-#define TO_KELVIN (2430)     /* Kelvin offset value */
-#define DT_KELVIN (100)      /* Kelvin delta T (difference between two consecutive table entries) */
-#define TO_FAHRENHEIT (-220) /* Fahrenheit offset value */
-#define DT_FAHRENHEIT (180)  /* Fahrenheit delta T (difference between two consecutive table entries) */
-
-//Parámetros para conversión en ºCelsius
-#define ToCels (-300)
-#define dTCels (100)
-//Parámetros para conversión en Kelvins
-#define ToKelv (2430)
-#define dTKelv (100)
-//Parámetros para conversión en ºFahrenheit
-#define ToFahr (-220)
-#define dTFahr (180)
+uint16_t cycle_time = 10000;
+uint8_t cycle_slots = 6;
+bool cycle_in_progress = 0;
+uint8_t system_valves = (sizeof(gas_valve) / sizeof(gas_valve[0]));
 
 // Prototypes
 int main(void);
 void Delay(unsigned int milli_seconds);
-int GetNtcTempTenths(uint16_t, int, int);
-float GetNtcTempDegrees(uint16_t, int, int);
-int TempNTC(unsigned int, int, int);
-uint8_t GetHeatLevel(int16_t, uint8_t);
 
 // Main function
 int main(void) {
@@ -66,6 +79,8 @@ int main(void) {
     uint8_t current_valve = 0;
     unsigned long valve_open_timer = 0;
 
+    #define BUFF_LEN 34
+
     uint16_t shake[BUFF_LEN];
     uint8_t length = BUFF_LEN;
 
@@ -73,34 +88,112 @@ int main(void) {
         shake[i] = i + 101;
     }
 
-    printf("\r\nGC temperature calculation\n\r");
-    printf("==========================\n\n\r");
+    printf("\r\nGC gas valve mixer\n\r");
+    printf("==================\n\n\r");
 
-    const uint16_t dhw_pot = 241;
-
-    //const uint16_t adc_temp = 347;
-
-    //printf("\n\rADC B: %d, Temperature calculation = %d\n\n\r", adc_temp, TempNTC(adc_temp, TO_CELSIUS, DT_CELSIUS));
-    for (uint16_t adc_temp = 1023; adc_temp > 0; adc_temp--) {
-        int celsius_tenths = GetNtcTempTenths(adc_temp, TO_CELSIUS, DT_CELSIUS);
-        float celsius_degrees = GetNtcTempDegrees(adc_temp, TO_CELSIUS, DT_CELSIUS);
-        if (celsius_degrees != -32767) {
-            // int celsius_grades = celsius_centigrades / 10;
-            // //int celsius_decimals = celsius_centigrades - (celsius_grades * 10);
-            // int celsius_decimals = celsius_centigrades % 10;
-            // if (celsius_decimals < 0) {
-            //     celsius_decimals *= -1;
-            // }
-            // printf("ADC B: %d, Temp Value = %d, Celsius calculation = %2d.%1d\n\r",
-            //        adc_temp, celsius_centigrades, celsius_grades, celsius_decimals);
-            printf("ADC output: %d, Temp value = %d, Celsius calculation = %.1f \370C\n\r",
-                   adc_temp, celsius_tenths, celsius_degrees);
+    printf("Available heat levels:\n\r");
+    printf("----------------------\n\r");
+    for (int gas_level = 0; gas_level < sizeof(heat_level) / sizeof(heat_level[0]); gas_level++) {
+        printf("Heat level %d: Kcal/h=%d G20-m3/h=%01.3f ", gas_level + 1, heat_level[gas_level].kcal_h, heat_level[gas_level].gas_usage);
+        for (uint8_t v = system_valves; v > 0; v--) {
+            printf("Valve-%d=%d ", v, heat_level[gas_level].valve_open_time[v - 1]);
         }
+        printf("\n\r");
+    }
+    printf("\n\r");
+
+    // Closing all valves
+    for (uint8_t i = 0; i < system_valves; i++) {
+        printf(" (X) Closing valve %d ...\n\r", i + 1);
+        gas_valve[i].status = 0;
     }
 
-    printf("\n\n\rDHW pot adc = %d, DHW heat level setting = %d\n\r", dhw_pot, GetHeatLevel(dhw_pot, DHW_SETTING_STEPS));
+    /*************
+     * Main loop *
+     *************
+     */
+    for (;;) {
 
-    printf("\n\n\r");
+        // if (length--) {
+        //     // printf("\n\n\rSHAKE PRONTO SHAKE %d: %d\n\n\r", length, shake[length]);
+        // } else {
+        //     length = BUFF_LEN;
+        //     printf("\n\n\r%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\r");
+        //     printf("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\r");
+        //     printf("%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%\n\n\r");
+        // }
+
+        // ******************************************************************************************
+        // Read the current heat level setup to determine what valves should be opened and for how long
+        if (current_valve < system_valves) {
+            //Valve-toggling cycle start
+            if (cycle_in_progress == 0) {
+                printf("\n\r============== >>> Cycle start: Heat level %d = %d Kcal/h... <<< ==============\n\r", current_heat_level + 1, heat_level[current_heat_level].kcal_h);
+                uint8_t heat_level_time_usage = 0;
+                int16_t cycle_slot_duration = cycle_time / cycle_slots;
+                for (uint8_t vt_check = 0; vt_check < system_valves; vt_check++) {
+                    heat_level_time_usage += heat_level[current_heat_level].valve_open_time[vt_check];
+                }
+                printf("\n\rCycle slot minimal duration: %d\n\r", cycle_slot_duration);
+                printf("Heat level time usage: %d\n\n\r", heat_level_time_usage);
+                if (heat_level_time_usage != 100) {
+                    printf("<<< Heat level %d setting error, the sum of the opening time of all valves must be 100! >>>\n\r", current_heat_level + 1, heat_level_time_usage);
+                    break;
+                }
+                cycle_in_progress = 1;
+            }
+            // If a heat-level cycle's current valve has an activation time setting other than zero ...
+            if (heat_level[current_heat_level].valve_open_time[current_valve] > 0) {
+                // If there are no valves open using a heat-level cycle time interval ...
+                if (valve_open_timer == 0) {
+                    // Set the valve opening time (delay) and open it ...
+                    valve_open_timer = (heat_level[current_heat_level].valve_open_time[current_valve] * cycle_time / 100);
+                    if (gas_valve[current_valve].status == 0) {
+                        printf(" (O) Opening valve %d for %d ms!\n\r", current_valve + 1, valve_open_timer);
+                        gas_valve[current_valve].status = 1; /* [ ] OPEN VALVE [ ] */
+                    } else {
+                        printf(" (=) Valve %d already open, keeping it as is for %d ms!\n\r", current_valve + 1, valve_open_timer);
+                    }
+                    // Close all other valves
+                    for (uint8_t valve_to_close = 0; valve_to_close < system_valves; valve_to_close++) {
+                        if (valve_to_close != current_valve) {
+                            if (gas_valve[valve_to_close].status != 0) {
+                                printf(" (X) Closing valve %d ...\n\r", valve_to_close + 1);
+                                gas_valve[valve_to_close].status = 0; /* [x] CLOSE VALVE [x] */
+                            }
+                        }
+                    }
+                }
+                
+            } else {
+                printf(" ||| Valve %d not set to be open in heat level %d (%d Kcal/h) ...\n\r", current_valve + 1, current_heat_level + 1, heat_level[current_heat_level].kcal_h);
+                valve_open_timer++; /* This is necessary to move to the next valve */
+            }
+            // Open-valve delay
+            if (!(--valve_open_timer)) {
+                printf("\n\r");
+                valve_open_timer = 0;
+                current_valve++;
+                // Valve-toggling cycle end
+                if (current_valve >= system_valves) {
+                    printf("============== >>> Cycle end: Heat level %d = %d Kcal/h... <<< ==============\n\n\r", current_heat_level + 1, heat_level[current_heat_level].kcal_h);
+                    printf(" .......\n\r .......\n\r .......\n\r .......\n\r .......\n\r");
+                    current_valve = 0;
+                    cycle_in_progress = 0;
+                    // Move to the next heat level
+                    if (current_heat_level++ >= (sizeof(heat_level) / sizeof(heat_level[0])) - 1) {
+                        current_heat_level = 0;
+                        //break;
+                    }
+                }
+            } else {
+                Delay(1);
+            }
+        }
+        // End of valves' toggling cycle
+        // ******************************************************************************************
+    }
+    printf("\n\rLoop ended!\n\n\r");
 }
 
 // Function Delay
@@ -108,70 +201,4 @@ void Delay(unsigned int milli_seconds) {
     clock_t goal = milli_seconds + clock();
     while (goal > clock())
         ;
-}
-
-// Function GetNtcTempTenths
-int GetNtcTempTenths(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
-    int aux;
-    uint16_t min, max;
-    uint8_t i;
-    // Search the table interval where the ADC value is located
-    for (i = 0; (i < NTC_VALUES) && (ntc_adc_value < (ntc_adc_table[i])); i++);
-    if ((i == 0) || (i == NTC_VALUES)) {  // If there is not located, return an error
-        return -32767;
-    }
-    //printf("ADC table entry (%d) = %d\n\r", i, ntc_adc_table[i]);
-    max = ntc_adc_table[i - 1];                 //Buscamos el valor más alto del intervalo
-    min = ntc_adc_table[i];                     //y el más bajoa
-    aux = (max - ntc_adc_value) * temp_delta;   //hacemos el primer paso de la interpolación
-    aux = aux / (max - min);                    //y el segundo paso
-    aux += (i - 1) * temp_delta + temp_offset;  //y añadimos el offset del resultado
-    return aux;
-}
-
-// Function GetNtctempDegrees
-float GetNtcTempDegrees(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
-    int aux;
-    uint16_t min, max;
-    uint8_t i;
-    // Search the table interval where the ADC value is located
-    for (i = 0; (i < NTC_VALUES) && (ntc_adc_value < (ntc_adc_table[i])); i++);
-    if ((i == 0) || (i == NTC_VALUES)) {  // If there is not located, return an error
-        return -32767.0;
-    }
-    max = ntc_adc_table[i - 1];                 //Buscamos el valor más alto del intervalo
-    min = ntc_adc_table[i];                     //y el más bajoa
-    aux = (max - ntc_adc_value) * temp_delta;   //hacemos el primer paso de la interpolación
-    aux = aux / (max - min);                    //y el segundo paso
-    aux += (i - 1) * temp_delta + temp_offset;  //y añadimos el offset del resultado
-    return ((float)aux / 10);
-}
-
-// Function TempNTC
-int TempNTC(unsigned int adc, int To, int dT) {
-    int aux_;
-    unsigned int min_, max_;
-    unsigned char i_;
-
-    //Buscamos el intervalo de la tabla en que se encuentra el valor de ADC
-    for (i_ = 0; (i_ < PuntosTabla) && (adc < (TablaADC[i_])); i_++)
-        ;
-    if ((i_ == 0) || (i_ == PuntosTabla))  //Si no está, devolvemos un error
-        return -32767;
-    max_ = TablaADC[i_ - 1];      //Buscamos el valor más alto del intervalo
-    min_ = TablaADC[i_];          //y el más bajoa
-    aux_ = (max_ - adc) * dT;     //hacemos el primer paso de la interpolación
-    aux_ = aux_ / (max_ - min_);  //y el segundo paso
-    aux_ += (i_ - 1) * dT + To;   //y añadimos el offset del resultado
-    return aux_;
-}
-
-// Function GetHeatLevel
-uint8_t GetHeatLevel(int16_t pot_adc_value, uint8_t knob_steps) {
-    uint8_t heat_level = 0;
-    for (heat_level = 0; (pot_adc_value < (ADC_MAX - ((ADC_MAX / knob_steps) * (heat_level + 1)))); heat_level++);
-    if (heat_level >= knob_steps) {
-        heat_level = --knob_steps;
-    }
-    return heat_level;
 }

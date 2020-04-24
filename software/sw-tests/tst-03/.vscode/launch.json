@@ -1,32 +1,28 @@
-// AUTOMATICALLY GENERATED FILE. PLEASE DO NOT MODIFY IT MANUALLY
-
-// PIO Unified Debugger
-//
-// Documentation: https://docs.platformio.org/page/plus/debugging.html
-// Configuration: https://docs.platformio.org/page/projectconf/section_env_debug.html
-
 {
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "platformio-debug",
+            "name": "(gdb) Launch",
+            "type": "cppdbg",
             "request": "launch",
-            "name": "PIO Debug",
-            "executable": "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/sw-tests/tst-03/.pio/build/pro16MHzatmega328/firmware.elf",
-            "toolchainBinDir": "C:/Users/casanovg/.platformio/packages/toolchain-atmelavr/bin",
-            "preLaunchTask": {
-                "type": "PlatformIO",
-                "task": "Pre-Debug"
-            },
-            "internalConsoleOptions": "openOnSessionStart"
-        },
-        {
-            "type": "platformio-debug",
-            "request": "launch",
-            "name": "PIO Debug (skip Pre-Debug)",
-            "executable": "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/sw-tests/tst-03/.pio/build/pro16MHzatmega328/firmware.elf",
-            "toolchainBinDir": "C:/Users/casanovg/.platformio/packages/toolchain-atmelavr/bin",
-            "internalConsoleOptions": "openOnSessionStart"
+            "program": "${workspaceFolder}/tst-02.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/mingw-w64/mingw64/bin/gdb.exe",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
         }
     ]
 }

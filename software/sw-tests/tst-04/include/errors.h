@@ -9,8 +9,8 @@
  *  ........................................................
  */
 
-#ifndef ERRORS_H_
-#define ERRORS_H_
+#ifndef _ERRORS_H_
+#define _ERRORS_H_
 
 // E000: No error
 #define ERROR_000 0
@@ -37,4 +37,4 @@
 // E011: Heat level inconsistency detected
 #define ERROR_011 11
 
-#endif /* ERRORS_H_ */
+#endif /* _ERRORS_H_ */

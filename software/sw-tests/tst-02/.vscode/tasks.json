@@ -2,14 +2,14 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build tst-02",
+            "label": "build tst-01",
             "type": "shell",
             "command": "g++",
             "args": [
                 "-g",
                 "-o",
-                "tst-02",
-                "tst-02.c"
+                "tst-01",
+                "tst-01.c"
             ],
             "group": {
                 "kind": "build",
@@ -28,6 +28,20 @@
             ],
             "options": {
                 "cwd": "C:/mingw-w64/mingw64/bin"
+            }
+        },
+        {
+            "type": "shell",
+            "label": "gcc.exe build active file",
+            "command": "C:\\MinGW\\bin\\gcc.exe",
+            "args": [
+                "-g",
+                "${file}",
+                "-o",
+                "${fileDirname}\\${fileBasenameNoExtension}.exe"
+            ],
+            "options": {
+                "cwd": "C:\\MinGW\\bin"
             }
         }
     ]

@@ -24,10 +24,10 @@
 #define CH_SETPOINT_HIGH 241  // ADC-NTC CH temperature ~ 55°C
 #define CH_SETPOINT_LOW 379   // ADC-NTC CH temperature ~ 38°C
 
-#define DHW_HEAT_CYCLE_TIME 3000  // DHW heat modulator cycle time (milliseconds)
+#define DHW_HEAT_CYCLE_TIME 15000  // DHW heat modulator cycle time (milliseconds)
 #define CH_HEAT_CYCLE_TIME 20000   // CH heat modulator cycle time (milliseconds)
 
-#define MAX_IGNITION_RETRIES 3  // Number of ignition retries when no flame is detected
+#define MAX_IGNITION_TRIES 3  // Number of ignition retries when no flame is detected
 
 #define DHW_SETTING_STEPS 12  // DHW setting potentiometer steps
 #define CH_SETTING_STEPS 12   // CH setting potentiometer steps
@@ -40,9 +40,10 @@
 #define AIRFLOW_OVERRIDE true      // True: Flue airflow sensor override
 #define FAN_TEST_OVERRIDE true     // True: Flue airflow sensor override
 #define LED_UI_FOR_FLAME true      // True: Activates onboard LED when the flame detector is on
-#define HEAT_MODULATOR_DEMO false  // True: ONLY FOR DEBUG!!! loops through all heat levels, from lower to higher. False: NORMAL OPERATION -> Heat modulator code reads DHW potentiometer to determine current heat level
+#define SHOW_DASHBOARD true        // True: Displays the system dashboard on a serial terminal
 #define SERIAL_DEBUG false         // True: Shows current heat level and valve timing instead of the dashboard
 #define LED_DEBUG false            // True: ONLY FOR DEBUG!!! Toggles SPARK_IGNITER_F on each heat-cycle start and keeps it on to show cycle's valve-time errors
+#define HEAT_MODULATOR_DEMO false  // True: ONLY FOR DEBUG!!! loops through all heat levels, from lower to higher. False: NORMAL OPERATION -> Heat modulator code reads DHW potentiometer to determine current heat level
 #define TIMER_INDEX_OVF_STOP true  // True: halt system if the system doesn't have enough timer slots (index overflow)!
 #define AUTO_DHW_DSP_REFRESH true  // True: Force a dashboard refresh when in a DHW_ON_DUTY loop every DLY_DHW_ON_DUTY_LOOP ms
 #define AUTO_CH_DSP_REFRESH true   // True: Force a dashboard refresh when in a CH_ON_DUTY loop every DLY_CH_ON_DUTY_LOOP ms
@@ -87,8 +88,11 @@
 #define DLY_IGNITING_4 125                                // Igniting_4: Time before opening the valve 1 (or 2) after opening the security valve
 #define DLY_IGNITING_5 25                                 // Igniting_5: Time before turning the spark igniter on while the valve 1 (or 2) is open
 #define DLY_IGNITING_6 (DEB_FLAME_TIMER_DURATION + 2500)  // Igniting_6: Waiting time for flame lit with gas open and spark igniter on before retrying
-#define DLY_DHW_ON_DUTY_LOOP 3000                         // DHW_on_Duty: Dashboard refreshing time when looping through DHW on-duty mode
-#define DLY_CH_ON_DUTY_LOOP 3000                          // CH_on_Duty: Dashboard refreshing time when looping through CH on-duty mode
+
+#if SHOW_DASHBOARD
+#define DLY_DHW_ON_DUTY_LOOP 3000  // DHW_on_Duty: Dashboard refreshing time when looping through DHW on-duty mode
+#define DLY_CH_ON_DUTY_LOOP 3000   // CH_on_Duty: Dashboard refreshing time when looping through CH on-duty mode
+#endif
 
 // System types
 
@@ -191,9 +195,10 @@ typedef struct sys_info {
     uint16_t system_mode;                                 // System mode potentiometer ADC readout
     uint8_t last_displayed_iflags;                        // Input sensor flags last shown status
     uint8_t last_displayed_oflags;                        // Hardware activation flags last shown status
-    uint8_t ignition_retries;                             // Burner ignition retry counter
+    uint8_t ignition_tries;                               // Burner ignition attempts counter
     uint8_t error;                                        // System error code
     uint32_t pump_timer_memory;                           // CH water pump auto-shutdown timer memory
+    bool ch_water_overheat;                               // Unexpected central heating water overtemperature flag
     InnerStep ch_on_duty_step;                            // CH inner step before handing over control to DHW
     uint8_t current_heat_level;                           // Current gas modulator heat level, set by the DHW or CH temperature potentiometers
     HeatValve current_valve;                              // Heat modulator current valve

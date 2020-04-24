@@ -34,9 +34,7 @@
 #define V_LINE 46
 #define SPACE 32
 
-#ifndef SHOW_PUMP_TIMER
 #define SHOW_PUMP_TIMER true  // True: Shows the CH water pump auto-shutdown timer
-#endif                        // SHOW_PUMP_TIMER
 
 // Types
 
@@ -66,27 +64,18 @@ void SerialTxStr(const __flash char *ptr_string);
 void DrawLine(uint8_t length, char line_char);
 int DivRound(const int numerator, const int denominator);
 void ClrScr(void);
+#if SHOW_DASHBOARD
 void Dashboard(SysInfo *p_system, bool force_refresh);
+#endif  // SHOW_DASHBOARD
 
 // Global console UI literals
 
-static const char __flash str_preboot_01[] = {" > Initializing ADC buffers ..."};
-static const char __flash str_preboot_02[] = {" > Initializing actuator controls ..."};
-static const char __flash str_preboot_03[] = {" > Turning all actuators off ..."};
-static const char __flash str_preboot_04[] = {" > Initializing digital sensor flags ..."};
-static const char __flash str_preboot_05[] = {" > Initializing analog sensor inputs ..."};
-static const char __flash str_preboot_06[] = {" > Pre-loading analog sensor values ..."};
-static const char __flash str_preboot_07[] = {" Starting normal FSM cycle ..."};
 static const char __flash str_header_01[] = {" " FW_NAME " " FW_VERSION " "};
+static const uint8_t __flash clr_ascii[] = {27, 91, 50, 74, 27, 91, 72};
+static const char __flash str_crlf[] = {"\r\n"};
+
+#if SHOW_DASHBOARD
 static const char __flash str_header_02[] = {FW_ALIAS};
-static const char __flash str_heat_mod_01[] = {" Heat Mode: "};
-static const char __flash str_heat_mod_02[] = {" (OK)"};
-static const char __flash str_heat_mod_03[] = {" (VALVE TIME ERROR)"};
-static const char __flash str_heat_mod_04[] = {"V-"};
-static const char __flash str_heat_mod_05[] = {" | (O)"};
-static const char __flash str_heat_mod_06[] = {" | (X)"};
-static const char __flash str_heat_mod_07[] = {" | (=)"};
-static const char __flash str_heat_mod_08[] = {" ms "};
 static const char __flash str_iflags[] = {"IF: "};
 static const char __flash str_oflags[] = {"OF: "};
 static const char __flash str_lit_00[] = {"DHW request: "};
@@ -112,10 +101,8 @@ static const char __flash str_lit_17[] = {"Sys set: "};
 static const char __flash str_lit_18[] = {"Settings -> "};
 static const char __flash str_true[] = {"Yes"};
 static const char __flash str_false[] = {"No "};
-static const char __flash str_crlf[] = {"\r\n"};
 static const char __flash str_error_s[] = {"                        >>> Error "};
 static const char __flash str_error_e[] = {" <<<"};
-static const uint8_t __flash clr_ascii[] = {27, 91, 50, 74, 27, 91, 72};
 static const char __flash sys_mode_00[] = {"[ WINTER ] "};
 static const char __flash sys_mode_01[] = {"[ SUMMER ] "};
 static const char __flash sys_mode_02[] = {"[ PWR-OFF ]"};
@@ -128,10 +115,15 @@ static const char __flash str_mode_40[] = {" [ CH ON DUTY "};
 static const char __flash str_mode_41[] = {"1 ] .\n\r"};
 static const char __flash str_mode_42[] = {"2 ] .\n\r"};
 static const char __flash str_mode_100[] = {"        [ ERROR ] .\n\r"};
+
 #if SHOW_PUMP_TIMER
 static const char __flash str_wptimer[] = {"  CH water pump auto-shutdown timer: "};
 static const char __flash str_wpmemory[] = {"<- Remaining time in memory: "};
-
+static const char __flash str_temperr[] = {"XX.X"};
 #endif  // SHOW_PUMP_TIMER
+
+#else
+static const char __flash str_no_dashboard[] = {"- System dashboard disabled in settings ..."};
+#endif  // SHOW_DASHBOARD
 
 #endif  // _SERIAL_UI_H_

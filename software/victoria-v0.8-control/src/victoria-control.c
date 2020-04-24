@@ -38,12 +38,14 @@ int main(void) {
     p_system->last_displayed_iflags = 0;
     p_system->last_displayed_oflags = 0;
     p_system->error = ERROR_000;
-    p_system->ignition_retries = 0;
+    p_system->ignition_tries = 1;
     p_system->ch_on_duty_step = CH_ON_DUTY_1;
     p_system->cycle_in_progress = 0;
     p_system->current_heat_level = 0;
     p_system->current_valve = 0;
     p_system->pump_timer_memory = 0;
+    p_system->ch_water_overheat = false;
+
     for (uint8_t valve = 0; valve < HEAT_MODULATOR_VALVES; valve++) {
         p_system->heat_modulator[valve] = gas_modulator[valve];
     }
@@ -85,8 +87,16 @@ int main(void) {
         }
     }
 
-    // Show system operation status
+#if SHOW_DASHBOARD
+    // Show system dashboard
     Dashboard(p_system, false);
+#else
+    ClrScr();
+    SerialTxStr(str_crlf);
+    SerialTxStr(str_header_01);
+    SerialTxStr(str_no_dashboard);
+    SerialTxStr(str_crlf);
+#endif  // SHOW_DASHBOARD
 
     // WDT resets the system if it becomes unresponsive
     _delay_ms(2000);      // Safety 2-second blocking delay before activating the WDT
@@ -140,11 +150,31 @@ int main(void) {
             p_system->system_state = ERROR;  // >>>>> Next state -> ERROR
         }
 
-        // Unexpected CH overheat -> Error 010
+        // Unexpected CH water overtemperature detected -> Error 010
         if (p_system->ch_temperature < (CH_SETPOINT_HIGH - MAX_CH_TEMP_TOLERANCE)) {
-            GasOff(p_system);
-            p_system->error = ERROR_010;
-            p_system->system_state = ERROR;  // >>>>> Next state -> ERROR
+            if (p_system->system_state == CH_ON_DUTY) {
+                // If the system is running in CH mode, there is a system failure, stop all and indicate error
+                GasOff(p_system);
+                p_system->error = ERROR_010;
+                p_system->system_state = ERROR;  // >>>>> Next state -> ERROR
+            } else {
+                // If the system is DHW mode, activate the pump until the CH hot water has flow off the exchanger.
+                // NOTE: While in DWH mode the pump is off, so the water is not recirculating through the CH circuit.
+                // The CH circuit water held inside the heat exchanger gets hot collaterally and can cause the
+                //  bimetallic thermostat to detect overtemperature and disrupting the operation.
+                p_system->ch_water_overheat = true;
+                if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F) == false) {
+                    SetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                }
+            }
+        } else {
+            // If the system is DHW mode and the CH water overtemperature is no longer detected, turn the pump off
+            if ((p_system->ch_temperature >= (CH_SETPOINT_HIGH - (MAX_CH_TEMP_TOLERANCE + 10))) && p_system->ch_water_overheat) {
+                if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F) && TimerFinished(PUMP_TIMER_ID)) {
+                    ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                }
+                p_system->ch_water_overheat = false;
+            }
         }
 
 #if !(OVERHEAT_OVERRIDE)
@@ -155,8 +185,10 @@ int main(void) {
         }
 #endif  // OVERHEAT_OVERRIDE
 
-        // Display updated status
+#if SHOW_DASHBOARD
+        // Display updated status on system dashboard
         Dashboard(p_system, false);
+#endif  // SHOW_DASHBOARD
 
         if (GetKnobPosition(p_system->system_mode, SYSTEM_MODE_STEPS) < SYS_OFF) {
             // System FSM
@@ -230,7 +262,9 @@ int main(void) {
                             }
 #else
                             // Airflow sensor check skipped
+#if SHOW_DASHBOARD
                             p_system->last_displayed_iflags = 0xFF;  // Force a display dashboard refresh
+#endif  // SHOW_DASHBOARD
                             ResetTimerLapse(FSM_TIMER_ID, DLY_OFF_4);
                             p_system->inner_step = OFF_4;
 #endif  // AIRFLOW_OVERRIDE && FAN_TEST_OVERRIDE
@@ -246,13 +280,17 @@ int main(void) {
                                     p_system->error = ERROR_006;
                                     p_system->system_state = ERROR;
                                 } else {
+#if SHOW_DASHBOARD
                                     p_system->last_displayed_iflags = 0xFF;  // Force a display dashboard refresh
+#endif                                                                       // SHOW_DASHBOARD
                                     ResetTimerLapse(FSM_TIMER_ID, (DLY_READY_1));
                                     p_system->inner_step = READY_1;
                                     p_system->system_state = READY;
                                 }
 #else
+#if SHOW_DASHBOARD
                                 p_system->last_displayed_iflags = 0xFF;  // Force a display dashboard refresh
+#endif  // SHOW_DASHBOARD
                                 ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
                                 p_system->inner_step = READY_1;
                                 p_system->system_state = READY;
@@ -308,14 +346,18 @@ int main(void) {
 
                     // Check if there a DHW or CH request. If both are requested, DHW will have higher priority after ignition
                     if ((GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) || (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F))) {
+#if SHOW_DASHBOARD
                         p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
+#endif                                                          // SHOW_DASHBOARD
                         ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
                         p_system->inner_step = IGNITING_1;
                         p_system->system_state = IGNITING;
                     }
                     if (TimerFinished(FSM_TIMER_ID)) { /* DLY_READY_1 */
                         ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
+#if SHOW_DASHBOARD
                         p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
+#endif                                                          // SHOW_DASHBOARD
                     }
                     break;
                 }
@@ -330,9 +372,11 @@ int main(void) {
                         (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F) == false)) {
                         // Request canceled, turn actuators off and return to "ready" state
                         GasOff(p_system);
+#if SHOW_DASHBOARD
                         p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
+#endif                                                          // SHOW_DASHBOARD
                         ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
-                        p_system->ignition_retries = 0;
+                        p_system->ignition_tries = 1;
                         p_system->inner_step = READY_1;
                         p_system->system_state = READY;
                         break;  // *** *** *** *** *** *** *** *** *** *** *** *** //
@@ -367,10 +411,12 @@ int main(void) {
                             }
 #else
                             // Airflow sensor check skipped
+#if SHOW_DASHBOARD
                             p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
+#endif  // SHOW_DASHBOARD
                             ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_3);
                             p_system->inner_step = IGNITING_3;
-#endif /* AIRFLOW_OVERRIDE */
+#endif  // AIRFLOW_OVERRIDE
                             break;
                         }
                         // .............................................
@@ -389,7 +435,7 @@ int main(void) {
                         // ......................................................
                         case IGNITING_4: {
                             if (TimerFinished(FSM_TIMER_ID)) { /* DLY_IGNITING_4 */
-                                if (p_system->ignition_retries == 0) {
+                                if ((GetFlag(p_system, OUTPUT_FLAGS, VALVE_1_F) == false) || (p_system->ignition_tries == 1)) {
                                     OpenHeatValve(p_system, VALVE_1);
                                 } else {
                                     OpenHeatValve(p_system, VALVE_2);
@@ -422,18 +468,22 @@ int main(void) {
                                 if (GetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F)) {
                                     ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);
                                 }
-                                // Reset ignition retry counter
-                                p_system->ignition_retries = 0;
+                                // Reset ignition attempts counter
+                                p_system->ignition_tries = 1;
                                 // Hand over control to the requested service (DHW has higher priority)
                                 if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
                                     ResetTimerLapse(HEAT_TIMER_ID, HEAT_TIMER_DURATION);
+#if SHOW_DASHBOARD
                                     ResetTimerLapse(FSM_TIMER_ID, DLY_DHW_ON_DUTY_LOOP);
+#endif  // SHOW_DASHBOARD
                                     p_system->inner_step = DHW_ON_DUTY_1;
                                     p_system->system_state = DHW_ON_DUTY;
                                 } else {
                                     if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F)) {
                                         ResetTimerLapse(HEAT_TIMER_ID, HEAT_TIMER_DURATION);
+#if SHOW_DASHBOARD
                                         ResetTimerLapse(FSM_TIMER_ID, DLY_CH_ON_DUTY_LOOP);
+#endif  //SHOW_DASHBOARD
                                         p_system->inner_step = CH_ON_DUTY_1;
                                         p_system->system_state = CH_ON_DUTY;
                                     } else {
@@ -448,11 +498,11 @@ int main(void) {
                                 // Timer finished without detecting flame
                                 if (TimerFinished(FSM_TIMER_ID)) {  // DLY_IGNITING_6
                                     // Increment ignition retry counter
-                                    if (p_system->ignition_retries++ >= MAX_IGNITION_RETRIES - 1) {
+                                    if (p_system->ignition_tries++ >= MAX_IGNITION_TRIES) {
                                         // If the number of ignition retries reached the maximum, close gas and indicate an error
                                         GasOff(p_system);
                                         // Reset ignition retry counter
-                                        p_system->ignition_retries = 0;
+                                        p_system->ignition_tries = 1;
                                         p_system->error = ERROR_005;
                                         p_system->system_state = ERROR;
                                     } else {
@@ -503,24 +553,29 @@ int main(void) {
                         p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
                     }
 #endif /* AIRFLOW_OVERRIDE */
-                    // If the CH water pump is on, store the running time remaining and halt it ...
-                    if ((p_system->pump_timer_memory == 0) && GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
-                        p_system->pump_timer_memory = GetTimeLeft(PUMP_TIMER_ID);
-                        ResetTimerLapse(PUMP_TIMER_ID, 0);
-                        ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                    // If a CH water overtemperature is not detected, but the CH water pump is on, store the running time remaining and halt it ...
+                    if (p_system->ch_water_overheat == false) {
+                        if ((p_system->pump_timer_memory == 0) && GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
+                            p_system->pump_timer_memory = GetTimeLeft(PUMP_TIMER_ID);
+                            ResetTimerLapse(PUMP_TIMER_ID, 0);
+                            ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                        }
                     }
                     // Check if the DHW request is over
                     if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F) == false) {
                         // If there is a CH request active, modulate to valve 1 and
                         // hand over control to CH service state
                         if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F)) {
-                            p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
+#if SHOW_DASHBOARD
+                            p_system->last_displayed_iflags = 0xFF;  // Force a display dashboard refresh
                             ResetTimerLapse(FSM_TIMER_ID, DLY_CH_ON_DUTY_LOOP);
+#endif  // SHOW_DASHBOARD
                             p_system->inner_step = p_system->ch_on_duty_step;
                             p_system->system_state = CH_ON_DUTY;
                         } else {
                             // DHW request canceled, turn gas off and return to "ready" state
                             GasOff(p_system);
+                            ResetTimerLapse(HEAT_TIMER_ID, HEAT_TIMER_DURATION);
                             ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
                             p_system->inner_step = READY_1;
                             p_system->system_state = READY;
@@ -533,12 +588,14 @@ int main(void) {
                         //																                          *
                         // ***************************************************************************************
                     }
+#if SHOW_DASHBOARD
 #if AUTO_DHW_DSP_REFRESH
                     if (TimerFinished(FSM_TIMER_ID)) {  // DLY_DHW_ON_DUTY_1
                         ResetTimerLapse(FSM_TIMER_ID, DLY_DHW_ON_DUTY_LOOP);
                         p_system->last_displayed_iflags = 0xFF;  // Force a display dashboard refresh
                     }
-#endif
+#endif  // AUTO_DHW_DSP_REFRESH
+#endif  // SHOW_DASHBOARD
                     break;
                 }
                 /* ________________________________
@@ -574,13 +631,16 @@ int main(void) {
                             }
                             ResetTimerLapse(PUMP_TIMER_ID, PUMP_TIMER_DURATION);
                             p_system->pump_timer_memory = 0;
+                            p_system->ch_water_overheat = false;
 
                             // If there is a DHW request active, modulate and hand over control to DHW service
                             if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
                                 p_system->ch_on_duty_step = CH_ON_DUTY_1;  // Preserve current CH service step
                                 // OpenHeatValve(p_system, VALVE_1); // Change to valve 1 before handing over control to DHW state
                                 ResetTimerLapse(HEAT_TIMER_ID, HEAT_TIMER_DURATION);
+#if SHOW_DASHBOARD
                                 ResetTimerLapse(FSM_TIMER_ID, DLY_DHW_ON_DUTY_LOOP);
+#endif  // SHOW_DASHBOARD
                                 p_system->inner_step = DHW_ON_DUTY_1;
                                 p_system->system_state = DHW_ON_DUTY;
                             } else {
@@ -589,6 +649,7 @@ int main(void) {
                                     // CH request canceled, turn gas off and return to "ready" state
                                     GasOff(p_system);
                                     ResetTimerLapse(HEAT_TIMER_ID, HEAT_TIMER_DURATION);
+                                    ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
                                     p_system->inner_step = READY_1;
                                     p_system->system_state = READY;
                                     break;
@@ -645,7 +706,9 @@ int main(void) {
                             // If there is a DHW request active, ignite and hand over control to DHW service
                             if (GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F)) {
                                 p_system->ch_on_duty_step = CH_ON_DUTY_2;  // Preserve current CH service step
-                                p_system->last_displayed_iflags = 0xFF;    // Force a display dashboard refresh
+#if SHOW_DASHBOARD
+                                p_system->last_displayed_iflags = 0xFF;  // Force a display dashboard refresh
+#endif                                                                   // SHOW_DASHBOARD
                                 ResetTimerLapse(FSM_TIMER_ID, DLY_IGNITING_1);
                                 p_system->inner_step = IGNITING_1;
                                 p_system->system_state = IGNITING;
@@ -666,18 +729,22 @@ int main(void) {
                         // .......................
                         default: {
                             if (p_system->system_state == CH_ON_DUTY) {
+#if SHOW_DASHBOARD
                                 ResetTimerLapse(FSM_TIMER_ID, DLY_CH_ON_DUTY_LOOP);
+#endif  // SHOW_DASHBOARD
                                 p_system->inner_step = p_system->ch_on_duty_step;
                             }
                             break;
                         }
                     }
+#if SHOW_DASHBOARD
 #if AUTO_CH_DSP_REFRESH
                     if (TimerFinished(FSM_TIMER_ID)) {  // DLY_CH_ON_DUTY_1
                         ResetTimerLapse(FSM_TIMER_ID, DLY_CH_ON_DUTY_LOOP);
                         p_system->last_displayed_iflags = 0xFF;  // Force a display dashboard refresh
                     }
-#endif
+#endif  // AUTO_CH_DSP_REFRESH
+#endif  // SHOW_DASHBOARD
                     break;
                 }
                 /* ___________________________
@@ -697,23 +764,26 @@ int main(void) {
                             CheckDigitalSensor(p_system, digital_sensor, false);
                         }
                         p_system->system_state = ERROR;
+#if SHOW_DASHBOARD
+                        // Display updated status on system dashboard
                         Dashboard(p_system, true);
-                        SetFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
-                        //ControlActuator(p_system, LED_UI_F, TURN_ON, false); /* true updates display on each pass */
                         SerialTxStr(str_error_s);
                         SerialTxNum(p_system->error, DIGITS_3);
                         SerialTxStr(str_error_e);
                         SerialTxStr(str_crlf);
+#endif  // SHOW_DASHBOARD
+                        SetFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
                         _delay_ms(500);  // 500-millisecond blocking delay before each error signaling
                         ClearFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
-                        //ControlActuator(p_system, LED_UI_F, TURN_OFF, false);
                         _delay_ms(500);  // 500-millisecond blocking delay after each error signaling
                     }
                     // If there are not enough slots for the required system timers, the system must be halted!
                     if (p_system->error != 12) {
                         // End of error loop
                         // Next state -> OFF (reset error and try to resume service)
+#if SHOW_DASHBOARD
                         p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
+#endif                                                          // SHOW_DASHBOARD
                         p_system->error = ERROR_000;
                         p_system->inner_step = OFF_1;
                         p_system->system_state = OFF;
@@ -764,8 +834,6 @@ int main(void) {
             _delay_ms(125);  // Blocking delay
 
         } /* Big if end */
-
-        //Dashboard(p_system, true);
 
     } /* Main loop end */
 

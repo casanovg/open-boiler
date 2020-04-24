@@ -70,7 +70,7 @@ void SerialTxNum(uint32_t number, DigitLength digits) {
             break;
         }
         case TEMP_NN: {
-            sprintf(str, "%2u", DivRound((uint16_t)number, 10));
+            sprintf(str, "%02u", DivRound((uint16_t)number, 10));
             break;
         }
         case TEMP_DD: {
@@ -123,6 +123,8 @@ void ClrScr(void) {
         SerialTxChr(clr_ascii[i]);
     }
 }
+
+#if SHOW_DASHBOARD
 
 // Function Dashboard
 void Dashboard(SysInfo *p_system, bool force_refresh) {
@@ -205,23 +207,33 @@ void Dashboard(SysInfo *p_system, bool force_refresh) {
         SerialTxChr(SPACE);  // Space (_)
 
         // DHW temperature
+        int dhw_temperature = GetNtcTemperature(p_system->dhw_temperature, TO_CELSIUS, DT_CELSIUS);
         SerialTxStr(str_lit_13);
-        SerialTxNum(GetNtcTemperature(p_system->dhw_temperature, TO_CELSIUS, DT_CELSIUS), TEMP_NN);
-        SerialTxChr(V_LINE);
-        SerialTxNum(GetNtcTemperature(p_system->dhw_temperature, TO_CELSIUS, DT_CELSIUS), TEMP_DD);
-        SerialTxChr(126);  // Space (_)
-        SerialTxChr(67);
+        if (dhw_temperature != -32767) {
+            SerialTxNum(dhw_temperature, TEMP_NN);
+            SerialTxChr(V_LINE);
+            SerialTxNum(dhw_temperature, TEMP_DD);
+        } else {
+            SerialTxStr(str_temperr);
+        }
+        SerialTxChr(126);  // Tilde (~)
+        SerialTxChr(67);   // C
 
         SerialTxChr(SPACE);  // Space (_)
         SerialTxChr(SPACE);  // Space (_)
 
         // CH temperature
+        int ch_temperature = GetNtcTemperature(p_system->ch_temperature, TO_CELSIUS, DT_CELSIUS);
         SerialTxStr(str_lit_14);
-        SerialTxNum(GetNtcTemperature(p_system->ch_temperature, TO_CELSIUS, DT_CELSIUS), TEMP_NN);
-        SerialTxChr(V_LINE);
-        SerialTxNum(GetNtcTemperature(p_system->ch_temperature, TO_CELSIUS, DT_CELSIUS), TEMP_DD);
-        SerialTxChr(126);  // Space (_)
-        SerialTxChr(67);
+        if (ch_temperature != -32767) {
+            SerialTxNum(ch_temperature, TEMP_NN);
+            SerialTxChr(V_LINE);
+            SerialTxNum(ch_temperature, TEMP_DD);
+        } else {
+            SerialTxStr(str_temperr);
+        }
+        SerialTxChr(126);    // Tilde (~)
+        SerialTxChr(67);     // C
         SerialTxChr(SPACE);  // Space (_)
         SerialTxNum(p_system->ch_temperature, DIGITS_4);
         SerialTxChr(SPACE);  // Space (_)
@@ -392,26 +404,34 @@ void Dashboard(SysInfo *p_system, bool force_refresh) {
             SerialTxStr(str_false);
         }
 
-        SerialTxChr(SPACE);  // Space (_)
-        SerialTxChr(SPACE);  // Space (_)
+        if (p_system->ch_water_overheat) {
+            SerialTxChr(SPACE);  // Space (_)
+            SerialTxChr(42);     // Asterisk (*)
+            SerialTxChr(SPACE);  // Space (_)
+        } else {
+            SerialTxChr(SPACE);  // Space (_)
+            SerialTxChr(SPACE);  // Space (_)
+            SerialTxChr(SPACE);  // Space (_)
+        }
+
         SerialTxChr(SPACE);  // Space (_)
 
         // Spark igniter
         SerialTxStr(str_lit_07);
         if (GetFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F)) {
             SerialTxStr(str_true);
-            SerialTxChr(SPACE);                                 // Space (_)
-            SerialTxChr(82);                                    // Displays ignition retries
-            SerialTxNum(p_system->ignition_retries, DIGITS_1);  // Displays ignition retries
-            SerialTxChr(SPACE);                                 // Space (_)
+            SerialTxChr(SPACE);                               // Space (_)
+            SerialTxChr(84);                                  // Displays ignition retries
+            SerialTxNum(p_system->ignition_tries, DIGITS_1);  // Displays ignition retries
+            //SerialTxChr(SPACE);                                 // Space (_)
         } else {
             SerialTxStr(str_false);
             SerialTxChr(SPACE);  // Space (_)
             SerialTxChr(SPACE);  // Space (_)
-
+            SerialTxChr(SPACE);  // Space (_)
         }
 
-        SerialTxChr(SPACE);  // Space (_)
+        //SerialTxChr(SPACE);  // Space (_)
         SerialTxChr(SPACE);  // Space (_)
 
         // LED UI
@@ -497,3 +517,5 @@ void Dashboard(SysInfo *p_system, bool force_refresh) {
         SerialTxStr(str_crlf);
     }
 }
+
+#endif  // SHOW_DASHBOARD

@@ -81,7 +81,7 @@
 #define DLY_OFF_2 10                                      // Off_2: Time before turning the fan for the flue exhaust test
 #define DLY_OFF_3 5000                                    // Off_3: Time to let the fan to rev up and the airflow sensor closes (fan test)
 #define DLY_OFF_4 3000                                    // Off_4: Time to let the fan to rev down after testing it (when the test is enabled)
-#define DLY_READY_1 2500                                  // Ready_1: Time to allow the flame and airflow sensors to switch off after the gas is closed
+#define DLY_READY_1 3500                                  // Ready_1: Time to allow the flame and airflow sensors to switch off after the gas is closed
 #define DLY_IGNITING_1 10                                 // Igniting_1: Time-lapse from an ignition request until turning the fan on
 #define DLY_IGNITING_2 5000                               // Igniting_2: Time to let the fan to rev up and the airflow sensor closes (ignition)
 #define DLY_IGNITING_3 250                                // Igniting_3: Time before opening the security valve after the fan is running

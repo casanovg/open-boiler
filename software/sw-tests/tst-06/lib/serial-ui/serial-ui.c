@@ -34,6 +34,29 @@ void SerialTxChr(uint8_t character_code) {
 }
 
 // Function SerialTxNum
+void SerialTxTemp(int ntc_temperature) {
+#define STR_NUM 5
+#define DOT 46
+    uint8_t str_num[STR_NUM] = {0};
+    sprintf(str_num, "%d", ((int)ntc_temperature));
+    uint8_t str_len = strlen(str_num);
+    // Integer part
+    for (int i = 0; i < str_len - 1; i++) {
+        while (!(UCSR0A & (1 << UDRE0))) {
+        };
+        UDR0 = str_num[i];
+    }
+    // Decimal separator
+    while (!(UCSR0A & (1 << UDRE0))) {
+    };
+    UDR0 = DOT;
+    // Decimal part
+    while (!(UCSR0A & (1 << UDRE0))) {
+    };
+    UDR0 = str_num[strlen(str_num) - 1];
+}
+
+// Function SerialTxNum
 void SerialTxNum(uint32_t number, DigitLength digits) {
 #define DATA_LNG 7
     char str[DATA_LNG] = {0};
@@ -69,6 +92,20 @@ void SerialTxNum(uint32_t number, DigitLength digits) {
             sprintf(str, "%0lu", (uint32_t)number);
             break;
         }
+        case TEMP_NN: {
+            sprintf(str, "%02u", DivRound((uint16_t)number, 10));
+            break;
+        }
+        case TEMP_DD: {
+            //sprintf(str, "%1u", DivRound(((uint16_t)data % 10), 10));
+            sprintf(str, "%1u", (uint16_t)number % 10);
+            break;
+        }
+
+        case ZUZU: {
+            sprintf(str, "%d", ((int)number));
+        }
+
         case DIGITS_FREE:
         default: {
             sprintf(str, "%u", (uint16_t)number);
@@ -88,28 +125,6 @@ void SerialTxStr(const __flash char *ptr_string) {
         char my_char = pgm_read_byte_near(ptr_string + k);
         SerialTxChr(my_char);
     }
-}
-
-// Function SerialTxTemp
-void SerialTxTemp(int ntc_temperature) {
-#define STR_NUM 5
-    uint8_t str_num[STR_NUM] = {0};
-    sprintf(str_num, "%d", ((int)ntc_temperature));
-    uint8_t str_len = strlen(str_num);
-    // Integer part
-    for (int i = 0; i < str_len - 1; i++) {
-        while (!(UCSR0A & (1 << UDRE0))) {
-        };
-        UDR0 = str_num[i];
-    }
-    // Decimal separator
-    while (!(UCSR0A & (1 << UDRE0))) {
-    };
-    UDR0 = DECIMAL_SEPARATOR;
-    // Decimal part
-    while (!(UCSR0A & (1 << UDRE0))) {
-    };
-    UDR0 = str_num[strlen(str_num) - 1];
 }
 
 // Function DrawDashedLine
@@ -223,12 +238,13 @@ void Dashboard(SysInfo *p_system, bool force_refresh) {
         int dhw_temperature = GetNtcTemperature(p_system->dhw_temperature, TO_CELSIUS, DT_CELSIUS);
         SerialTxStr(str_lit_13);
         if (dhw_temperature != -32767) {
-            SerialTxTemp(dhw_temperature);
+            SerialTxNum(dhw_temperature, TEMP_NN);
+            SerialTxChr(V_LINE);
+            SerialTxNum(dhw_temperature, TEMP_DD);
         } else {
             SerialTxStr(str_temperr);
         }
-        //SerialTxChr(126);  // Tilde (~)
-        SerialTxChr(39);  // Apostrophe (')
+        SerialTxChr(126);  // Tilde (~)
         SerialTxChr(67);   // C
 
         SerialTxChr(SPACE);  // Space (_)
@@ -238,12 +254,13 @@ void Dashboard(SysInfo *p_system, bool force_refresh) {
         int ch_temperature = GetNtcTemperature(p_system->ch_temperature, TO_CELSIUS, DT_CELSIUS);
         SerialTxStr(str_lit_14);
         if (ch_temperature != -32767) {
-            SerialTxTemp(dhw_temperature);
+            SerialTxNum(ch_temperature, TEMP_NN);
+            SerialTxChr(V_LINE);
+            SerialTxNum(ch_temperature, TEMP_DD);
         } else {
             SerialTxStr(str_temperr);
         }
-        //SerialTxChr(126);    // Tilde (~)
-        SerialTxChr(39);  // Apostrophe (')
+        SerialTxChr(126);    // Tilde (~)
         SerialTxChr(67);     // C
         SerialTxChr(SPACE);  // Space (_)
         SerialTxNum(p_system->ch_temperature, DIGITS_4);

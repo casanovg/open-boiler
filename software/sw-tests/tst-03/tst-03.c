@@ -4,7 +4,9 @@
 // NTC resistance to ADC values to °C Temp
 // ---------------------------------------------
 
-#include "tst-02.h"
+#include "tst-03.h"
+
+//#include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -33,6 +35,15 @@ const unsigned int TablaADC[PuntosTabla] = {
 //-30,-20, -10,  0,   10,  20,  30,  40,  50,  60,  70 ºC
 //  0   1    2   3     4    5    6    7    8    9   10  i
 
+// Prototypes
+int main(void);
+void Delay(unsigned int milli_seconds);
+int GetNtcTempTenths(uint16_t, int, int);
+float GetNtcTempDegrees(uint16_t, int, int);
+int TempNTC(unsigned int, int, int);
+uint8_t GetHeatLevel(int16_t, uint8_t);
+int DivRound(const int numerator, const int denominator);
+
 // Temperature calculation settings
 #define TO_CELSIUS (-200)    /* Celsius offset value */
 #define DT_CELSIUS (100)     /* Celsius delta T (difference between two consecutive table entries) */
@@ -50,14 +61,6 @@ const unsigned int TablaADC[PuntosTabla] = {
 //Parámetros para conversión en ºFahrenheit
 #define ToFahr (-220)
 #define dTFahr (180)
-
-// Prototypes
-int main(void);
-void Delay(unsigned int milli_seconds);
-int GetNtcTempTenths(uint16_t, int, int);
-float GetNtcTempDegrees(uint16_t, int, int);
-int TempNTC(unsigned int, int, int);
-uint8_t GetHeatLevel(int16_t, uint8_t);
 
 // Main function
 int main(void) {
@@ -93,8 +96,13 @@ int main(void) {
             // }
             // printf("ADC B: %d, Temp Value = %d, Celsius calculation = %2d.%1d\n\r",
             //        adc_temp, celsius_centigrades, celsius_grades, celsius_decimals);
-            printf("ADC output: %d, Temp value = %d, Celsius calculation = %.1f \370C\n\r",
-                   adc_temp, celsius_tenths, celsius_degrees);
+            printf("ADC output: %d, Temp value = %d, Celsius calculation = %.1f \370C -> Float sim: %02u.%1u\n\r",
+                   adc_temp,
+                   celsius_tenths,
+                   celsius_degrees,
+                   //DivRound((uint16_t)celsius_tenths, 10),
+                   ((uint16_t)celsius_tenths) / 10,
+                   (uint16_t)celsius_tenths % 10);
         }
     }
 
@@ -116,7 +124,8 @@ int GetNtcTempTenths(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
     uint16_t min, max;
     uint8_t i;
     // Search the table interval where the ADC value is located
-    for (i = 0; (i < NTC_VALUES) && (ntc_adc_value < (ntc_adc_table[i])); i++);
+    for (i = 0; (i < NTC_VALUES) && (ntc_adc_value < (ntc_adc_table[i])); i++)
+        ;
     if ((i == 0) || (i == NTC_VALUES)) {  // If there is not located, return an error
         return -32767;
     }
@@ -135,7 +144,8 @@ float GetNtcTempDegrees(uint16_t ntc_adc_value, int temp_offset, int temp_delta)
     uint16_t min, max;
     uint8_t i;
     // Search the table interval where the ADC value is located
-    for (i = 0; (i < NTC_VALUES) && (ntc_adc_value < (ntc_adc_table[i])); i++);
+    for (i = 0; (i < NTC_VALUES) && (ntc_adc_value < (ntc_adc_table[i])); i++)
+        ;
     if ((i == 0) || (i == NTC_VALUES)) {  // If there is not located, return an error
         return -32767.0;
     }
@@ -169,9 +179,21 @@ int TempNTC(unsigned int adc, int To, int dT) {
 // Function GetHeatLevel
 uint8_t GetHeatLevel(int16_t pot_adc_value, uint8_t knob_steps) {
     uint8_t heat_level = 0;
-    for (heat_level = 0; (pot_adc_value < (ADC_MAX - ((ADC_MAX / knob_steps) * (heat_level + 1)))); heat_level++);
+    for (heat_level = 0; (pot_adc_value < (ADC_MAX - ((ADC_MAX / knob_steps) * (heat_level + 1)))); heat_level++)
+        ;
     if (heat_level >= knob_steps) {
         heat_level = --knob_steps;
     }
     return heat_level;
+}
+
+// Function DivRound
+int DivRound(const int numerator, const int denominator) {
+    int result = 0;
+    if ((numerator < 0) ^ (denominator < 0)) {
+        result = ((numerator - denominator / 2) / denominator);
+    } else {
+        result = ((numerator + denominator / 2) / denominator);
+    }
+    return result;
 }

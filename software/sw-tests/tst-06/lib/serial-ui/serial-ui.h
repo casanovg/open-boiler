@@ -33,7 +33,6 @@
 #define H_ILINE 46
 #define V_LINE 46
 #define SPACE 32
-#define DECIMAL_SEPARATOR 46
 
 #define SHOW_PUMP_TIMER true  // True: Shows the CH water pump auto-shutdown timer
 
@@ -50,6 +49,9 @@ typedef enum digit_length {
     DIGITS_8 = 8,
     DIGITS_9 = 9,
     DIGITS_10 = 10,
+    TEMP_NN = 50,
+    TEMP_DD = 51,
+    ZUZU = 66,
     DIGITS_FREE = 0
 } DigitLength;
 
@@ -60,7 +62,6 @@ uint8_t SerialRxChr(void);
 void SerialTxChr(uint8_t character_code);
 void SerialTxNum(uint32_t number, DigitLength digits);
 void SerialTxStr(const __flash char *ptr_string);
-void SerialTxTemp(int ntc_temperature);
 void DrawLine(uint8_t length, char line_char);
 int DivRound(const int numerator, const int denominator);
 void ClrScr(void);
@@ -73,6 +74,12 @@ void Dashboard(SysInfo *p_system, bool force_refresh);
 static const char __flash str_header_01[] = {" " FW_NAME " " FW_VERSION " "};
 static const uint8_t __flash clr_ascii[] = {27, 91, 50, 74, 27, 91, 72};
 static const char __flash str_crlf[] = {"\r\n"};
+
+static const char __flash str_adcout[] = {"ADC output: "};
+static const char __flash str_tempdecs[] = {"Temp decs = "};
+static const char __flash str_tempvalue[] = {"Temp value = "};
+static const char __flash str_temperr[] = {"----"};
+static const char __flash str_tempsym[] = {"'C"};
 
 #if SHOW_DASHBOARD
 static const char __flash str_header_02[] = {FW_ALIAS};
@@ -119,7 +126,7 @@ static const char __flash str_mode_100[] = {"        [ ERROR ] .\n\r"};
 #if SHOW_PUMP_TIMER
 static const char __flash str_wptimer[] = {"  CH water pump auto-shutdown timer: "};
 static const char __flash str_wpmemory[] = {"<- Remaining time in memory: "};
-static const char __flash str_temperr[] = {"XX.X"};
+//static const char __flash str_temperr[] = {"XX.X"};
 #endif  // SHOW_PUMP_TIMER
 
 #else

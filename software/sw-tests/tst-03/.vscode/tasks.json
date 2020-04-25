@@ -2,24 +2,25 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "build tst-02",
+            "label": "build tst-03",
             "type": "shell",
             "command": "g++",
             "args": [
                 "-g",
                 "-o",
-                "tst-02",
-                "tst-02.c"
+                "tst-03",
+                "tst-03.c"
             ],
             "group": {
                 "kind": "build",
                 "isDefault": true
-            }
+            },
+            "problemMatcher": []
         },
         {
             "type": "shell",
             "label": "g++.exe build active file",
-            "command": "C:/mingw-w64/mingw64/bin/g++.exe",
+            "command": "C:\\mingw-w64\\mingw64\\bin\\g++.exe",
             "args": [
                 "-g",
                 "${file}",
@@ -28,7 +29,9 @@
             ],
             "options": {
                 "cwd": "C:/mingw-w64/mingw64/bin"
-            }
+            },
+            "problemMatcher": [],
+            "group": "build"
         }
     ]
 }

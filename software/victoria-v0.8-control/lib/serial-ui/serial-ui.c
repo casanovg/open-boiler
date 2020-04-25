@@ -238,7 +238,7 @@ void Dashboard(SysInfo *p_system, bool force_refresh) {
         int ch_temperature = GetNtcTemperature(p_system->ch_temperature, TO_CELSIUS, DT_CELSIUS);
         SerialTxStr(str_lit_14);
         if (ch_temperature != -32767) {
-            SerialTxTemp(dhw_temperature);
+            SerialTxTemp(ch_temperature);
         } else {
             SerialTxStr(str_temperr);
         }

@@ -45,8 +45,11 @@
 #define LED_DEBUG false            // True: ONLY FOR DEBUG!!! Toggles SPARK_IGNITER_F on each heat-cycle start and keeps it on to show cycle's valve-time errors
 #define HEAT_MODULATOR_DEMO false  // True: ONLY FOR DEBUG!!! loops through all heat levels, from lower to higher. False: NORMAL OPERATION -> Heat modulator code reads DHW potentiometer to determine current heat level
 #define TIMER_INDEX_OVF_STOP true  // True: halt system if the system doesn't have enough timer slots (index overflow)!
+
+#if SHOW_DASHBOARD
 #define AUTO_DHW_DSP_REFRESH true  // True: Force a dashboard refresh when in a DHW_ON_DUTY loop every DLY_DHW_ON_DUTY_LOOP ms
 #define AUTO_CH_DSP_REFRESH true   // True: Force a dashboard refresh when in a CH_ON_DUTY loop every DLY_CH_ON_DUTY_LOOP ms
+#endif                             // SHOW_DASHBOARD
 
 #define FSM_TIMER_ID 1                    // Main finite state machine timer id
 #define FSM_TIMER_DURATION 0              // Main finite state machine timer time-lapse (milliseconds)

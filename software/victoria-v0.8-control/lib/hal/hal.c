@@ -199,6 +199,9 @@ bool CheckDigitalSensor(SysInfo *p_system, InputFlag digital_sensor, bool show_d
                     if (TimerFinished(DEB_FLAME_TIMER_ID)) {
                         if ((GetFlag(p_system, INPUT_FLAGS, FLAME_F)) != ((FLAME_PINP >> FLAME_PIN) & true)) {
                             ToggleFlag(p_system, INPUT_FLAGS, FLAME_F);
+#if LED_UI_FOR_FLAME
+                            ToggleFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
+#endif  // LED_UI_FOR_FLAME
                         }
                         DeleteTimer(DEB_FLAME_TIMER_ID);
                     }
@@ -219,9 +222,11 @@ bool CheckDigitalSensor(SysInfo *p_system, InputFlag digital_sensor, bool show_d
             return ((p_system->input_flags >> OVERHEAT_F) & true);
         }
     }
+#if SHOW_DASHBOARD
     if (show_dashboard == true) {
         Dashboard(p_system, false);
     }
+#endif  // SHOW_DASHBOARD
     return 0;
 }
 
@@ -311,9 +316,11 @@ uint16_t CheckAnalogSensor(SysInfo *p_system, AdcBuffers *p_buffer_pack, AnalogI
             break;
         }
     }
+#if SHOW_DASHBOARD
     if (show_dashboard == true) {
         Dashboard(p_system, false);
     }
+#endif  // SHOW_DASHBOARD
     return (ADC & 0x3FF);
 }
 
@@ -448,9 +455,11 @@ void ControlActuator(SysInfo *p_system, OutputFlag device_flag, HwSwitch command
             ClearFlag(p_system, OUTPUT_FLAGS, device_flag);  // Clear actuator flags
         }
     }
+#if SHOW_DASHBOARD
     if (show_dashboard == true) {
         Dashboard(p_system, false);
     }
+#endif  // SHOW_DASHBOARD
 }
 
 // Function InitAdcBuffers: Initializes the ADC filtering buffers

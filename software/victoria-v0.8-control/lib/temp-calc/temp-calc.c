@@ -42,7 +42,7 @@ int GetNtcTemperature(uint16_t ntc_adc_value, int temp_offset, int temp_delta) {
     for (i = 0; (i < NTC_VALUES) && (ntc_adc_value < (ntc_adc_table[i])); i++)
         ;
     if ((i == 0) || (i == NTC_VALUES)) {  // If there is not located, return an error
-        return -32767;
+        return INVALID_TEMP_D;
     }
     max = ntc_adc_table[i - 1];                 //Buscamos el valor más alto del intervalo
     min = ntc_adc_table[i];                     //y el más bajoa
@@ -61,7 +61,7 @@ float GetNtcTempDegrees(uint16_t ntc_adc_value, int temp_offset, int temp_delta)
     for (i = 0; (i < NTC_VALUES) && (ntc_adc_value < (ntc_adc_table[i])); i++)
         ;
     if ((i == 0) || (i == NTC_VALUES)) {  // If there is not located, return an error
-        return -32767.0;
+        return INVALID_TEMP_F;
     }
     max = ntc_adc_table[i - 1];                 //Buscamos el valor más alto del intervalo
     min = ntc_adc_table[i];                     //y el más bajoa

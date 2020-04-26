@@ -22,6 +22,9 @@
 
 #define CH_TEMP_MASK 0x3FE
 
+#define INVALID_TEMP_D -32767
+#define INVALID_TEMP_F -32767.0
+
 // Filter settings
 #define FIR_SUM 11872
 #define IR_VAL 50

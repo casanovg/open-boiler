@@ -28,7 +28,9 @@
 #define TILDE 126                // ~
 #define APOSTROPHE 39            // '
 #define ASTERISK 42              // *
-#define CHR_C 67
+#define CHR_C 67                 // C
+#define CHR_SQRB_O 91            // [
+#define CHR_SQRB_C 93            // ]
 
 #if SHOW_DASHBOARD
 #define IGNITION_TRIES_CHR 84  // T
@@ -57,8 +59,8 @@ static const char __flash str_lit_11[] = {"Valve-3: "};
 static const char __flash str_lit_12[] = {"LED UI: "};
 static const char __flash str_lit_13[] = {"DHW temp: "};
 static const char __flash str_lit_14[] = {"CH temp: "};
-static const char __flash str_lit_15[] = {" DHW set: "};
-static const char __flash str_lit_16[] = {" CH set: "};
+static const char __flash str_lit_15[] = {"DHW set: "};
+static const char __flash str_lit_16[] = {"CH set: "};
 static const char __flash str_lit_17[] = {" Mode: "};
 static const char __flash str_lit_18[] = {"Settings -> "};
 static const char __flash str_true[] = {"Yes"};

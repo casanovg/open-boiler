@@ -29,6 +29,8 @@
 #define APOSTROPHE 39            // '
 #define ASTERISK 42              // *
 #define CHR_C 67                 // C
+#define CHR_SQRB_O 91            // [
+#define CHR_SQRB_C 93            // ]
 
 #if SHOW_DASHBOARD
 #define IGNITION_TRIES_CHR 73  // I
@@ -57,10 +59,10 @@ static const char __flash str_lit_11[] = {"Valvula-3: "};
 static const char __flash str_lit_12[] = {"LED: "};
 static const char __flash str_lit_13[] = {"Temp ACS: "};
 static const char __flash str_lit_14[] = {"Temp CC: "};
-static const char __flash str_lit_15[] = {"  Sel ACS: "};
+static const char __flash str_lit_15[] = {" Sel ACS: "};
 static const char __flash str_lit_16[] = {" Sel CC: "};
 static const char __flash str_lit_17[] = {" Modo:"};
-static const char __flash str_lit_18[] = {"Controles -> "};
+static const char __flash str_lit_18[] = {"Controles ->"};
 static const char __flash str_true[] = {"Si"};
 static const char __flash str_false[] = {"No"};
 static const char __flash str_error_s[] = {"                        >>> Error "};

@@ -331,14 +331,18 @@ void Dashboard(SysInfo *p_system, bool force_refresh) {
         SerialTxStr(str_space_s);
 
         SerialTxStr(str_lit_15);
+        SerialTxChr(CHR_SQRB_O);
         SerialTxNum(GetKnobPosition(p_system->dhw_setting, DHW_SETTING_STEPS), DIGITS_2);
+        SerialTxChr(CHR_SQRB_C);
         
-        SerialTxStr(str_space_l);
+        SerialTxStr(str_space_m);
 
         SerialTxStr(str_lit_16);
+        SerialTxChr(CHR_SQRB_O);
         SerialTxNum(GetKnobPosition(p_system->ch_setting, CH_SETTING_STEPS), DIGITS_2);
+        SerialTxChr(CHR_SQRB_C);
 
-        SerialTxStr(str_space_l);
+        SerialTxStr(str_space_m);
 
         SerialTxStr(str_lit_17);
         switch (GetKnobPosition(p_system->system_mode, SYSTEM_MODE_STEPS)) {

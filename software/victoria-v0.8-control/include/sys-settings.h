@@ -47,7 +47,7 @@
 #define TIMER_INDEX_OVF_STOP true  // True: halt system if the system doesn't have enough timer slots (index overflow)!
 
 #if SHOW_DASHBOARD
-#define DASHBOARD_LANG _EN_        // Dashboard language: _EN_=English, _ES_=Spanish
+#define DASHBOARD_LANG _ES_        // Dashboard language: _EN_=English, _ES_=Spanish
 #define AUTO_DHW_DSP_REFRESH true  // True: Force a dashboard refresh when in a DHW_ON_DUTY loop every DLY_DHW_ON_DUTY_LOOP ms
 #define AUTO_CH_DSP_REFRESH true   // True: Force a dashboard refresh when in a CH_ON_DUTY loop every DLY_CH_ON_DUTY_LOOP ms
 #endif                             // SHOW_DASHBOARD

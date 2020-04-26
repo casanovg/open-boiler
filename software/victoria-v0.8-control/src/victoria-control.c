@@ -137,14 +137,14 @@ int main(void) {
         }
 
         // DHW temperature sensor out of range -> Error 008
-        if ((p_system->dhw_temperature <= ADC_MIN) || (p_system->dhw_temperature >= ADC_MAX)) {
+        if ((p_system->dhw_temperature <= ADC_MIN_THRESHOLD) || (p_system->dhw_temperature >= ADC_MAX_THRESHOLD)) {
             GasOff(p_system);
             p_system->error = ERROR_008;
             p_system->system_state = ERROR;  // >>>>> Next state -> ERROR
         }
 
         // CH temperature sensor out of range -> Error 009
-        if ((p_system->ch_temperature <= ADC_MIN) || (p_system->ch_temperature >= ADC_MAX)) {
+        if ((p_system->ch_temperature <= ADC_MIN_THRESHOLD) || (p_system->ch_temperature >= ADC_MAX_THRESHOLD)) {
             GasOff(p_system);
             p_system->error = ERROR_009;
             p_system->system_state = ERROR;  // >>>>> Next state -> ERROR

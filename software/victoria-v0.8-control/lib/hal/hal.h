@@ -24,6 +24,12 @@
 #include "../../include/hw-mapping.h"
 #include "../../include/sys-settings.h"
 
+#define ADC_MIN 0     // System 10-bit ADC device minimum value
+#define ADC_MAX 1023  // System 10-bit ADC device maximum value
+
+#define ADC_MIN_THRESHOLD (ADC_MIN + (ADC_MAX / 200))  // Safety threshold to consider an ADC readout as the range lowest value
+#define ADC_MAX_THRESHOLD (ADC_MAX - (ADC_MAX / 200))  // Safety threshold to consider an ADC readout as the range highest value
+
 // Types
 
 typedef enum hw_switch {

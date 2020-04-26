@@ -14,10 +14,6 @@
 
 #include <avr/io.h>
 
-#define ADC_MIN 0
-#define ADC_MAX 1023
-#define MAX_CH_TEMP_TOLERANCE 65
-
 #define BUFFER_LENGTH 34 /* Circular buffers length */
 
 #define CH_TEMP_MASK 0x3FE

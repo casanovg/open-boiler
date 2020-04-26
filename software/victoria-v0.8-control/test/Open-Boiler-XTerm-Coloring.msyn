@@ -2,12 +2,12 @@
 Name=Open-Boiler
 UseRegex=0
 Underline=
-Red=(error|no)
+Red=(error|no|xx.x'c)
 Green=(yes|si)
 Yellow=(igniting|encendiendo|t1|t2|t3|i1|i2|i3|\[+[0-9]+[0-9]+\])
-Blue=(ready|listo|dhw on duty|acs en servicio|ch on duty +[1-2]|cc en servicio +[1-2])
+Blue=(ready|listo|dhw on duty|acs en servicio|ch on duty +[1-2]|cc en servicio +[1-2]|[0-9]+[0-9].[0-9]+'c)
 Magenta=
 Cyan=
-Blinking=
+Blinking=(xx.x'c)
 CaseSensitive=0
 

@@ -4,12 +4,12 @@ This project aims to replace a Roca Victoria 20/20 domestic combined boiler cont
 <table>
 <thead>
 	<tr>
-		<th>Roca Victoria 20 /20 boiler</th>
+		<thRoca Victoria 20/20 T combi boiler</th>
 	</tr>
 </thead>
 <tbody>
 	<tr>
-		<td>![Roca Victoria 20/20 T combi boiler](https://github.com/casanovg/open-boiler/blob/media/pictures/roca-victoria-20-20-t.png)</td>
+		<td>[Roca Victoria 20/20 T combi boiler](https://github.com/casanovg/open-boiler/blob/media/pictures/roca-victoria-20-20-t.png)</td>
 	</tr>
 </tbody>
 </table>

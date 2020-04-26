@@ -1,7 +1,15 @@
 # Open-Boiler
 This project aims to replace a Roca Victoria 20/20 domestic combined boiler control PCB with an open-hardware/software alternative. It is possible that in the future its application will also be extended to other boiler models and manufacturers.
 
-[Roca Victoria 20/20 T combi boiler](https://github.com/casanovg/open-boiler/blob/media/pictures/roca-victoria-20-20-t.png)
+<table>
+<tbody>
+	<tr>
+		<td><img src="https://github.com/casanovg/open-boiler/blob/media/pictures/roca-victoria-20-20-t.png" width="300" height="300" alt="Roca Victoria 20/20 T combi boiler"></td>
+    <td><img src="https://github.com/casanovg/open-boiler/blob/media/pictures/open-boiler-v0.8-dashboard-01.png" width="500" height="300" alt="Roca Victoria 20/20 T combi boiler"></td>
+  </tr>
+  
+</tbody>
+</table>
 
 ## The story behind the project
 I bought this “Roca Victoria 20/20 T” combined boiler in 2002 and it worked perfectly for approximately 5 years, then the first problems with the control sensors appeared. First was the ionization probe, which detects when the burner is on. Over time the exhaust gas flowmeter also started to fail. It is interesting to mention that the failure of the first sensor leaves the boiler with an error indication waiting for a reset, so if this happens to you in the middle of a cold winter night when you sleep, in the morning you get up at the trans-Siberian express.

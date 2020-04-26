@@ -8,13 +8,10 @@
             "includePath": [
                 "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/include",
                 "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/src",
-                "C:/Users/casanovg/.platformio/packages/framework-arduino-avr/cores/arduino",
-                "C:/Users/casanovg/.platformio/packages/framework-arduino-avr/variants/eightanaloginputs",
-                "C:/Users/casanovg/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
-                "C:/Users/casanovg/.platformio/packages/framework-arduino-avr/libraries/HID/src",
-                "C:/Users/casanovg/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
-                "C:/Users/casanovg/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
-                "C:/Users/casanovg/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/lib/serial-ui",
+                "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/lib/hal",
+                "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/lib/timers",
+                "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/lib/temp-calc",
                 "C:/Users/casanovg/.platformio/packages/tool-unity",
                 ""
             ],
@@ -23,23 +20,18 @@
                 "path": [
                     "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/include",
                     "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/src",
-                    "C:/Users/casanovg/.platformio/packages/framework-arduino-avr/cores/arduino",
-                    "C:/Users/casanovg/.platformio/packages/framework-arduino-avr/variants/eightanaloginputs",
-                    "C:/Users/casanovg/.platformio/packages/framework-arduino-avr/libraries/EEPROM/src",
-                    "C:/Users/casanovg/.platformio/packages/framework-arduino-avr/libraries/HID/src",
-                    "C:/Users/casanovg/.platformio/packages/framework-arduino-avr/libraries/SPI/src",
-                    "C:/Users/casanovg/.platformio/packages/framework-arduino-avr/libraries/SoftwareSerial/src",
-                    "C:/Users/casanovg/.platformio/packages/framework-arduino-avr/libraries/Wire/src",
+                    "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/lib/serial-ui",
+                    "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/lib/hal",
+                    "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/lib/timers",
+                    "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/lib/temp-calc",
                     "C:/Users/casanovg/.platformio/packages/tool-unity",
                     ""
                 ]
             },
             "defines": [
+                "F_CPU=16000000L",
                 "PLATFORMIO=40301",
                 "ARDUINO_AVR_PRO",
-                "F_CPU=16000000L",
-                "ARDUINO_ARCH_AVR",
-                "ARDUINO=10808",
                 "__AVR_ATmega328P__",
                 ""
             ],

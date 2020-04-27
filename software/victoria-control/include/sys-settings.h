@@ -23,6 +23,8 @@
 #define CH_SETPOINT_HIGH 241  // ADC-NTC CH temperature ~ 55°C
 #define CH_SETPOINT_LOW 379   // ADC-NTC CH temperature ~ 38°C
 
+#define MAX_CH_TEMP_TOLERANCE 65  // CH temperature tolerance ~ 66°C (CH_SETPOINT_HIGH - this value)
+
 #define DHW_HEAT_CYCLE_TIME 15000  // DHW heat modulator cycle time (milliseconds)
 #define CH_HEAT_CYCLE_TIME 20000   // CH heat modulator cycle time (milliseconds)
 

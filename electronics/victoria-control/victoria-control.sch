@@ -1,5 +1,4 @@
 EESchema Schematic File Version 4
-LIBS:victoria-control-cache
 EELAYER 30 0
 EELAYER END
 $Descr A4 11693 8268
@@ -7,7 +6,7 @@ encoding utf-8
 Sheet 1 1
 Title "Open-Boiler"
 Date "2019-08-19"
-Rev "0.5"
+Rev "0.8"
 Comp "Nicebots"
 Comment1 "Gustavo Casanova"
 Comment2 ""

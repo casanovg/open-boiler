@@ -331,16 +331,16 @@ void Dashboard(SysInfo *p_system, bool force_refresh) {
         SerialTxStr(str_space_s);
 
         SerialTxStr(str_lit_15);
-        SerialTxChr(CHR_SQRB_O);
+        SerialTxChr(CHR_RNDB_O);
         SerialTxNum(GetKnobPosition(p_system->dhw_setting, DHW_SETTING_STEPS), DIGITS_2);
-        SerialTxChr(CHR_SQRB_C);
+        SerialTxChr(CHR_RNDB_C);
         
         SerialTxStr(str_space_m);
 
         SerialTxStr(str_lit_16);
-        SerialTxChr(CHR_SQRB_O);
+        SerialTxChr(CHR_RNDB_O);
         SerialTxNum(GetKnobPosition(p_system->ch_setting, CH_SETTING_STEPS), DIGITS_2);
-        SerialTxChr(CHR_SQRB_C);
+        SerialTxChr(CHR_RNDB_C);
 
         SerialTxStr(str_space_m);
 
@@ -404,14 +404,11 @@ void Dashboard(SysInfo *p_system, bool force_refresh) {
         }
 
         if (p_system->ch_water_overheat) {
-            SerialTxStr(str_space_xs);   
             SerialTxChr(ASTERISK);  // Asterisk (*)
-            SerialTxStr(str_space_xs);   
+            SerialTxStr(str_space_s);   
         } else {
-            SerialTxStr(str_space_s);
+            SerialTxStr(str_space_m);
         }
-
-        SerialTxStr(str_space_xs);
 
         // Spark igniter
         SerialTxStr(str_lit_07);

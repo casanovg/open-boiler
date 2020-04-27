@@ -31,6 +31,8 @@
 #define CHR_C 67                 // C
 #define CHR_SQRB_O 91            // [
 #define CHR_SQRB_C 93            // ]
+#define CHR_RNDB_O 40            // (
+#define CHR_RNDB_C 41            // )
 
 #if SHOW_DASHBOARD
 #define IGNITION_TRIES_CHR 73  // I

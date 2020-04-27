@@ -9,7 +9,7 @@ Dale una mirada funcionando:
 <tbody>
 	<tr>
 		<td><img src="https://github.com/casanovg/open-boiler/blob/media/pictures/roca-victoria-20-20-t.png" width="300" height="300" alt="Roca Victoria 20/20 T combi boiler"></td>
-    <td><img src="https://github.com/casanovg/open-boiler/blob/media/pictures/open-boiler-v0.8-dashboard-01.png" width="500" height="300" alt="Open-Boiler v0.8 serial terminal dashboard"></td>
+    <td><img src="https://github.com/casanovg/open-boiler/blob/media/pictures/open-boiler-v0.8-dashboard-06.png" width="500" height="300" alt="Open-Boiler v0.8 serial terminal dashboard"></td>
   </tr>
   
 </tbody>

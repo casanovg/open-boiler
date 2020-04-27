@@ -1,11 +1,15 @@
 # Open-Boiler
 This project aims to replace a Roca Victoria 20/20 domestic combined boiler control PCB with an open-hardware/software alternative. It is possible that in the future its application will also be extended to other boiler models and manufacturers.
 
+Take a look at it working: 
+* [Domestic hot water and safety test](https://youtu.be/deHfOc_8mxE)
+* Central Heating: [wall thermostat activation](https://youtu.be/CYksFCGb7gs) and [heating and recirculation water](https://youtu.be/CYksFCGb7gs)
+
 <table>
 <tbody>
 	<tr>
 		<td><img src="https://github.com/casanovg/open-boiler/blob/media/pictures/roca-victoria-20-20-t.png" width="300" height="300" alt="Roca Victoria 20/20 T combi boiler"></td>
-    <td><img src="https://github.com/casanovg/open-boiler/blob/media/pictures/open-boiler-v0.8-dashboard-01.png" width="500" height="300" alt="Roca Victoria 20/20 T combi boiler"></td>
+    <td><img src="https://github.com/casanovg/open-boiler/blob/media/pictures/open-boiler-v0.8-dashboard-01.png" width="500" height="300" alt="Open-Boiler v0.8 serial terminal dashboard"></td>
   </tr>
   
 </tbody>

@@ -8,10 +8,6 @@
             "includePath": [
                 "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/include",
                 "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/src",
-                "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/lib/serial-ui",
-                "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/lib/hal",
-                "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/lib/timers",
-                "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/lib/temp-calc",
                 "C:/Users/casanovg/.platformio/packages/tool-unity",
                 ""
             ],
@@ -20,10 +16,6 @@
                 "path": [
                     "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/include",
                     "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/src",
-                    "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/lib/serial-ui",
-                    "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/lib/hal",
-                    "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/lib/timers",
-                    "c:/Users/casanovg/source/Repos/GitHub/open-boiler/software/victoria-control/lib/temp-calc",
                     "C:/Users/casanovg/.platformio/packages/tool-unity",
                     ""
                 ]

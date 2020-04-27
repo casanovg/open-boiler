@@ -3,7 +3,7 @@ This project aims to replace a Roca Victoria 20/20T domestic combined boiler con
 
 Take a look at it working: 
 * [Domestic hot water and safety test](https://youtu.be/deHfOc_8mxE)
-* Central Heating test: [wall thermostat activation](https://youtu.be/CYksFCGb7gs) and [heating and recirculation water](https://youtu.be/nZ2wHWD1Drg)
+* Central Heating test: [room thermostat activation](https://youtu.be/CYksFCGb7gs) and [heating and recirculation water](https://youtu.be/nZ2wHWD1Drg)
 
 <table>
 <tbody>
@@ -37,6 +37,8 @@ The first thing to consider is to start seeing the boiler, not as a black box an
 6. Flame sensor: ionization probe -> to be replaced by a [KY-026](https://github.com/casanovg/open-boiler/blob/master/electronics/datasheets/KY-026.pdf) infrared light sensor module.
 7. Flue exhaust flow sensor: Pressure switch 12-15 mm ca -> initially preserved but with an overridding option by software. Maybe it will be replaced by a Bosch BMP280 barometric sensor in the future.
 8. Overheating sensor: [Campini Ty60R 105 °C manual reset-thermostat](https://github.com/casanovg/open-boiler/blob/master/electronics/datasheets/Campini-TY60R.pdf).
+9. DHW request magnetic detector.
+10. Roca CH room thermostat. 
 
 ## Outputs:
 1. Safety gas valve: Solenoid 12 VDC, 31 Ω.

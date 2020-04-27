@@ -1,12 +1,12 @@
 /*
- *	Open-Boiler Control - Victoria 20-20 T/F boiler control
- *	Author: Gustavo Casanova
- *	........................................................
- *	File: victoria-control.c (main code) for ATmega328
- *	........................................................
- *	Version: 0.8 "Juan" / 2019-04-09 (Easter Quarantine)
- *	gustavo.casanova@nicebots.com
- *	........................................................
+ *  Open-Boiler Control - Victoria 20-20 T/F boiler control
+ *  Author: Gustavo Casanova
+ *  ........................................................
+ *  File: victoria-control.c (main code) for ATmega328
+ *  ........................................................
+ *  Version: 0.8 "Juan" / 2019-04-09 (Easter Quarantine)
+ *  gustavo.casanova@nicebots.com
+ *  ........................................................
  */
 
 #include "victoria-control.h"
@@ -14,10 +14,10 @@
 // Main function
 int main(void) {
     /* ___________________
-	  |					  | 
-	  |	   Setup Block	  |
-	  |___________________|
-	*/
+      |                   | 
+      |    Setup Block    |
+      |___________________|
+    */
     wdt_disable();  // Disable watch dog timer
     SerialInit();   // Initialize USART for serial communications (57600, N, 8, 1)
 
@@ -111,10 +111,10 @@ int main(void) {
     sei();
     SetTickTimer();
     /* ___________________
-	  |					  | 
-	  |		Main Loop	  |
-	  |___________________|
-	*/
+      |                   | 
+      |     Main Loop     |
+      |___________________|
+    */
     for (;;) {
         // Reset the WDT
         wdt_reset();
@@ -194,10 +194,10 @@ int main(void) {
             // System FSM
             switch (p_system->system_state) {
                 /* _________________________
-				  |							|
-				  |	  System state -> OFF	|
-				  |_________________________|
-				*/
+                  |                         |
+                  |   System state -> OFF   |
+                  |_________________________|
+                */
                 case OFF: {
                     // Verify that the flame sensor is off at this point, otherwise, there's a failure
                     if (GetFlag(p_system, INPUT_FLAGS, FLAME_F)) {
@@ -217,7 +217,7 @@ int main(void) {
 #endif  // AIRFLOW_OVERRIDE
                     switch (p_system->inner_step) {
                         // .....................................
-                        // . Step OFF_1 : Turn all devices off	.
+                        // . Step OFF_1 : Turn all devices off  .
                         // .....................................
                         case OFF_1: {
                             // Turn all actuators off, except the CH water pump
@@ -229,7 +229,7 @@ int main(void) {
                             break;
                         }
                         // ..................................................
-                        // . Step OFF_2 : Fan test in progress: turn fan on	 .
+                        // . Step OFF_2 : Fan test in progress: turn fan on  .
                         // ..................................................
                         case OFF_2: {
 #if (!(AIRFLOW_OVERRIDE) && !(FAN_TEST_OVERRIDE))
@@ -311,10 +311,10 @@ int main(void) {
                     break;
                 }
                 /* ___________________________
-				  |							  |
-				  |	  System state -> READY	  |
-				  |___________________________|
-				*/
+                  |                           |
+                  |   System state -> READY   |
+                  |___________________________|
+                */
                 case READY: {
                     // Give the flame sensor time before checking if it is off when the gas is closed
                     // Give the airflow sensor time before checking if it switches off when the fan gets turned off
@@ -362,10 +362,10 @@ int main(void) {
                     break;
                 }
                 /* ______________________________
-				  |								 |
-				  |	  System state -> IGNITING	 |
-				  |______________________________|
-				*/
+                  |                              |
+                  |   System state -> IGNITING   |
+                  |______________________________|
+                */
                 case IGNITING: {
                     // Check if the DHW and CH request are over
                     if ((GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F) == false) &&
@@ -383,7 +383,7 @@ int main(void) {
                     }
                     switch (p_system->inner_step) {
                         // .................................
-                        // . Step IGNITING_1 : Turn fan on	.
+                        // . Step IGNITING_1 : Turn fan on  .
                         // .................................
                         case IGNITING_1: {
                             if (TimerFinished(FSM_TIMER_ID)) {                  /* DLY_IGNITING_1 */
@@ -394,7 +394,7 @@ int main(void) {
                             break;
                         }
                         // ..........................................
-                        // . Step IGNITING_2 : Check airflow sensor	 .
+                        // . Step IGNITING_2 : Check airflow sensor  .
                         // ..........................................
                         case IGNITING_2: {
 #if !(AIRFLOW_OVERRIDE)
@@ -420,7 +420,7 @@ int main(void) {
                             break;
                         }
                         // .............................................
-                        // . Step IGNITING_3 : Open gas security valve	.
+                        // . Step IGNITING_3 : Open gas security valve  .
                         // .............................................
                         case IGNITING_3: {
                             if (TimerFinished(FSM_TIMER_ID)) { /* DLY_IGNITING_3 */
@@ -531,10 +531,10 @@ int main(void) {
                     break;
                 }
                 /* _________________________________
-				  |									|
-				  |	  System state -> DHW_ON_DUTY	|
-				  |_________________________________|
-				*/
+                  |                                 |
+                  |   System state -> DHW_ON_DUTY   |
+                  |_________________________________|
+                */
                 case DHW_ON_DUTY: {
                     // If the flame sensor is off, check that gas valves 3 and 2 are closed and retry ignition
                     if (GetFlag(p_system, INPUT_FLAGS, FLAME_F) == false) {
@@ -585,7 +585,7 @@ int main(void) {
                         //                                                                                         *
                         p_system->current_heat_level = GetKnobPosition(p_system->dhw_setting, DHW_SETTING_STEPS);  //*
                         ModulateHeat(p_system, p_system->current_heat_level, DHW_HEAT_CYCLE_TIME);                 //*
-                        //																                          *
+                        //                                                                                        *
                         // ***************************************************************************************
                     }
 #if SHOW_DASHBOARD
@@ -599,10 +599,10 @@ int main(void) {
                     break;
                 }
                 /* ________________________________
-				  |								   |
-				  |	  System state -> CH_ON_DUTY   |
-				  |________________________________|
-				*/
+                  |                                |
+                  |   System state -> CH_ON_DUTY   |
+                  |________________________________|
+                */
                 case CH_ON_DUTY: {
                     switch (p_system->inner_step) {
                         // ............................................
@@ -748,10 +748,10 @@ int main(void) {
                     break;
                 }
                 /* ___________________________
-				  |							  |
-				  |	  System state -> ERROR	  |
-				  |___________________________|
-				*/
+                  |                           |
+                  |   System state -> ERROR   |
+                  |___________________________|
+                */
                 case ERROR: {
                     // Turn all actuators off, except the CH water pump
                     GasOff(p_system);
@@ -793,10 +793,10 @@ int main(void) {
                     break;
                 }
                 /* _____________________________
-				  |								|
-				  |	  System state -> Default	|
-				  |_____________________________|
-				*/
+                  |                             |
+                  |   System state -> Default   |
+                  |_____________________________|
+                */
                 default: {
                     ResetTimerLapse(FSM_TIMER_ID, DLY_OFF_2);
                     p_system->inner_step = OFF_1;

@@ -3,7 +3,7 @@ This project aims to replace a Roca Victoria 20/20T domestic combined boiler con
 
 Take a look at it working: 
 * [Domestic hot water and safety test](https://youtu.be/deHfOc_8mxE)
-* Central Heating test: [room thermostat activation](https://youtu.be/CYksFCGb7gs) and [heating and recirculation water](https://youtu.be/nZ2wHWD1Drg)
+* Central Heating test: [room thermostat activation](https://youtu.be/CYksFCGb7gs) and [heating and water recirculation](https://youtu.be/nZ2wHWD1Drg)
 
 <table>
 <tbody>
@@ -16,7 +16,7 @@ Take a look at it working:
 </table>
 
 ## The story behind the project
-I bought this “[Roca Victoria 20/20T](https://github.com/casanovg/open-boiler/blob/master/electronics/datasheets/Roca-Victoria-Technical-Manual.pdf)” combined boiler back in 2002 and it worked perfectly for approximately 5 years, then the first problems with the control sensors appeared. First was the ionization probe, which detects when the burner is on. Over time the exhaust gas flowmeter also started to fail. It is interesting to mention that the failure of the first sensor leaves the boiler with an error indication waiting for a reset, so if this happens to you in the middle of a cold winter night when you sleep, in the morning you get up at the trans-Siberian express.
+I bought this “[Roca Victoria 20/20T](https://github.com/casanovg/open-boiler/blob/master/electronics/datasheets/Roca-Victoria-Technical-Manual.pdf)” combined boiler back in 2002 and it worked perfectly for approximately 5 years, then the first problems with the control sensors appeared. First was the ionization probe, which detects when the burner is on. Over time the exhaust gas flow meter also started to fail. It is interesting to mention that the failure of the first sensor leaves the boiler with an error indication waiting for a reset, so if this happens to you in the middle of a cold winter night when you sleep, in the morning you get up at the trans-Siberian express.
 
 The other sensor, which checks if the combustion fume extractor generates pressure in the outlet pipe, has a bad habit of failing just when you are taking a nice warm bath, so that the cold water punch you receive when the boiler suddenly turns off with error makes you change the note that you were singing in the shower for a desperate scream worthy of a B-class horror movie. That's how I kept replacing the sensors, which are not cheap, regularly every 2 or three years.
 

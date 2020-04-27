@@ -35,10 +35,10 @@ The first thing to consider is to start seeing the boiler, not as a black box an
 4. DC temperature setting: [Piher 10 KΩ through-hole PCB potentiometer](https://github.com/casanovg/open-boiler/blob/master/electronics/datasheets/Piher-PT15NV_10K_A2020.pdf).
 5. System mode setting: [Piher 10 KΩ through-hole PCB potentiometer](https://github.com/casanovg/open-boiler/blob/master/electronics/datasheets/Piher-PT15NV_10K_A2020.pdf).
 6. Flame sensor: ionization probe -> to be replaced by a [KY-026](https://github.com/casanovg/open-boiler/blob/master/electronics/datasheets/KY-026.pdf) infrared light sensor module.
-7. Flue exhaust flow sensor: Pressure switch 12-15 mm ca -> initially preserved but with an overridding option by software. Maybe it will be replaced by a Bosch BMP280 barometric sensor in the future.
+7. Flue exhaust flow sensor: [Pressure switch 12-15 mm ca](https://github.com/casanovg/open-boiler/blob/media/pictures/presostato-victoria-20-20-f.jpg) -> initially preserved but with an overridding option by software. Maybe it will be replaced by a Bosch BMP280 barometric sensor in the future.
 8. Overheating sensor: [Campini Ty60R 105 °C manual reset-thermostat](https://github.com/casanovg/open-boiler/blob/master/electronics/datasheets/Campini-TY60R.pdf).
-9. DHW request magnetic detector.
-10. Roca CH room thermostat. 
+9. DHW request [magnetic detector](https://github.com/casanovg/open-boiler/blob/media/pictures/kit-captador-flow-switch-victoria-20-20.jpg).
+10. Roca CH [room thermostat](https://github.com/casanovg/open-boiler/blob/media/pictures/room-thermostat-tm-1.jpg).
 
 ## Outputs:
 1. Safety gas valve: Solenoid 12 VDC, 31 Ω.

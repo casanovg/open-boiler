@@ -34,10 +34,10 @@ Lo primero a considerar, es comenzar a ver la caldera, ya no como una caja negra
 4. Ajuste de temperatura de CC: [Potenciómetro PCB Piher de 10 kΩ](https://github.com/casanovg/open-boiler/blob/master/electronics/datasheets/Piher-PT15NV_10K_A2020.pdf).
 5. Ajuste de modo del sistema: [Potenciómetro PCB Piher de 10 kΩ](https://github.com/casanovg/open-boiler/blob/master/electronics/datasheets/Piher-PT15NV_10K_A2020.pdf).
 6. Sensor de llama: Sonda de ionización -> se reemplaza por sensor de luz infrarroja [KY-026](https://github.com/casanovg/open-boiler/blob/master/electronics/datasheets/KY-026.pdf).
-7. Sensor de flujo de aire de escape: Presostato 12-15 mm ca -> inicialmente se conserva con la posibilidad de ser anulado por software. En un futuro se reemplazará por un sensor barométrico Bosch BMP280.
+7. Sensor de flujo de aire de escape: [Presostato 12-15 mm ca](https://github.com/casanovg/open-boiler/blob/media/pictures/presostato-victoria-20-20-f.jpg) -> inicialmente se conserva con la posibilidad de ser anulado por software. En un futuro se reemplazará por un sensor barométrico Bosch BMP280.
 8. Sensor de sobrecalentamiento: Termostato [Campini Ty60R de 105 °C con reposición manual](https://github.com/casanovg/open-boiler/blob/master/electronics/datasheets/Campini-TY60R.pdf).
-9. Detector magnético de solicitud de ACS.
-10. Termostato de ambiente para calefacción central Roca.
+9. [Detector magnético](https://github.com/casanovg/open-boiler/blob/media/pictures/kit-captador-flow-switch-victoria-20-20.jpg) de solicitud de ACS.
+10. [Termostato de ambiente](https://github.com/casanovg/open-boiler/blob/media/pictures/room-thermostat-tm-1.jpg) para calefacción central Roca.
 
 ## Salidas:
 1. Válvula de gas de seguridad: Solenoide 12 VCC, 31 Ω.

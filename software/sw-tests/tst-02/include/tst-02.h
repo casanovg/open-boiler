@@ -1,5 +1,5 @@
-#ifndef _TST_01_H_
-#define _TST_01_H
+#ifndef _TST_02_H_
+#define _TST_02_H
 
 int input_values[] = {7000, 14000, 20000};
 int target_values[] = {
@@ -14,4 +14,4 @@ int target_values[] = {
     19000, 19500, 20000    
 };
 
-#endif /* _TST_01_H */
+#endif /* _TST_02_H */

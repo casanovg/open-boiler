@@ -4,7 +4,7 @@
 // Heat modulation algorithm
 // ---------------------------------------------
 
-#include "tst-01.h"
+#include "tst-02.h"
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>

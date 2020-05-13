@@ -7,7 +7,7 @@
  *  Version: 1.0.0 / 2019-08-09
  *  gustavo.casanova@nicebots.com
  *  .............................................
- *  Based on work by Atmel (AVR312) et others
+ *  Based on works by Atmel (AVR312) et others
  *  .............................................
  */
 

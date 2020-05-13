@@ -7,7 +7,7 @@
  *  Version: 0.9.0 / 2020-05-12
  *  gustavo.casanova@nicebots.com
  *  .............................................
- *  Based on work by Atmel (AVR311) et others
+ *  Based on works by Atmel (AVR311) et others
  *  .............................................
  */
 
@@ -177,6 +177,9 @@ ISR(TWI_vect) {
         case TWI_SRX_STOP_RESTART: {
             // Prepare for next event
             TWCR = (1 << TWEN) | (1 << TWIE) | (1 << TWINT) | (1 << TWEA);
+
+            // SEE HERE *** SEE HERE *** SEE HERE *** SEE HERE *** SEE HERE
+
             break;
         }
         case TWI_SRX_ADR_DATA_NACK:

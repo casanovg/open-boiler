@@ -15,6 +15,7 @@
 #include "nb-usitwisl-if.h"
 
 // USI TWI driver globals
+uint8_t twi_addr = 0;
 uint8_t rx_buffer[TWI_RX_BUFFER_SIZE];
 uint8_t tx_buffer[TWI_TX_BUFFER_SIZE];
 uint8_t rx_byte_count = 0;                              /* Bytes received in RX buffer */
@@ -42,12 +43,30 @@ inline static void SET_USI_SCL_AS_INPUT(void) __attribute__((always_inline));
 inline static void SET_USI_SDA_AND_SCL_AS_OUTPUT(void) __attribute__((always_inline));
 inline static void SET_USI_SDA_AND_SCL_AS_INPUT(void) __attribute__((always_inline));
 
+/*  _______________________________
+   |                               |
+   | USI TWI driver initialization |
+   |_______________________________|
+*/
+//void TwiDriverInit(void) {
+void TwiDriverInit(uint8_t address) {    
+    // Initialize USI for TWI Slave mode.
+    twi_addr = address;                    /* Device TWI address */    
+    tx_tail = tx_head = 0;                  /* Flush TWI TX buffers */
+    rx_tail = rx_head = rx_byte_count = 0;  /* Flush TWI RX buffers */
+    SET_USI_SDA_AND_SCL_AS_OUTPUT();        /* Set SCL and SDA as output */
+    PORT_USI |= (1 << PORT_USI_SDA);        /* Set SDA high */
+    PORT_USI |= (1 << PORT_USI_SCL);        /* Set SCL high */
+    SET_USI_SDA_AS_INPUT();                 /* Set SDA as input */
+    SET_USI_TO_WAIT_FOR_TWI_ADDRESS();      /* Wait for TWI start condition and address from master */
+}
+
 /*  ___________________________
    |                           |
    | USI TWI byte transmission |
    |___________________________|
 */
-void UsiTwiTransmitByte(uint8_t data_byte) {
+void TwiTransmitByte(uint8_t data_byte) {
     tx_head = ((tx_head + 1) & TWI_TX_BUFFER_MASK); /* Update the TX buffer index */
     while (tx_head == tx_tail) {};          /* Wait until there is free space in the TX buffer */
     tx_buffer[tx_head] = data_byte;         /* Write the data byte into the TX buffer */
@@ -58,26 +77,10 @@ void UsiTwiTransmitByte(uint8_t data_byte) {
    | USI TWI byte reception    |
    |___________________________|
 */
-uint8_t UsiTwiReceiveByte(void) {
+uint8_t TwiReceiveByte(void) {
     while (rx_byte_count-- == 0) {};        /* Wait until a byte is received into the RX buffer */
     rx_tail = ((rx_tail + 1) & TWI_RX_BUFFER_MASK); /* Update the RX buffer index */
     return rx_buffer[rx_tail];              /* Return data from the buffer */
-}
-
-/*  _______________________________
-   |                               |
-   | USI TWI driver initialization |
-   |_______________________________|
-*/
-void UsiTwiDriverInit(void) {
-    // Initialize USI for TWI Slave mode.
-    tx_tail = tx_head = 0;                  /* Flush TWI TX buffers */
-    rx_tail = rx_head = rx_byte_count = 0;  /* Flush TWI RX buffers */
-    SET_USI_SDA_AND_SCL_AS_OUTPUT();        /* Set SCL and SDA as output */
-    PORT_USI |= (1 << PORT_USI_SDA);        /* Set SDA high */
-    PORT_USI |= (1 << PORT_USI_SCL);        /* Set SCL high */
-    SET_USI_SDA_AS_INPUT();                 /* Set SDA as input */
-    SET_USI_TO_WAIT_FOR_TWI_ADDRESS();      /* Wait for TWI start condition and address from master */
 }
 
 /*  _______________________________________________________
@@ -121,7 +124,7 @@ inline bool UsiOverflowHandler(void) {
         // a general call, reply ACK and check whether it should send or receive data.
         // Otherwise, set USI to wait for the next start condition and address.
         case STATE_CHECK_RECEIVED_ADDRESS: {
-            if ((USIDR == 0) || ((USIDR >> 1) == TWI_ADDR)) {
+            if ((USIDR == 0) || ((USIDR >> 1) == twi_addr)) {
                 if (USIDR & 0x01) {     /* If data register low-order bit = 1, start the send data mode */
                     // >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
                     if (p_receive_event) {                  //                           >>

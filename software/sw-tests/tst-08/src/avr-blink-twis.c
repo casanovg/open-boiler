@@ -82,6 +82,12 @@ int main(void) {
        |___________________|
     */
     for (;;) {
+
+#ifdef ARDUINO_AVR_ATTINYX5
+        // TwiStartHandler();
+        // UsiOverflowHandler();
+#endif // ARDUINO_AVR_ATTINYX5        
+
         if (reset_now == true) {
             ResetMCU();
         }

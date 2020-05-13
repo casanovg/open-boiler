@@ -53,11 +53,12 @@ typedef enum { /* TWI driver operational modes */
 
 // Function pointers
 void (*p_receive_event)(uint8_t);
+void (*p_enable_slow_ops)(void);
 
 // USI TWI driver prototypes
-void UsiTwiTransmitByte(uint8_t);
-uint8_t UsiTwiReceiveByte(void);
-void UsiTwiDriverInit(void);
+void TwiDriverInit(uint8_t);
+void TwiTransmitByte(uint8_t);
+uint8_t TwiReceiveByte(void);
 void TwiStartHandler(void);
 bool UsiOverflowHandler(void);
 

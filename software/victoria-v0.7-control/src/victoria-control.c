@@ -540,10 +540,10 @@ int main(void) {
                     // .......................................
                     case DHW_ON_DUTY_2: {
                         // Close non-operating valves for state 2/3
-                        ClearFlag(p_system, OUTPUT_FLAGS, VALVE_2);
+                        ClearFlag(p_system, OUTPUT_FLAGS, VALVE_1);
                         ClearFlag(p_system, OUTPUT_FLAGS, VALVE_3);
                         // Open operating valve for state 2/3
-                        SetFlag(p_system, OUTPUT_FLAGS, VALVE_1);
+                        SetFlag(p_system, OUTPUT_FLAGS, VALVE_2);
                         // "State 2/3" timing
                         if (!(delay--)) { /* DLY_L_FLAME_MODULATION / 3 */
                             delay = DLY_L_FLAME_MODULATION / 3;

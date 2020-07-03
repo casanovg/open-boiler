@@ -20,7 +20,8 @@ int main(void) {
     */
 
     // Disable watch dog timer
-    wdt_disable();
+    MCUSR = 0;
+    wdt_disable();    
 
     //System state initialization
     SysInfo sys_info;

@@ -18,8 +18,13 @@ int main(void) {
       |    Setup Block    |
       |___________________|
     */
-    wdt_disable();  // Disable watch dog timer
-    SerialInit();   // Initialize USART for serial communications (57600, N, 8, 1)
+
+    // Disable watch dog timer
+    MCUSR = 0;
+    wdt_disable();
+
+    // Initialize USART for serial communications (57600, N, 8, 1)
+    SerialInit();
 
     // System gas modulator
     HeatModulator gas_modulator[] = {

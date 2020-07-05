@@ -1,4 +1,4 @@
-# Open-Boiler
+# ![Open-Boiler](https://github.com/casanovg/open-boiler/blob/media/open-boiler-logo.png)
 This project aims to replace a Roca Victoria 20/20T domestic combined boiler control PCB with an open-hardware/software alternative. It is possible that in the future its application will also be extended to other boiler models and manufacturers. \[[Español](LEEME.md)\] 
 
 Take a look at it working: 

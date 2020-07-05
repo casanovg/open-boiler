@@ -1,4 +1,4 @@
-# Proyecto Open-Boiler
+# ![Open-Boiler](https://github.com/casanovg/open-boiler/blob/media/open-boiler-logo.png)
 Este proyecto apunta a reemplazar la placa de control electrónica de una caldera combinada hogareña Roca Victoria 20/20T por una alternativa de hardware y software abierto. Es posible que a futuro se también se extienda su aplicación a otros modelos y fabricantes. \[[English](README.md)\]
 
 Dale una mirada funcionando: 

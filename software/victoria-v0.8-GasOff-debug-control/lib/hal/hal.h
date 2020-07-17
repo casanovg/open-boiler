@@ -85,7 +85,7 @@ static const char __flash str_caller[] = {"\n\n\r --> GasOff function caller: "}
 
 // Heat levels valve settings
 // ....................................................
-// { { %valve-1, %valve-3, %valve-3 }, Kcal/h, G20_m3 }
+// { { %valve-1, %valve-2, %valve-3 }, Kcal/h, G20_m3 }
 // ....................................................
 static const HeatLevel __flash heat_level[] = {
     {{100, 0, 0}, 7000, 0.870},    // Heat level 0 = 7000 Kcal/h

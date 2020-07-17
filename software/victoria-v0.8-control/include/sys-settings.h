@@ -101,7 +101,7 @@
 #endif
 
 #define BLINKS_AT_START 5    // Number of LED_UI blinks to show firmware execution start
-#define BLINK_AT_ST_DLY 500  // Delay between start indication blinks
+#define BLINK_AT_ST_DLY 250  // Delay between start indication blinks
 
 // System types
 

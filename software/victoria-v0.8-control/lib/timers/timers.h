@@ -9,8 +9,8 @@
  *  ........................................................
  */
 
-#ifndef _SYS_TIMERS_H_
-#define _SYS_TIMERS_H_
+#ifndef SYS_TIMERS_H
+#define SYS_TIMERS_H
 
 #include <avr/interrupt.h>
 #include <avr/io.h>
@@ -82,4 +82,4 @@ volatile static uint8_t timer0_fractions = 0;      // Range 0 - 255
 // System Timers globals
 SystemTimer timer_buffer[SYSTEM_TIMERS];
 
-#endif  // _SYS_TIMERS_H_
+#endif  // SYS_TIMERS_H

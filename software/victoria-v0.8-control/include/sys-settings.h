@@ -9,8 +9,8 @@
  *  ........................................................
  */
 
-#ifndef _SYS_SETTINGS_H_
-#define _SYS_SETTINGS_H_
+#ifndef SYS_SETTINGS_H
+#define SYS_SETTINGS_H
 
 #include "hw-mapping.h"
 
@@ -99,6 +99,9 @@
 #define DLY_DHW_ON_DUTY_LOOP 3000  // DHW_on_Duty: Dashboard refreshing time when looping through DHW on-duty mode
 #define DLY_CH_ON_DUTY_LOOP 3000   // CH_on_Duty: Dashboard refreshing time when looping through CH on-duty mode
 #endif
+
+#define BLINKS_AT_START 5    // Number of LED_UI blinks to show firmware execution start
+#define BLINK_AT_ST_DLY 500  // Delay between start indication blinks
 
 // System types
 
@@ -212,4 +215,4 @@ typedef struct sys_info {
     HeatModulator heat_modulator[HEAT_MODULATOR_VALVES];  // Heat modulator struct
 } SysInfo;
 
-#endif  // _SYS_SETTINGS_H_
+#endif  // SYS_SETTINGS_H

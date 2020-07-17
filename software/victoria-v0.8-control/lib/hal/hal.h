@@ -9,8 +9,8 @@
  *  ........................................................
  */
 
-#ifndef _HAL_H_
-#define _HAL_H_
+#ifndef HAL_H
+#define HAL_H
 
 #include <avr/pgmspace.h>
 #include <avr/wdt.h>
@@ -115,4 +115,4 @@ static const HeatLevel __flash heat_level[] = {
     {{0, 0, 100}, 20000, 2.390}    // Heat level 27 = 20000 Kcal/h
 };
 
-#endif  // _HAL_H_
+#endif  // HAL_H

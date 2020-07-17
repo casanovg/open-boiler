@@ -9,8 +9,8 @@
  *  ........................................................
  */
 
-#ifndef _ERRORS_H_
-#define _ERRORS_H_
+#ifndef ERRORS_H
+#define ERRORS_H
 
 #define ERROR_000 0   // E000: No error
 #define ERROR_001 1   // E001: Overheat thermostat open
@@ -26,4 +26,4 @@
 #define ERROR_011 11  // E011: Heat level inconsistency detected
 #define ERROR_012 12  // E012: Unable to create system timer, not enough slots
 
-#endif /* _ERRORS_H_ */
+#endif  // ERRORS_H

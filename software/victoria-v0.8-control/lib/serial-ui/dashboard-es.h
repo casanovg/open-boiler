@@ -9,8 +9,8 @@
  *  ........................................................
  */
 
-#ifndef _DASHBOARD_ES_H_
-#define _DASHBOARD_ES_H_
+#ifndef DASHBOARD_ES_H
+#define DASHBOARD_ES_H
 
 #include "../../include/sys-settings.h"
 
@@ -92,4 +92,4 @@ static const char __flash str_temperr[] = {"XX.X"};
 static const char __flash str_no_dashboard[] = {"- Tablero del sistema desabilitado en consiguracion ..."};
 #endif  // SHOW_DASHBOARD
 
-#endif  // _DASHBOARD_ES_H_
+#endif  // DASHBOARD_ES_H

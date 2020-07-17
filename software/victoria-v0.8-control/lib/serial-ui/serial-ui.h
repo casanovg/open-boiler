@@ -9,8 +9,8 @@
  *  ........................................................
  */
 
-#ifndef _SERIAL_UI_H_
-#define _SERIAL_UI_H_
+#ifndef SERIAL_UI_H
+#define SERIAL_UI_H
 
 #include <avr/pgmspace.h>
 #include <hal.h>
@@ -76,4 +76,4 @@ static const char __flash str_header_01[] = {" " FW_NAME " " FW_VERSION " "};
 static const uint8_t __flash clr_ascii[] = {27, 91, 50, 74, 27, 91, 72};
 static const char __flash str_crlf[] = {"\r\n"};
 
-#endif  // _SERIAL_UI_H_
+#endif  // SERIAL_UI_H

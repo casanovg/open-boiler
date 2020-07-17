@@ -51,6 +51,12 @@ int main(void) {
     p_system->pump_timer_memory = 0;
     p_system->ch_water_overheat = false;
 
+    // Start indication
+    for (uint8_t i = 0; i < BLINKS_AT_START * 2; i++) {
+        ToggleFlag(p_system, OUTPUT_FLAGS, LED_UI_F);
+        _delay_ms(BLINK_AT_ST_DLY);
+    }
+
     for (uint8_t valve = 0; valve < HEAT_MODULATOR_VALVES; valve++) {
         p_system->heat_modulator[valve] = gas_modulator[valve];
     }

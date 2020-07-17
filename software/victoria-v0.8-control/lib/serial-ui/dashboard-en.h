@@ -9,8 +9,8 @@
  *  ........................................................
  */
 
-#ifndef _DASHBOARD_EN_H_
-#define _DASHBOARD_EN_H_
+#ifndef DASHBOARD_EN_H
+#define DASHBOARD_EN_H
 
 #include "../../include/sys-settings.h"
 
@@ -92,4 +92,4 @@ static const char __flash str_temperr[] = {"XX.X"};
 static const char __flash str_no_dashboard[] = {"- System dashboard disabled in settings ..."};
 #endif  // SHOW_DASHBOARD
 
-#endif  // _DASHBOARD_EN_H_
+#endif  // DASHBOARD_EN_H

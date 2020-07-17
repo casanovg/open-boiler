@@ -9,8 +9,8 @@
  *  ........................................................
  */
 
-#ifndef _HARDWARE_MAPPING_H_
-#define _HARDWARE_MAPPING_H_
+#ifndef HARDWARE_MAPPING_H
+#define HARDWARE_MAPPING_H
 
 // Flame detector (mini-pro pin 2 - input)
 #define FLAME_DDR DDRD
@@ -90,4 +90,4 @@
 #define CH_SET_ADC 1    // ADC1 - ADC Channel 1 (Pin A1)
 #define SYS_MOD_ADC 2   // ADC2 - ADC Channel 2 (Pin A2)
 
-#endif  // _HARDWARE_MAPPING_H_
+#endif  // HARDWARE_MAPPING_H

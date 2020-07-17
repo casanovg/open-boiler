@@ -9,8 +9,8 @@
  *  ........................................................
  */
 
-#ifndef _VICTORIA_CONTROL_H_
-#define _VICTORIA_CONTROL_H_
+#ifndef VICTORIA_CONTROL_H
+#define VICTORIA_CONTROL_H
 
 #include <avr/io.h>
 #include <avr/pgmspace.h>
@@ -23,4 +23,4 @@
 #include "errors.h"
 #include "sys-settings.h"
 
-#endif  // _VICTORIA_CONTROL_H_
+#endif  // VICTORIA_CONTROL_H

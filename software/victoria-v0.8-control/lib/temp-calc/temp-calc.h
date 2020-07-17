@@ -9,8 +9,8 @@
  *  ........................................................
  */
 
-#ifndef _TEMP_CALC_H_
-#define _TEMP_CALC_H_
+#ifndef TEMP_CALC_H
+#define TEMP_CALC_H
 
 #include <avr/io.h>
 
@@ -55,4 +55,4 @@ static const uint16_t __flash fir_table[FIR_LEN] = {
     1, 3, 9, 23, 48, 89, 149, 230, 333, 454, 586, 719, 840, 938, 1002, 1024,
     1002, 938, 840, 719, 586, 454, 333, 230, 149, 89, 48, 23, 9, 3, 1};
 
-#endif /* _TEMP_CALC_H_ */
+#endif  // TEMP_CALC_H

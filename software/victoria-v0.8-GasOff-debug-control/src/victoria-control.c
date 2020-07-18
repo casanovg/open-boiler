@@ -23,8 +23,10 @@ int main(void) {
     MCUSR = 0;
     wdt_disable();
 
+#if (SHOW_DASHBOARD || GASOFF_DEBUG || SERIAL_DEBUG)
     // Initialize USART for serial communications (57600, N, 8, 1)
     SerialInit();
+#endif  (SHOW_DASHBOARD || GASOFF_DEBUG)
 
     // System gas modulator
     HeatModulator gas_modulator[] = {
@@ -149,16 +151,22 @@ int main(void) {
 
         // DHW temperature sensor out of range -> Error 008
         if ((p_system->dhw_temperature <= ADC_MIN_THRESHOLD) || (p_system->dhw_temperature >= ADC_MAX_THRESHOLD)) {
-            // GasOff(p_system);
+#if !(GASOFF_DEBUG)
+            GasOff(p_system);
+#else
             GasOff(p_system, 1);
+#endif  // !(GASOFF_DEBUG)
             p_system->error = ERROR_008;
             p_system->system_state = ERROR;  // >>>>> Next state -> ERROR
         }
 
         // CH temperature sensor out of range -> Error 009
         if ((p_system->ch_temperature <= ADC_MIN_THRESHOLD) || (p_system->ch_temperature >= ADC_MAX_THRESHOLD)) {
-            // GasOff(p_system);
+#if !(GASOFF_DEBUG)
+            GasOff(p_system);
+#else
             GasOff(p_system, 2);
+#endif  // !(GASOFF_DEBUG)
             p_system->error = ERROR_009;
             p_system->system_state = ERROR;  // >>>>> Next state -> ERROR
         }
@@ -167,8 +175,11 @@ int main(void) {
         if (p_system->ch_temperature < (CH_SETPOINT_HIGH - MAX_CH_TEMP_TOLERANCE)) {
             if (p_system->system_state == CH_ON_DUTY) {
                 // If the system is running in CH mode, there is a system failure, stop all and indicate error
-                // GasOff(p_system);
+#if !(GASOFF_DEBUG)
+            GasOff(p_system);
+#else
                 GasOff(p_system, 3);
+#endif  // !(GASOFF_DEBUG)
                 p_system->error = ERROR_010;
                 p_system->system_state = ERROR;  // >>>>> Next state -> ERROR
             } else {
@@ -215,8 +226,11 @@ int main(void) {
                 case OFF: {
                     // Verify that the flame sensor is off at this point, otherwise, there's a failure
                     if (GetFlag(p_system, INPUT_FLAGS, FLAME_F)) {
-                        // GasOff(p_system);
+#if !(GASOFF_DEBUG)
+                        GasOff(p_system);
+#else
                         GasOff(p_system, 4);
+#endif  // !(GASOFF_DEBUG)
                         p_system->error = ERROR_002;
                         p_system->system_state = ERROR;  // >>>>> Next state -> ERROR
                         break;
@@ -236,8 +250,11 @@ int main(void) {
                         // .....................................
                         case OFF_1: {
                             // Turn all actuators off, except the CH water pump
-                            // GasOff(p_system);
+#if !(GASOFF_DEBUG)
+                            GasOff(p_system);
+#else
                             GasOff(p_system, 5);
+#endif  // !(GASOFF_DEBUG)
                             ResetTimerLapse(FSM_TIMER_ID, DLY_OFF_2);
                             //if (GetKnobPosition(p_system->system_mode, SYSTEM_MODE_STEPS) < SYS_OFF) {
                             p_system->inner_step = OFF_2;
@@ -387,8 +404,11 @@ int main(void) {
                     if ((GetFlag(p_system, INPUT_FLAGS, DHW_REQUEST_F) == false) &&
                         (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F) == false)) {
                         // Request canceled, turn actuators off and return to "ready" state
-                        // GasOff(p_system);
+#if !(GASOFF_DEBUG)
+                        GasOff(p_system);
+#else
                         GasOff(p_system, 6);
+#endif  // !(GASOFF_DEBUG)
 #if SHOW_DASHBOARD
                         p_system->last_displayed_iflags = 0xFF; /* Force a display dashboard refresh */
 #endif                                                          // SHOW_DASHBOARD
@@ -505,8 +525,11 @@ int main(void) {
                                         p_system->system_state = CH_ON_DUTY;
                                     } else {
                                         // Request canceled, turn actuators off and return to "ready" state
-                                        // GasOff(p_system);
+#if !(GASOFF_DEBUG)
+                                        GasOff(p_system);
+#else
                                         GasOff(p_system, 7);
+#endif  // !(GASOFF_DEBUG)
                                         ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
                                         p_system->inner_step = READY_1;
                                         p_system->system_state = READY;
@@ -518,8 +541,11 @@ int main(void) {
                                     // Increment ignition retry counter
                                     if (p_system->ignition_tries++ >= MAX_IGNITION_TRIES) {
                                         // If the number of ignition retries reached the maximum, close gas and indicate an error
-                                        // GasOff(p_system);
+#if !(GASOFF_DEBUG)
+                                        GasOff(p_system);
+#else
                                         GasOff(p_system, 8);
+#endif  // !(GASOFF_DEBUG)
                                         // Reset ignition retry counter
                                         p_system->ignition_tries = 1;
                                         p_system->error = ERROR_005;
@@ -567,8 +593,11 @@ int main(void) {
 #if !(AIRFLOW_OVERRIDE)
                     // Verify that the airflow sensor is on, otherwise, close gas and go to error
                     if (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F) == false) {
-                        // GasOff(p_system); /* Close gas, turn igniter and fan off */
+#if !(GASOFF_DEBUG)
+                        GasOff(p_system); /* Close gas, turn igniter and fan off */
+#else
                         GasOff(p_system, 9);
+#endif  // !(GASOFF_DEBUG)                        
                         p_system->error = ERROR_007;
                         p_system->system_state = ERROR; /* >>>>> Next state -> ERROR */
                     }
@@ -594,8 +623,11 @@ int main(void) {
                             p_system->system_state = CH_ON_DUTY;
                         } else {
                             // DHW request canceled, turn gas off and return to "ready" state
-                            // GasOff(p_system);
+#if !(GASOFF_DEBUG)
+                            GasOff(p_system);
+#else
                             GasOff(p_system, 10);
+#endif  // !(GASOFF_DEBUG)
                             ResetTimerLapse(HEAT_TIMER_ID, HEAT_TIMER_DURATION);
                             ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
                             p_system->inner_step = READY_1;
@@ -641,8 +673,11 @@ int main(void) {
 #if !(AIRFLOW_OVERRIDE)
                             // Verify that the airflow sensor is on, otherwise, close gas and go to error
                             if (GetFlag(p_system, INPUT_FLAGS, AIRFLOW_F) == false) {
-                                // GasOff(p_system);  // Close gas, turn igniter and fan off
+#if !(GASOFF_DEBUG)
+                                GasOff(p_system);  // Close gas, turn igniter and fan off
+#else
                                 GasOff(p_system, 11);
+#endif  // !(GASOFF_DEBUG)
                                 p_system->error = ERROR_007;
                                 p_system->system_state = ERROR;  // >>>>> Next state -> ERROR
                             }
@@ -669,8 +704,11 @@ int main(void) {
                                 // Check if the CH request is over
                                 if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F) == false) {
                                     // CH request canceled, turn gas off and return to "ready" state
-                                    // GasOff(p_system);
+#if !(GASOFF_DEBUG)
+                                    GasOff(p_system);
+#else
                                     GasOff(p_system, 12);
+#endif  // !(GASOFF_DEBUG)
                                     ResetTimerLapse(HEAT_TIMER_ID, HEAT_TIMER_DURATION);
                                     ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
                                     p_system->inner_step = READY_1;
@@ -691,8 +729,11 @@ int main(void) {
 
                             } else {
                                 //Close gas
-                                // GasOff(p_system);
+#if !(GASOFF_DEBUG)
+                                GasOff(p_system);
+#else
                                 GasOff(p_system, 13);
+#endif  // !(GASOFF_DEBUG)
                                 // NO NO NO Restart the water pump shutdown timeout counter
                                 // NO NO NO p_system->pump_delay = DLY_WATER_PUMP_OFF;
                                 p_system->inner_step = CH_ON_DUTY_2;
@@ -705,8 +746,11 @@ int main(void) {
                         case CH_ON_DUTY_2: {
                             // Close gas
                             if (GetFlag(p_system, INPUT_FLAGS, FLAME_F)) {
-                                // GasOff(p_system);
+#if !(GASOFF_DEBUG)
+                                GasOff(p_system);
+#else
                                 GasOff(p_system, 14);
+#endif  // !(GASOFF_DEBUG)
                             }
                             // If the CH water pump is off, but it still has pending running time, turn it on
                             if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F) == false) {
@@ -741,8 +785,11 @@ int main(void) {
                                 // Check if the CH request is over
                                 if (GetFlag(p_system, INPUT_FLAGS, CH_REQUEST_F) == false) {
                                     // CH request canceled, turn gas off and return to "ready" state
-                                    // GasOff(p_system);
+#if !(GASOFF_DEBUG)
+                                    GasOff(p_system);
+#else
                                     GasOff(p_system, 15);
+#endif  // !(GASOFF_DEBUG)
                                     ResetTimerLapse(FSM_TIMER_ID, DLY_READY_1);
                                     p_system->inner_step = READY_1;
                                     p_system->system_state = READY;
@@ -780,8 +827,11 @@ int main(void) {
                 */
                 case ERROR: {
                     // Turn all actuators off, except the CH water pump
-                    // GasOff(p_system);
+#if !(GASOFF_DEBUG)
+                    GasOff(p_system);
+#else
                     GasOff(p_system, 16);
+#endif  // !(GASOFF_DEBUG)
                     uint8_t error_loops = 5; /* Number of times the error will be displayed */
                     // Error loop -> displays the error code "error_loops" times
                     while (error_loops--) {
@@ -836,8 +886,11 @@ int main(void) {
             //ClrScr();
             if (GetKnobPosition(p_system->system_mode, SYSTEM_MODE_STEPS) == SYS_OFF) {
                 // System OFF mode indication
-                // GasOff(p_system);
+#if !(GASOFF_DEBUG)
+                GasOff(p_system);
+#else
                 GasOff(p_system, 17);
+#endif  // !(GASOFF_DEBUG)
                 p_system->system_state = OFF;
                 p_system->inner_step = OFF_1;
                 for (int i = 0; i < 6; i++) {
@@ -848,8 +901,11 @@ int main(void) {
                 SerialTxChr((char)32);
             } else {
                 // System RESET mode indication
-                // GasOff(p_system);
+#if !(GASOFF_DEBUG)
+                GasOff(p_system);
+#else
                 GasOff(p_system, 18);
+#endif  // !(GASOFF_DEBUG)
                 p_system->system_state = OFF;
                 p_system->inner_step = OFF_1;
                 for (int i = 0; i < 14; i++) {

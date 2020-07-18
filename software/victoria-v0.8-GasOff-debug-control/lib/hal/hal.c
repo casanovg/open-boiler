@@ -619,22 +619,23 @@ void ModulateHeat(SysInfo *p_system, uint8_t heat_level_ix, uint32_t heat_cycle_
     //
 }
 
-// // Function GasOff: Closes all heat valves and the security valve, turns the spark igniter and exhaust fan off
-// void GasOff(SysInfo *p_system) {
-//     ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);  // Turn spark igniter off
-//     _delay_ms(5);                                        // Blocking delay
-//     ClearFlag(p_system, OUTPUT_FLAGS, VALVE_3_F);        // Close gas valve 3
-//     _delay_ms(5);                                        // Blocking delay
-//     ClearFlag(p_system, OUTPUT_FLAGS, VALVE_2_F);        // Close gas valve 2
-//     _delay_ms(5);                                        // Blocking delay
-//     ClearFlag(p_system, OUTPUT_FLAGS, VALVE_1_F);        // Close gas valve 1
-//     _delay_ms(5);                                        // Blocking delay
-//     ClearFlag(p_system, OUTPUT_FLAGS, VALVE_S_F);        // Close gas security valve
-//     _delay_ms(5);                                        // Blocking delay
-//     ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN_F);    // Turn exhaust fan off
-//     _delay_ms(5);                                        // Blocking delay
-// }
-
+#if !(GASOFF_DEBUG)
+// Function GasOff: Closes all heat valves and the security valve, turns the spark igniter and exhaust fan off
+void GasOff(SysInfo *p_system) {
+    ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);  // Turn spark igniter off
+    _delay_ms(5);                                        // Blocking delay
+    ClearFlag(p_system, OUTPUT_FLAGS, VALVE_3_F);        // Close gas valve 3
+    _delay_ms(5);                                        // Blocking delay
+    ClearFlag(p_system, OUTPUT_FLAGS, VALVE_2_F);        // Close gas valve 2
+    _delay_ms(5);                                        // Blocking delay
+    ClearFlag(p_system, OUTPUT_FLAGS, VALVE_1_F);        // Close gas valve 1
+    _delay_ms(5);                                        // Blocking delay
+    ClearFlag(p_system, OUTPUT_FLAGS, VALVE_S_F);        // Close gas security valve
+    _delay_ms(5);                                        // Blocking delay
+    ClearFlag(p_system, OUTPUT_FLAGS, EXHAUST_FAN_F);    // Turn exhaust fan off
+    _delay_ms(5);                                        // Blocking delay
+}
+#else
 // Function GasOff: Closes all heat valves and the security valve, turns the spark igniter and exhaust fan off
 void GasOff(SysInfo *p_system, uint8_t caller) {
     ClearFlag(p_system, OUTPUT_FLAGS, SPARK_IGNITER_F);  // Turn spark igniter off
@@ -655,6 +656,7 @@ void GasOff(SysInfo *p_system, uint8_t caller) {
     SerialTxStr(str_caller);
     SerialTxNum(caller, DIGITS_2);
 
-    _delay_ms(3000);
+    _delay_ms(2000);
 
 }
+#endif  // !(GASOFF_DEBUG)

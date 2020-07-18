@@ -18,6 +18,8 @@
 #define FW_NAME "OPEN-BOILER"
 #define FW_VERSION "v0.8-d"
 
+#define GASOFF_DEBUG true
+
 // System defines
 
 #define CH_SETPOINT_HIGH 241  // ADC-NTC CH temperature ~ 55°C

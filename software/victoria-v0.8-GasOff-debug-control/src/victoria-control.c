@@ -26,7 +26,7 @@ int main(void) {
 #if (SHOW_DASHBOARD || GASOFF_DEBUG || SERIAL_DEBUG)
     // Initialize USART for serial communications (57600, N, 8, 1)
     SerialInit();
-#endif  (SHOW_DASHBOARD || GASOFF_DEBUG)
+#endif  // (SHOW_DASHBOARD || GASOFF_DEBUG || SERIAL_DEBUG)
 
     // System gas modulator
     HeatModulator gas_modulator[] = {

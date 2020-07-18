@@ -1,0 +1,10 @@
+AVR microcontroller fuses (No bootloader, no brown-out detector)
+=================================================================
+
+Low fuse = [0xff]
+..............................
+High fuse = [0xdf]
+..............................
+Extended fuse = [0xff]
+..............................
+

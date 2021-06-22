@@ -2,7 +2,7 @@ AVR microcontroller fuses
 =========================
 Low fuse = [0xff]
 ..............................
-High fuse = [0xda]
+High fuse = [0xdb]
 ..............................
-Extended fuse = [0xff]
+Extended fuse = [0xfd]
 ..............................

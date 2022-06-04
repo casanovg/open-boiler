@@ -1,0 +1,1 @@
+open-boiler project-specific KiCad libraries

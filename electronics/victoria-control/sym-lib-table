@@ -1,5 +1,5 @@
 (sym_lib_table
-  (lib (name "Arduino_Pro_Mini")(type "Legacy")(uri "${KIPRJMOD}/victoria-control-symbol-libraries/Arduino_Pro_Mini/Arduino_Pro_Mini.lib")(options "")(descr ""))
-  (lib (name "ESP32_DevKitC_32D")(type "Legacy")(uri "${KIPRJMOD}/victoria-control-symbol-libraries/ESP32_DevKitC_32D/ESP32_DevKitC_32D.lib")(options "")(descr ""))
-  (lib (name "Thermostat")(type "Legacy")(uri "${KIPRJMOD}/victoria-control-symbol-libraries/Thermostat/Thermostat.lib")(options "")(descr ""))
+  (lib (name "Arduino_Pro_Mini")(type "KiCad")(uri "${KIPRJMOD}/victoria-control-symbol-libraries/Arduino_Pro_Mini/Arduino_Pro_Mini.kicad_sym")(options "")(descr ""))
+  (lib (name "ESP32_DevKitC_32D")(type "KiCad")(uri "${KIPRJMOD}/victoria-control-symbol-libraries/ESP32_DevKitC_32D/ESP32_DevKitC_32D.kicad_sym")(options "")(descr ""))
+  (lib (name "Thermostat")(type "KiCad")(uri "${KIPRJMOD}/victoria-control-symbol-libraries/Thermostat/Thermostat.kicad_sym")(options "")(descr ""))
 )

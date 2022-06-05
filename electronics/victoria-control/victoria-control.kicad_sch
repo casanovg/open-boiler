@@ -6373,7 +6373,7 @@
     (property "Value" "Arduino-Pro-Mini" (id 1) (at 173.99 48.26 90)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Footprint" "ARDUINO_PRO_MINI" (id 2) (at 181.61 48.26 0)
+    (property "Footprint" "" (id 2) (at 181.61 48.26 0)
       (effects (font (size 1.27 1.27)) (justify left bottom) hide)
     )
     (property "Datasheet" "ARDUINO PRO MINI" (id 3) (at 181.61 48.26 0)
@@ -6574,7 +6574,7 @@
       (reference "#PWR043") (unit 1) (value "+12V") (footprint "")
     )
     (path "/cad727cd-865c-47f4-b63a-9d074c75ce57"
-      (reference "B1") (unit 1) (value "Arduino-Pro-Mini") (footprint "ARDUINO_PRO_MINI")
+      (reference "B1") (unit 1) (value "Arduino-Pro-Mini") (footprint "")
     )
     (path "/00000000-0000-0000-0000-00005d65c30d"
       (reference "C1") (unit 1) (value "C_Polarized_Small_US") (footprint "")

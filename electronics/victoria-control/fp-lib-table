@@ -1,0 +1,4 @@
+(fp_lib_table
+  (lib (name "Arduino_Pro_Mini")(type "KiCad")(uri "${KIPRJMOD}/victoria-control-symbol-libraries/Arduino_Pro_Mini")(options "")(descr ""))
+  (lib (name "ESP32_DevKitC_32D")(type "KiCad")(uri "${KIPRJMOD}/victoria-control-symbol-libraries/ESP32_DevKitC_32D")(options "")(descr ""))
+)

@@ -132,7 +132,7 @@ void InitDigitalSensor(SysInfo *p_system, InputFlag digital_sensor) {
         }
         case FLAME_F: {
             FLAME_DDR &= ~(1 << FLAME_PIN);  // Set Flame detector pin as input
-            FLAME_PORT |= (1 << FLAME_PIN); // Activate pull-up resistor on this pin
+            //OVERHEAT_PORT &= ~(1 << OVERHEAT_PIN); // Deactivate pull-up resistor on this pin
             break;
         }
         case OVERHEAT_F: {
@@ -197,7 +197,7 @@ bool CheckDigitalSensor(SysInfo *p_system, InputFlag digital_sensor, bool show_d
             if (((GetFlag(p_system, INPUT_FLAGS, FLAME_F)) == ((FLAME_PINP >> FLAME_PIN) & true)) || TimerExists(DEB_FLAME_TIMER_ID)) {
                 if (TimerExists(DEB_FLAME_TIMER_ID)) {
                     if (TimerFinished(DEB_FLAME_TIMER_ID)) {
-                        if ((GetFlag(p_system, INPUT_FLAGS, FLAME_F)) != ((FLAME_PINP >> FLAME_PIN) & true)) {
+                        if ((GetFlag(p_system, INPUT_FLAGS, FLAME_F)) == ((FLAME_PINP >> FLAME_PIN) & true)) {
                             ToggleFlag(p_system, INPUT_FLAGS, FLAME_F);
 #if LED_UI_FOR_FLAME
                             ToggleFlag(p_system, OUTPUT_FLAGS, LED_UI_F);

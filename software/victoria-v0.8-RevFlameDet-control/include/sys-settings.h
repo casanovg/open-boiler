@@ -4,7 +4,7 @@
  *  ........................................................
  *  File: sys-types.h (system types) for ATmega328
  *  ........................................................
- *  Version: 0.8-d "Easter Quarantine" / 2020-04-10
+ *  Version: 0.8 "Easter Quarantine" / 2020-04-10
  *  gustavo.casanova@nicebots.com
  *  ........................................................
  */
@@ -16,9 +16,7 @@
 
 // This software
 #define FW_NAME "OPEN-BOILER"
-#define FW_VERSION "v0.8-d"
-
-#define GASOFF_DEBUG true
+#define FW_VERSION "v0.8c"
 
 // System defines
 
@@ -103,7 +101,7 @@
 #endif
 
 #define BLINKS_AT_START 5    // Number of LED_UI blinks to show firmware execution start
-#define BLINK_AT_ST_DLY 500  // Delay between start indication blinks
+#define BLINK_AT_ST_DLY 250  // Delay between start indication blinks
 
 // System types
 

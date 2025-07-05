@@ -144,6 +144,7 @@ int main(void) {
         if (TimerFinished(PUMP_TIMER_ID)) {
             if (GetFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F)) {
                 ClearFlag(p_system, OUTPUT_FLAGS, WATER_PUMP_F);
+                wdt_reset();  // Reset the WDT to clear all registers
             }
         }
 
